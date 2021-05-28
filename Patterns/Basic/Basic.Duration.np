@@ -1,0 +1,30 @@
+@require "Basic.Number.np";
+
+@namespace Basic.Duration {
+    @search @pattern NumberWithUnit = {
+        [ 1+ { Basic.Number.IntegerNumber, Num } + Space + DurationFollowedUnit + ?Space ],
+        AnUnit
+    };
+
+    // (^\s*{DurationUnitRegex}\s+{SuffixAndRegex})|(^\s*{SuffixAndRegex}?(\s+|-)?{DurationUnitRegex})
+    DurationFollowedUnit = { 
+        DurationUnit + Space + SuffixAnd,
+        ?(SuffixAnd + { Space, '-' }) + DurationUnit
+    };
+
+    // (?<unit>{DateUnitRegex}|h(ou)?rs?|h|min(ute)?s?|sec(ond)?s?|nights?)\b
+    DurationUnit = { DateUnit, 'h', 'hr', 'hrs', 'hour', 'hours', 'min', 'mins', 'minute', 'minutes', 'sec', 'secs', 'second', 'seconds', 'night', 'nights' };
+
+    // (?<unit>decades?|years?|months?|weeks?|(?<business>(business\s+|week\s*))?days?|fortnights?|weekends?|(?<=\s+\d{1,4})[ymwd])\b
+    //TODO: (?<=\s+\d{1,4})[ymwd]) - ?
+    DateUnit = { 'decade', 'decades', 'year', 'years', 'month', 'months', 'week', 'weeks', 'day', 'days', 'business day', 'business days', 'weekday', 'weekdays', 'fortnights', 'fortnight',  'weekends', 'weekend' };
+
+    // (?<suffix>\s*(and)\s+(an?\s+)?(?<suffix_num>half|quarter))
+    SuffixAnd = 'and' + Space + ?({'a', 'an'} + Space) + { 'half', 'quarter' };
+
+    // (\b((?<half>(half)\s+)?an?|another)|(?<half>(1/2|½|half)))\s+{DurationUnitRegex}
+    AnUnit = {
+        { ?('half' + Space) + {'a', 'an'}, 'another' },
+        '1/2', '½', 'half'
+    } + Space + DurationUnit;
+}

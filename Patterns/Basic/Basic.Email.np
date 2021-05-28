@@ -1,0 +1,20 @@
+@require "Basic.IpAddress.np";
+
+@namespace Basic.Email {
+    // Скопировано из Common/Email.np с удалением QuotedLocalPart - временный обходной путь для https://lab.nezaboodka.com/nv/nevod/-/issues/96
+    @search @pattern Target = LocalPart + '@' + {Domain, ~Basic.IpAddress.IpAddressV4, '[' + Basic.IpAddress.IpAddressV4 + ']'}
+    @where
+    {
+        LocalPart = (Word @outside '.' + Word) + [0+ {Word, Punct, Symbol, ~NotAllowedSymbols, ~[2+ '.'], ~'.@'}]
+        @where
+        {
+            NotAllowedSymbols = {'"', '(', ')', ',', ':', ';', '<', '>', '@', '[', '\', ']'};
+        };
+        Domain = {SubDomain + [0+ '.' + SubDomain] + '.' + FirstLevelDomain, 'localhost'}
+        @where
+        {
+            SubDomain = Word + [0+ {Word, '-'}];
+            FirstLevelDomain = Alpha(2+);
+        };
+    };
+}

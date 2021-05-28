@@ -1,0 +1,4 @@
+@namespace Basic.BankCardNumber
+{
+  Delimiter = {Space, '-'};
+}

@@ -1,0 +1,19 @@
+@require "./BankCardNumber.Common.np";
+
+// Card Type: InterPayment
+// Length: 16-19
+// IIN Ranges: 636
+// Spacing Patterns:
+//  #### #### #### #### (4-4-4-4)
+//  Pattern not known for 17-19 digit cards.
+
+@namespace Basic.BankCardNumber
+{
+  @search @pattern InterPayment = {SpacingPattern, Num(16-19)}
+  @where
+  {
+    SpacingPattern = InterPayment.IIN + [3 Delimiter + Num(4)];
+    IIN = {
+      '6360', '6361', '6362','6363','6364','6365','6366','6367','6368','6369'};
+  };
+}

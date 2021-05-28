@@ -1,0 +1,8 @@
+Package: negrep
+Version: {current-version-value}
+Priority: optional
+Architecture: amd64
+Section: utils
+Installed-Size: {installed-size-value}
+Maintainer: Nezaboodka Software LLC <contact@nezaboodka.com>
+Description: Grep-like utility based on Nevod Textual Pattern Matching

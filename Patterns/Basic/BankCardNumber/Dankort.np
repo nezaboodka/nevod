@@ -1,0 +1,16 @@
+@require "./BankCardNumber.Common.np";
+
+// Card Type: Dankort
+// Length: 16
+// IIN Ranges: 5019
+// Spacing Patterns:
+//  #### #### #### #### (4-4-4-4)
+
+@namespace Basic.BankCardNumber
+{
+  @search @pattern Dankort = {SpacingPattern, Num(16)}
+  @where
+  {
+    @pattern SpacingPattern = '5019' + [3 Delimiter + Num(4)];
+  };
+}

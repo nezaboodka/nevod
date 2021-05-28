@@ -1,0 +1,319 @@
+@require "Basic.ConnectNum.Generated.np";
+
+@namespace Basic.Time {
+    @search @pattern Target = {
+        TimeExtractor1,
+        TimeExtractor2,
+        TimeExtractor3,
+        TimeExtractor4,
+        TimeExtractor5,
+        TimeExtractor6,
+        TimeExtractor7,
+        TimeExtractor9,
+        TimeExtractor11,
+        At,
+        Ish,
+        ConnectNum
+    };
+    
+    // Root - TimeRegex1
+    // (three min past)? seven|7|(seven thirty) pm
+    // \b({TimePrefix}\s+)?({WrittenTimeRegex}|{HourNumRegex}|{BaseDateTime.HourRegex})(\s*|[.]){DescRegex}
+    TimeExtractor1 = ?(TimePrefix + Space) + { { WrittenTime, HourNum, Hour24 } + { ?Space, '.' } + Desc, Num12AmPm, Num12P };
+
+    // Root - TimeRegex2
+    // (three min past)? 3:00(:00)? (pm)?
+    // (\b{TimePrefix}\s+)?(t)?{BaseDateTime.HourRegex}(\s*)?:(\s*)?{BaseDateTime.MinuteRegex}((\s*)?:(\s*)?{BaseDateTime.SecondRegex})?(?<iam>a)?((\s*{DescRegex})|\b)
+    TimeExtractor2 = ?(TimePrefix + Space) + THour24 + ?Space + ':' + ?Space + {
+        Num60OptionalAmPm,
+        Num60A,
+        Num60 + ?Space + ':' + ?Space + Num60OptionalAmPm
+    } @where {
+        Num60OptionalAmPm = { Num60 + ?(?Space + Desc), Num60AmPm };
+    };
+
+    // Root - TimeRegex3
+    // (three min past)? 3.00 (pm)
+    // (\b{TimePrefix}\s+)?{BaseDateTime.HourRegex}\.{BaseDateTime.MinuteRegex}(\s*{DescRegex})
+    TimeExtractor3 = ?(TimePrefix + Space) + Hour24 + '.' + {Num60 + ?Space + Desc, Num60AmPm};
+
+    // Root - TimeRegex4
+    // (three min past) (five thirty|seven|7|7:00(:00)?) (pm)? (in the night)
+    // \b{TimePrefix}\s+{BasicTime}(\s*{DescRegex})?\s+{TimeSuffix}\b
+    TimeExtractor4 = TimePrefix + Space + BasicTime + ?(?Space + Desc) + Space + TimeSuffix;
+
+    // Root - TimeRegex5
+    // (three min past) (five thirty|seven|7|7:00(:00)?) (pm)?
+    // \b{TimePrefix}\s+{BasicTime}((\s*{DescRegex})|\b)
+    TimeExtractor5 = TimePrefix + Space + BasicTime + ?(?Space + Desc);
+
+    // Root - TimeRegex6
+    // (five thirty|seven|7|7:00(:00)?) (pm)? (in the night)
+    // {BasicTime}(\s*{DescRegex})?\s+{TimeSuffix}\b
+    TimeExtractor6 = {
+        BasicTime + ?(?Space + Desc),
+        Num12AmPm, 
+        Hour24 + ':' + Num60AmPm + ?(':' + Num60),
+        Hour24 + ':' + Num60 + ':' + Num60AmPm
+    } + Space + TimeSuffix;
+
+    // Root - TimeRegex7
+    // (in the night) at? (five thirty|seven|7|7:00(:00)?) (pm)?
+    // \b{TimeSuffixFull}\s+(at\s+)?{BasicTime}((\s*{DescRegex})|\b)
+    TimeExtractor7 = TimeSuffixFull + Space + ?('at' + Space) + BasicTime + ?(?Space + Desc);
+
+    // Root - TimeRegex9
+    // \b{PeriodHourNumRegex}(\s+|-){FivesRegex}((\s*{DescRegex})|\b)
+    TimeExtractor9 = PeriodHourNum + {Space, '-'} + Fives + ?(?Space + Desc);
+
+    // Root - TimeRegex10
+    // (three min past)? 3h00 (pm)?
+    // \b({TimePrefix}\s+)?{BaseDateTime.HourRegex}(\s*h\s*){BaseDateTime.MinuteRegex}(\s*{DescRegex})?
+    // TODO: 3h00 - как?
+    // TODO: уменьшает количество пройденных тестов
+    // TimeExtractor10 = ?(TimePrefix + Space) + {Hour24h, Hour24 + Space + 'h'} + Space + Num60 + ?(?Space + Desc);
+
+    // Root - TimeRegex11
+    // at 2.30, "at" prefix is required here
+    // 3.30pm, "am/pm" suffix is required here
+    // \b((?:({TimeTokenPrefix})?{TimeRegexWithDotConnector}(\s*{DescRegex}))|(?:(?:{TimeTokenPrefix}{TimeRegexWithDotConnector})(?!\s*per\s*cent|%)))
+    // TODO: не увеличивает количество пройденных тестов
+    TimeExtractor11 = {
+        ?TimeTokenPrefix + HourAndMinuteAmPm,
+        TimeTokenPrefix + { HourAndMinuteAmPm, ~HourAndMinuteAmPm + ?Space + {'percent', 'per cent', '%' } }
+    } @where {
+        HourAndMinuteAmPm = { TimeRegexWithDotConnector + Space + Desc, Hour24 + ?Space + '.' + ?Space + Num60AmPm };
+    };
+
+    // Root
+    // \b(?:(?:(?:{BaseDateTime.HourRegex}?|{MidTimeRegex}))|{MidTimeRegex})\b
+    /* if (match.Index + match.Length < text.Length &&
+            text[match.Index + match.Length].Equals('%'))
+        {
+            continue;
+        }
+    */
+    At = {
+        Result @inside ('at' + Space + Result),
+        {MidTime, ~MidTime + '%'}
+    } @where {
+        Result = {AtBody, ~AtBody + '%'};
+        AtBody = { WrittenTime, HourNum, 
+            {
+                { Hour24, ~ Hour24 + {'.', ':'} } + ?(?Space + { 'a', 'p' }),
+                Num12A, Num12P
+            },
+            MidTime };
+    };
+
+    Ish = {
+        Hour24 + {'-', '——'} + 'ish',
+        Hour24ish,
+        'noon',
+        'noonish'
+    };
+
+    ConnectNum = {
+        Basic.ConnectNum.Generated.ConnectHourAndMinute + Space + Desc,
+        Basic.ConnectNum.Generated.ConnectHourAndMinuteAmPm,
+        Basic.ConnectNum.Generated.ConnectHourAndMinuteAP + ?('.' + ?Space) + 'm' + ?'.'
+    };
+
+    // ----------------------------------------------
+
+    // (?<prefix>{LessThanOneHour}\s+(past|to))
+    TimePrefix = LessThanOneHour + Space + {'past', 'to'};
+    
+    // (?<lth>(a\s+)?quarter|three quarter(s)?|half( an hour)?|{BaseDateTime.DeltaMinuteRegex}(\s+(minutes?|mins?))|{DeltaMinuteNumRegex}(\s+(minutes?|mins?)))
+    LessThanOneHour = {
+        ?('a' + Space) + 'quarter',
+        'three quarter', 'three quarters',
+        'half' + ?' an hour',
+        Num60 + ?(Space + Minute),
+        DeltaMinuteNum + ?(Space + Minute)
+    } @where {
+        Minute = {'min', 'mins', 'minute', 'minutes'};
+    };
+
+    // (?<deltaminnum>ten|eleven|twelve|thirteen|fifteen|eighteen|(four|six|seven|nine)(teen)?|twenty|thirty|forty|fifty|one|two|three|five|eight)
+    DeltaMinuteNum = MinuteNum;
+
+    // (?<writtentime>{HourNumRegex}\s+({MinuteNumRegex}|(?<tens>twenty|thirty|fou?rty|fifty)\s+{MinuteNumRegex}))
+    WrittenTime = HourNum + Space + { MinuteNum, { 'twenty', 'thirty', 'fourty', 'forty', 'fifty' } + Space + MinuteNum };
+
+    // \b(?<hournum>zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\b
+    HourNum = { 'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve' };
+
+    // (?<minnum>ten|eleven|twelve|thirteen|fifteen|eighteen|(four|six|seven|nine)(teen)?|twenty|thirty|forty|fifty|one|two|three|five|eight)
+    MinuteNum = { 'ten', 'eleven', 'twelve', 'thirteen', 'fifteen', 'eighteen', 'four', 'fourteen', 'six', 'sixteen', 'seven', 
+        'seventeen', 'nine', 'nineteen', 'twenty', 'thirty', 'forty', 'fifty', 'one', 'two', 'three', 'five', 'eight' };
+
+    // (:?(:?({OclockRegex}\s+)?(?<desc>({AmPmDescRegex}|{AmDescRegex}|{PmDescRegex}|{SpecialDescRegex})))|{OclockRegex})
+    Desc = {
+        ?(Oclock + Space) + { AmPmDesc, AmDesc, PmDesc, 'p' },
+        Oclock
+    };
+
+    // \b(?<basictime>{WrittenTimeRegex}|{HourNumRegex}|{BaseDateTime.HourRegex}:{BaseDateTime.MinuteRegex}(:{BaseDateTime.SecondRegex})?|{BaseDateTime.HourRegex}(?![%\d]))
+    BasicTime = { WrittenTime, HourNum, Hour24 + ':' + Num60 + ?(':' + Num60), {Hour24, ~ Hour24 + '%'} };
+
+    // (?<suffix>{AmRegex}|{PmRegex}|{OclockRegex})
+    TimeSuffix = { Am, Pm, Oclock };
+
+    // (?<suffix>{AmRegex}|{PmRegexFull}|{OclockRegex})
+    TimeSuffixFull = { Am, PmFull, Oclock };
+
+    AmDesc = { 'am', 'a' + ?Space + ?('.' + ?Space) + 'm' + ?Space + ?'.' };
+    PmDesc = { 'pm', 'p' + ?Space + ?('.' + ?Space) + 'm' + ?Space + ?'.' };
+    AmPmDesc = 'ampm';
+    // (?<oclock>o\s*((’|‘|')\s*)?clock|sharp)
+    Oclock = { 'o' + ?Space + {'’', '‘', "'"} + ?Space + 'clock', 'oclock', 'sharp' };
+
+    // (?<am>((?:at|in|around|on|for)\s+(the\s+)?)?(morning))
+    Am = ?({ 'at', 'in', 'around', 'on', 'for' } + Space + ?('the' + Space)) + 'morning';
+    
+    // (?<pm>(((?:at|in|around|on|for)\s+(the\s+)?)?(afternoon|evening|midnight|lunchtime))|((at|in|around|on|for)\s+(the\s+)?night))
+    Pm = {
+        ?({ 'at', 'in', 'around', 'on', 'for' } + Space + ?('the' + Space)) + { 'afternoon', 'evening', 'midnight', 'lunchtime' },
+        { 'at', 'in', 'around', 'on', 'for' } + Space + ?('the' + Space) + 'night'
+    };
+
+    // (?<pm>((?:at|in|around|on|for)\s+(the\s+)?)?(afternoon|evening|(mid)?night|lunchtime))
+    PmFull = ?({ 'at', 'in', 'around', 'on', 'for' } + Space + ?('the' + Space)) + { 'afternoon', 'evening', 'midnight', 'night', 'lunchtime' };
+
+    // \b(?<hour>twenty(\s+(one|two|three|four))?|eleven|twelve|thirteen|fifteen|eighteen|(four|six|seven|nine)(teen)?|zero|one|two|three|five|eight|ten)\b
+    PeriodHourNum = {
+        'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+        'twenty' + ?(Space + { 'one', 'two', 'three', 'four' }),
+        'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'
+    };
+
+    // (?<tens>(?:fifteen|(?:twen|thir|fou?r|fif)ty(\s*five)?|ten|five))\b
+    Fives = { 
+        'fifteen', 
+        { 'twenty', 'thirty', 'fourty', 'forty', 'fifty'} + ?(?Space + 'five'),
+        'ten', 'five'
+    };
+
+    // 'at '
+    TimeTokenPrefix = 'at ';
+
+    // ({BaseDateTime.HourRegex}(\s*\.\s*){BaseDateTime.MinuteRegex})
+    TimeRegexWithDotConnector = Hour24 + ?Space + '.' + ?Space + Num60;
+
+    // (?<mid>({MidnightRegex}|{MidmorningRegex}|{MidafternoonRegex}|{MiddayRegex}))
+    MidTime = {
+        // (?<midnight>mid\s*(-\s*)?night)
+        'midnight', 'mid' + DashOrSpace + 'night',
+        // (?<midmorning>mid\s*(-\s*)?morning)
+        'midmorning', 'mid' + DashOrSpace + 'morning',
+        // (?<midafternoon>mid\s*(-\s*)?afternoon)
+        'midafternoon', 'mid' + DashOrSpace + 'afternoon',
+        // (?<midday>mid\s*(-\s*)?day|((12\s)?noon))
+        'midday', 'mid' + DashOrSpace + 'day', '12 noon', 'noon'
+    } @where {
+        DashOrSpace = { Space, ?Space + '-' + ?Space };
+    };
+
+    // 00 - 24 или T00 - T24, нужно описывать явно, т. к. это один токен
+    THour24 = {
+        Hour24,    
+        'T0', 'T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9',
+        'T00', 'T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08', 'T09',
+        'T10', 'T11', 'T12', 'T13', 'T14', 'T15', 'T16', 'T17', 'T18', 'T19',
+        'T20', 'T21', 'T22', 'T23', 'T24'
+    };
+
+    // 00 - 24 или 00h - 24h, нужно описывать явно, т. к. это один токен
+    Hour24h = {
+        Hour24,
+        '0h', '1h', '2h', '3h', '4h', '5h', '6h', '7h', '8h', '9h',
+        '00h', '01h', '02h', '03h', '04h', '05h', '06h', '07h', '08h', '09h',
+        '10h', '11h', '12h', '13h', '14h', '15h', '16h', '17h', '18h', '19h',
+        '20h', '21h', '22h', '23h', '24h'
+    };
+
+    Hour24ish = {
+        '0ish', '1ish', '2ish', '3ish', '4ish', '5ish', '6ish', '7ish', '8ish', '9ish',
+        '00ish', '01ish', '02ish', '03ish', '04ish', '05ish', '06ish', '07ish', '08ish', '09ish',
+        '10ish', '11ish', '12ish', '13ish', '14ish', '15ish', '16ish', '17ish', '18ish', '19ish',
+        '20ish', '21ish', '22ish', '23ish', '24ish'
+    };
+
+    Num12P = { '0p', '1p', '2p', '3p', '4p', '5p', '6p', '7p', '8p', '9p', '10p', '11p', '12p' };
+    Num12A = { '0a', '1a', '2a', '3a', '4a', '5a', '6a', '7a', '8a', '9a', '10a', '11a', '12a' };
+
+    Num60A = {
+        '0a', '1a', '2a', '3a', '4a', '5a', '6a', '7a', '8a', '9a',
+        '00a', '01a', '02a', '03a', '04a', '05a', '06a', '07a', '08a', '09a',
+        '10a', '11a', '12a', '13a', '14a', '15a', '16a', '17a', '18a', '19a',
+        '20a', '21a', '22a', '23a', '24a', '25a', '26a', '27a', '28a', '29a',
+        '30a', '31a', '32a', '33a', '34a', '35a', '36a', '37a', '38a', '39a',
+        '40a', '41a', '42a', '43a', '44a', '45a', '46a', '47a', '48a', '49a',
+        '50a', '51a', '52a', '53a', '54a', '55a', '56a', '57a', '58a', '59a'
+    };
+
+    Time = {Time24, Time12} + ?(WordBreak + TimeZone);
+
+    Time24 = Hour24 + TimeDelim + Num60;
+    Time12 = {Num12AmPm, Num12 + TimeDelim + Num60AmPm,
+        Num12 + TimeDelim + Num60 + ?(Space + AmPm)};
+    TimeDelim = ':';
+    AmPm = {'pm', 'am', 'p.m.', 'a.m.', "o'clock"};
+    TimeZone = {'GMT', 'EST', 'ET', 'PST', 'PT'};
+    Hour24 = {
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+        '00', '01', '02', '03', '04', '05', '06', '07', '08', '09',
+        '10', '11', '12', '13', '14', '15', '16', '17', '18', '19',
+        '20', '21', '22', '23', '24'};
+    Num12 = {
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+        '00', '01', '02', '03', '04', '05', '06', '07', '08', '09',
+        '10', '11', '12'};
+    Num60 = {
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+        '00', '01', '02', '03', '04', '05', '06', '07', '08', '09',
+        '10', '11', '12', '13', '14', '15', '16', '17', '18', '19',
+        '20', '21', '22', '23', '24', '25', '26', '27', '28', '29',
+        '30', '31', '32', '33', '34', '35', '36', '37', '38', '39',
+        '40', '41', '42', '43', '44', '45', '46', '47', '48', '49',
+        '50', '51', '52', '53', '54', '55', '56', '57', '58', '59'};
+    Num12AmPm = {
+        '0am', '1am', '2am', '3am', '4am', '5am', '6am', '7am', '8am', '9am',
+        '10am', '11am', '12am',
+        '0pm', '1pm', '2pm', '3pm', '4pm', '5pm', '6pm', '7pm', '8pm', '9pm',
+        '10pm', '11pm', '12pm',
+        '0a.m.', '1a.m.', '2a.m.', '3a.m.', '4a.m.', '5a.m.', '6a.m.', '7a.m.', '8a.m.', '9a.m.',
+        '10a.m.', '11a.m.', '12a.m.',
+        '0p.m.', '1p.m.', '2p.m.', '3p.m.', '4p.m.', '5p.m.', '6p.m.', '7p.m.', '8p.m.', '9p.m.',
+        '10p.m.', '11p.m.', '12p.m.'};
+    Num60AmPm = {
+        '0am', '1am', '2am', '3am', '4am', '5am', '6am', '7am', '8am', '9am',
+        '00am', '01am', '02am', '03am', '04am', '05am', '06am', '07am', '08am', '09am',
+        '10am', '11am', '12am', '13am', '14am', '15am', '16am', '17am', '18am', '19am',
+        '20am', '21am', '22am', '23am', '24am', '25am', '26am', '27am', '28am', '29am',
+        '30am', '31am', '32am', '33am', '34am', '35am', '36am', '37am', '38am', '39am',
+        '40am', '41am', '42am', '43am', '44am', '45am', '46am', '47am', '48am', '49am',
+        '50am', '51am', '52am', '53am', '54am', '55am', '56am', '57am', '58am', '59am',
+        '0pm', '1pm', '2pm', '3pm', '4pm', '5pm', '6pm', '7pm', '8pm', '9pm',
+        '00pm', '01pm', '02pm', '03pm', '04pm', '05pm', '06pm', '07pm', '08pm', '09pm',
+        '10pm', '11pm', '12pm', '13pm', '14pm', '15pm', '16pm', '17pm', '18pm', '19pm',
+        '20pm', '21pm', '22pm', '23pm', '24pm', '25pm', '26pm', '27pm', '28pm', '29pm',
+        '30pm', '31pm', '32pm', '33pm', '34pm', '35pm', '36pm', '37pm', '38pm', '39pm',
+        '40pm', '41pm', '42pm', '43pm', '44pm', '45pm', '46pm', '47pm', '48pm', '49pm',
+        '50pm', '51pm', '52pm', '53pm', '54pm', '55pm', '56pm', '57pm', '58pm', '59pm',
+        '0a.m.', '1a.m.', '2a.m.', '3a.m.', '4a.m.', '5a.m.', '6a.m.', '7a.m.', '8a.m.', '9a.m.',
+        '00a.m.', '01a.m.', '02a.m.', '03a.m.', '04a.m.', '05a.m.', '06a.m.', '07a.m.', '08a.m.', '09a.m.',
+        '10a.m.', '11a.m.', '12a.m.', '13a.m.', '14a.m.', '15a.m.', '16a.m.', '17a.m.', '18a.m.', '19a.m.',
+        '20a.m.', '21a.m.', '22a.m.', '23a.m.', '24a.m.', '25a.m.', '26a.m.', '27a.m.', '28a.m.', '29a.m.',
+        '30a.m.', '31a.m.', '32a.m.', '33a.m.', '34a.m.', '35a.m.', '36a.m.', '37a.m.', '38a.m.', '39a.m.',
+        '40a.m.', '41a.m.', '42a.m.', '43a.m.', '44a.m.', '45a.m.', '46a.m.', '47a.m.', '48a.m.', '49a.m.',
+        '50a.m.', '51a.m.', '52a.m.', '53a.m.', '54a.m.', '55a.m.', '56a.m.', '57a.m.', '58a.m.', '59a.m.',
+        '0p.m.', '1p.m.', '2p.m.', '3p.m.', '4p.m.', '5p.m.', '6p.m.', '7p.m.', '8p.m.', '9p.m.',
+        '00p.m.', '01p.m.', '02p.m.', '03p.m.', '04p.m.', '05p.m.', '06p.m.', '07p.m.', '08p.m.', '09p.m.',
+        '10p.m.', '11p.m.', '12p.m.', '13p.m.', '14p.m.', '15p.m.', '16p.m.', '17p.m.', '18p.m.', '19p.m.',
+        '20p.m.', '21p.m.', '22p.m.', '23p.m.', '24p.m.', '25p.m.', '26p.m.', '27p.m.', '28p.m.', '29p.m.',
+        '30p.m.', '31p.m.', '32p.m.', '33p.m.', '34p.m.', '35p.m.', '36p.m.', '37p.m.', '38p.m.', '39p.m.',
+        '40p.m.', '41p.m.', '42p.m.', '43p.m.', '44p.m.', '45p.m.', '46p.m.', '47p.m.', '48p.m.', '49p.m.',
+        '50p.m.', '51p.m.', '52p.m.', '53p.m.', '54p.m.', '55p.m.', '56p.m.', '57p.m.', '58p.m.', '59p.m.'};
+}

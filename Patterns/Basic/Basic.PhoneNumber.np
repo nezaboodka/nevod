@@ -1,0 +1,1526 @@
+@require "Basic.DateTime.np";
+@require "Basic.Date.np";
+@require "Basic.Time.np";
+@require "Basic.Number.np";
+@require "Basic.HashTag.np";
+@require "Basic.Url.np";
+// @require "Basic.BankCardNumber/BankCardNumber.np";
+
+@namespace Basic.PhoneNumber {
+    @search @pattern Target = {PhoneNumber, ContextualPhoneNumber};
+
+    ContextualPhoneNumber = LongPhoneNumber @inside 'phone number is' + ?Space + LongPhoneNumber
+    @where {
+        LongPhoneNumber = ?('(' + ?Space + Num + ?Space + ')' + Delimiter) + ShortNumber;
+        ShortNumber = Num + [0+ Delimiter + Num] + ?(Delimiter + NumAlpha);
+    };
+
+    PhoneNumber = {
+        InternationalNotation,
+        NationalNotation,
+        '+' + ?Space + CountryCodeWithSuffix, // +123456
+        ?('+' + ?Space) + CountryCodeWithSuffix6 + [0+ Delimiter + Num], // 32123456
+        ?('+' + ?Space) + CountryCodeWithSuffix + Delimiter + Num(3+) + [0+ Delimiter + Num], // 375201 234567
+        '00' + Delimiter + InternationalNotation, // 00375291234567
+        '0'*(Num, 5+) + [0+ Delimiter + Num(1-9)], // 012345, 001234
+        //~CountryCodeWithSuffix + [1+ Delimiter + Num] + ?Space + '=', // NOTE: affects performance
+        ~'0' + [1+ Delimiter + '0'], // 0 0 0 ... 0
+        ~Num(6+) + Delimiter + Num(13+), // Too long numbers (123456 1234567890123)
+        ~Basic.Date.YearSpan // 2010-16, 2008/2010
+    } @outside {
+        Basic.Url.Target,
+        Basic.HashTag.Target,
+        Basic.Number.FloatNumber,
+        Basic.Number.ThousandSeparatedFloat,
+        Basic.Date.Target,
+        Basic.Time.Target,
+        CreditCardLike /* Basic.BankCardNumber */,
+        SSNLike,
+        '-' + Num(10),
+        Num + '%',
+        {'E', 'e'} + {'-', '+'} + Num,
+        '0'*(Num, 3+) + Delimiter + Num(11+), // 0039 31122627111-26737
+        {AlphaNum, NumAlpha} + [1+ Delimiter + {Num, NumAlpha, AlphaNum}],
+        {AlphaNum, NumAlpha, Num} + [0+ Delimiter + {AlphaNum, NumAlpha, Num}] + Delimiter + {AlphaNum, NumAlpha} + [0+ Delimiter + {AlphaNum, NumAlpha, Num}], // hexadecimal
+        'Formula' .. [1-5] .. 'is not a phone number',
+        'card number' + ?' is' + Space + Num,
+        'account' + ?' number' + ?' is' + Space + Num
+    };
+
+    InternationalNotation = {ParenthesizedCountryCode, ?('+' + ?Space) + {CountryCode, CountryCodeWithSuffix}} + Delimiter + {NationalNotation, Num(6)};
+    ParenthesizedCountryCode = '(' + ?Space + ?('+' + ?Space) + CountryCode + ?Space + ')';
+
+    NationalNotation = {
+        SimplePhoneNumber,
+        ?('(' + ?Space) + Num(1-5) + ?Space + ')' + Delimiter + {SimplePhoneNumber, Num(5+)} + ?ExtensionNumber
+    };
+
+    SimplePhoneNumber = {
+        Num(7-14),
+        Num + [3+ Delimiter + Num],
+        Num + [1+ Delimiter + Num(3+)],
+        Num(2+) + [1+ Delimiter + Num],
+        [2+ Num + Delimiter] + ExtensionNumber
+        //~Num(2+) + [1+ Delimiter + Num] + ?Space + '=' // NOTE: affects performance
+    };
+
+    ExtensionNumber = {'extension', 'ext', 'ext.', 'x'} + ?Space + Num;
+
+    Delimiter = ?Space + ?(DelimiterSymbol + ?Space);
+    DelimiterSymbol = {'-', '.', '/'};
+
+    CreditCardLike = Num(4) + [2 {Space, '-'} + Num(4)] + {Space, '-'} + Num(3-4);
+    SSNLike = Num(3) + '-' + Num(2) + '-' + Num(4);
+    
+    CountryCodeWithSuffix = {
+        Afghanistan,
+        Albania,
+        Algeria,
+        American-Samoa,
+        Andorra,
+        Angola,
+        Anguilla,
+        Antarctica-Australian-bases,
+        Antigua-and-Barbuda,
+        Argentina,
+        Armenia,
+        Aruba,
+        Ascension,
+        Australia,
+        Austria,
+        Azerbaijan,
+        Bahamas,
+        Bahrain,
+        Bangladesh,
+        Barbados,
+        Belarus,
+        Belgium,
+        Belize,
+        Benin,
+        Bermuda,
+        Bhutan,
+        Bolivia,
+        Bonaire,
+        Bosnia-and-Herzegovina,
+        Botswana,
+        Brazil,
+        British-Virgin-Islands,
+        Brunei,
+        Bulgaria,
+        Burkina-Faso,
+        Burundi,
+        Cabo-Verde,
+        Cambodia,
+        Cameroon,
+        Canada,
+        Cayman-Islands,
+        Central-African-Republic,
+        Chad,
+        Chile,
+        China,
+        Colombia,
+        Comoros,
+        Democratic-Republic-of-the-Congo,
+        Republic-of-the-Congo,
+        Cook-Islands,
+        Costa-Rica,
+        Cote-dIvoire,
+        Croatia,
+        Cuba,
+        Curacao,
+        Cyprus,
+        Czech-Republic,
+        Denmark,
+        Diego-Garcia,
+        Djibouti,
+        Dominica,
+        Dominican-Republic,
+        Ecuador,
+        Egypt,
+        El-Salvador,
+        Equatorial-Guinea,
+        Eritrea,
+        Estonia,
+        Eswatini,
+        Ethiopia,
+        Falkland-Islands,
+        Faroe-Islands,
+        Fiji,
+        Finland,
+        France,
+        French-Guiana,
+        French-Polynesia,
+        Gabon,
+        Gambia,
+        Georgia,
+        Germany,
+        Ghana,
+        Gibraltar,
+        Greece,
+        Greenland,
+        Grenada,
+        Guadeloupe,
+        Guam,
+        Guatemala,
+        Guinea,
+        Guinea-Bissau,
+        Guyana,
+        Haiti,
+        Honduras,
+        Hong-Kong,
+        Hungary,
+        Iceland,
+        India,
+        Indonesia,
+        Iran,
+        Iraq,
+        Ireland-Eire,
+        Israel,
+        Italy,
+        Jamaica,
+        Japan,
+        Jordan,
+        Kazakhstan,
+        Kenya,
+        Kiribati,
+        Kosovo,
+        Kuwait,
+        Kyrgyzstan,
+        Laos,
+        Latvia,
+        Lebanon,
+        Lesotho,
+        Liberia,
+        Libya,
+        Liechtenstein,
+        Lithuania,
+        Luxembourg,
+        Macau,
+        Madagascar,
+        Malawi,
+        Malaysia,
+        Maldives,
+        Mali,
+        Malta,
+        Marshall-Islands,
+        Martinique,
+        Mauritania,
+        Mauritius,
+        Mayotte,
+        Mexico,
+        Federated-States-of-Micronesia,
+        Moldova,
+        Monaco,
+        Mongolia,
+        Montenegro,
+        Montserrat,
+        Morocco,
+        Mozambique,
+        Myanmar,
+        Namibia,
+        Nauru,
+        Nepal,
+        Netherlands,
+        New-Caledonia,
+        New-Zealand,
+        Nicaragua,
+        Niger,
+        Nigeria,
+        Niue,
+        Norfolk-Island,
+        North-Korea,
+        North-Macedonia,
+        Northern-Mariana-Islands,
+        Norway,
+        Oman,
+        Pakistan,
+        Palau,
+        Palestine,
+        Panama,
+        Papua-New-Guinea,
+        Paraguay,
+        Peru,
+        Philippines,
+        Poland,
+        Portugal,
+        Puerto-Rico,
+        Qatar,
+        Reunion,
+        Romania,
+        Russia,
+        Rwanda,
+        Saba,
+        Saint-Barthelemy,
+        Saint-Helena,
+        Saint-Kitts-and-Nevis,
+        Saint-Lucia,
+        Saint-Martin-French-side,
+        Saint-Pierre-and-Miquelon,
+        Saint-Vincent-and-the-Grenadines,
+        Samoa,
+        San-Marino,
+        Sao-Tome-and-Principe,
+        Saudi-Arabia,
+        Senegal,
+        Serbia,
+        Seychelles,
+        Sierra-Leone,
+        Singapore,
+        Sint-Eustatius,
+        Sint-Maarten-Dutch-side,
+        Slovakia,
+        Slovenia,
+        Solomon-Islands,
+        Somalia,
+        South-Africa,
+        South-Korea,
+        South-Sudan,
+        Spain,
+        Sri-Lanka,
+        Sudan,
+        Suriname,
+        Sweden,
+        Switzerland,
+        Syria,
+        Taiwan,
+        Tajikistan,
+        Tanzania,
+        Thailand,
+        Timor-Leste,
+        Togo,
+        Tokelau,
+        Tonga,
+        Trinidad-and-Tobago,
+        Tristan-da-Cunha,
+        Tunisia,
+        Turkey,
+        Turkmenistan,
+        Turks-and-Caicos-Islands,
+        Tuvalu,
+        Uganda,
+        Ukraine,
+        United-Arab-Emirates,
+        United-Kingdom,
+        United-States-of-America,
+        Uruguay,
+        Uzbekistan,
+        Vanuatu,
+        Vatican-City-State,
+        Venezuela,
+        Vietnam,
+        US-Virgin-Islands,
+        Wallis-and-Futuna,
+        Yemen,
+        Zambia,
+        Zimbabwe
+    } @where {
+        Afghanistan = '93'*(Num);
+        Albania = '355'*(Num);
+        Algeria = '213'*(Num);
+        American-Samoa = {'1' + Delimiter + '684'*(Num), '1684'*(Num)};
+        Andorra = '376'*(Num);
+        Angola = '244'*(Num);
+        Anguilla = {'1' + Delimiter + '264'*(Num), '1264'*(Num)};
+        Antarctica-Australian-bases = {'672' + Delimiter + '1'*(Num), '6721'*(Num)};
+        Antigua-and-Barbuda = {'1' + Delimiter + '268'*(Num), '1268'*(Num)};
+        Argentina = '54'*(Num);
+        Armenia = '374'*(Num);
+        Aruba = '297'*(Num);
+        Ascension = '247'*(Num);
+        Australia = '61'*(Num);
+        Austria = '43'*(Num);
+        Azerbaijan = '994'*(Num);
+        Bahamas = {'1' + Delimiter + '242'*(Num), '1242'*(Num)};
+        Bahrain = '973'*(Num);
+        Bangladesh = '880'*(Num);
+        Barbados = {'1' + Delimiter + '246'*(Num), '1246'*(Num)};
+        Belarus = '375'*(Num);
+        Belgium = '32'*(Num);
+        Belize = '501'*(Num);
+        Benin = '229'*(Num);
+        Bermuda = {'1' + Delimiter + '441'*(Num), '1441'*(Num)};
+        Bhutan = '975'*(Num);
+        Bolivia = '591'*(Num);
+        Bonaire = '599'*(Num);
+        Bosnia-and-Herzegovina = '387'*(Num);
+        Botswana = '267'*(Num);
+        Brazil = '55'*(Num);
+        British-Virgin-Islands = {'1' + Delimiter + '284'*(Num), '1284'*(Num)};
+        Brunei = '673'*(Num);
+        Bulgaria = '359'*(Num);
+        Burkina-Faso = '226'*(Num);
+        Burundi = '257'*(Num);
+        Cabo-Verde = '238'*(Num);
+        Cambodia = '855'*(Num);
+        Cameroon = '237'*(Num);
+        Canada = '1'*(Num);
+        Cayman-Islands = {'1' + Delimiter + '345'*(Num), '1345'*(Num)};
+        Central-African-Republic = '236'*(Num);
+        Chad = '235'*(Num);
+        Chile = '56'*(Num);
+        China = '86'*(Num);
+        Colombia = '57'*(Num);
+        Comoros = '269'*(Num);
+        Democratic-Republic-of-the-Congo = '243'*(Num);
+        Republic-of-the-Congo = '242'*(Num);
+        Cook-Islands = '682'*(Num);
+        Costa-Rica = '506'*(Num);
+        Cote-dIvoire = '225'*(Num);
+        Croatia = '385'*(Num);
+        Cuba = '53'*(Num);
+        Curacao = '599'*(Num);
+        Cyprus = '357'*(Num);
+        Czech-Republic = '420'*(Num);
+        Denmark = '45'*(Num);
+        Diego-Garcia = '246'*(Num);
+        Djibouti = '253'*(Num);
+        Dominica = {'1' + Delimiter + '767'*(Num), '1767'*(Num)};
+        Dominican-Republic = {'1' + Delimiter + '809'*(Num), '1' + Delimiter + '829'*(Num), '1' + Delimiter + '849'*(Num), '1809'*(Num), '1829'*(Num), '1849'*(Num)};
+        Ecuador = '593'*(Num);
+        Egypt = '20'*(Num);
+        El-Salvador = '503'*(Num);
+        Equatorial-Guinea = '240'*(Num);
+        Eritrea = '291'*(Num);
+        Estonia = '372'*(Num);
+        Eswatini = '268'*(Num);
+        Ethiopia = '251'*(Num);
+        Falkland-Islands = '500'*(Num);
+        Faroe-Islands = '298'*(Num);
+        Fiji = '679'*(Num);
+        Finland = '358'*(Num);
+        France = '33'*(Num);
+        French-Guiana = '594'*(Num);
+        French-Polynesia = '689'*(Num);
+        Gabon = '241'*(Num);
+        Gambia = '220'*(Num);
+        Georgia = '995'*(Num);
+        Germany = '49'*(Num);
+        Ghana = '233'*(Num);
+        Gibraltar = '350'*(Num);
+        Greece = '30'*(Num);
+        Greenland = '299'*(Num);
+        Grenada = {'1' + Delimiter + '473'*(Num), '1473'*(Num)};
+        Guadeloupe = '590'*(Num);
+        Guam = {'1' + Delimiter + '671'*(Num), '1671'*(Num)};
+        Guatemala = '502'*(Num);
+        Guinea = '224'*(Num);
+        Guinea-Bissau = '245'*(Num);
+        Guyana = '592'*(Num);
+        Haiti = '509'*(Num);
+        Honduras = '504'*(Num);
+        Hong-Kong = '852'*(Num);
+        Hungary = '36'*(Num);
+        Iceland = '354'*(Num);
+        India = '91'*(Num);
+        Indonesia = '62'*(Num);
+        Iran = '98'*(Num);
+        Iraq = '964'*(Num);
+        Ireland-Eire = '353'*(Num);
+        Israel = '972'*(Num);
+        Italy = '39'*(Num);
+        Jamaica = {'1' + Delimiter + '658'*(Num), '1' + Delimiter + '876'*(Num), '1658'*(Num), '1876'*(Num)};
+        Japan = '81'*(Num);
+        Jordan = '962'*(Num);
+        Kazakhstan = '7'*(Num);
+        Kenya = '254'*(Num);
+        Kiribati = '686'*(Num);
+        Kosovo = '383'*(Num);
+        Kuwait = '965'*(Num);
+        Kyrgyzstan = '996'*(Num);
+        Laos = '856'*(Num);
+        Latvia = '371'*(Num);
+        Lebanon = '961'*(Num);
+        Lesotho = '266'*(Num);
+        Liberia = '231'*(Num);
+        Libya = '218'*(Num);
+        Liechtenstein = '423'*(Num);
+        Lithuania = '370'*(Num);
+        Luxembourg = '352'*(Num);
+        Macau = '853'*(Num);
+        Madagascar = '261'*(Num);
+        Malawi = '265'*(Num);
+        Malaysia = '60'*(Num);
+        Maldives = '960'*(Num);
+        Mali = '223'*(Num);
+        Malta = '356'*(Num);
+        Marshall-Islands = '692'*(Num);
+        Martinique = '596'*(Num);
+        Mauritania = '222'*(Num);
+        Mauritius = '230'*(Num);
+        Mayotte = '262'*(Num);
+        Mexico = '52'*(Num);
+        Federated-States-of-Micronesia = '691'*(Num);
+        Moldova = '373'*(Num);
+        Monaco = '377'*(Num);
+        Mongolia = '976'*(Num);
+        Montenegro = '382'*(Num);
+        Montserrat = {'1' + Delimiter + '664'*(Num), '1664'*(Num)};
+        Morocco = '212'*(Num);
+        Mozambique = '258'*(Num);
+        Myanmar = '95'*(Num);
+        Namibia = '264'*(Num);
+        Nauru = '674'*(Num);
+        Nepal = '977'*(Num);
+        Netherlands = '31'*(Num);
+        New-Caledonia = '687'*(Num);
+        New-Zealand = '64'*(Num);
+        Nicaragua = '505'*(Num);
+        Niger = '227'*(Num);
+        Nigeria = '234'*(Num);
+        Niue = '683'*(Num);
+        Norfolk-Island = {'672' + Delimiter + '3'*(Num), '6723'*(Num)};
+        North-Korea = '850'*(Num);
+        North-Macedonia = '389'*(Num);
+        Northern-Mariana-Islands = {'1' + Delimiter + '670'*(Num), '1670'*(Num)};
+        Norway = '47'*(Num);
+        Oman = '968'*(Num);
+        Pakistan = '92'*(Num);
+        Palau = '680'*(Num);
+        Palestine = '970'*(Num);
+        Panama = '507'*(Num);
+        Papua-New-Guinea = '675'*(Num);
+        Paraguay = '595'*(Num);
+        Peru = '51'*(Num);
+        Philippines = '63'*(Num);
+        Poland = '48'*(Num);
+        Portugal = '351'*(Num);
+        Puerto-Rico = {'1' + Delimiter + '787'*(Num), '1' + Delimiter + '939'*(Num), '1787'*(Num), '1939'*(Num)};
+        Qatar = '974'*(Num);
+        Reunion = '262'*(Num);
+        Romania = '40'*(Num);
+        Russia = '7'*(Num);
+        Rwanda = '250'*(Num);
+        Saba = '599'*(Num);
+        Saint-Barthelemy = '590'*(Num);
+        Saint-Helena = '290'*(Num);
+        Saint-Kitts-and-Nevis = {'1' + Delimiter + '869'*(Num), '1869'*(Num)};
+        Saint-Lucia = {'1' + Delimiter + '758'*(Num), '1758'*(Num)};
+        Saint-Martin-French-side = '590'*(Num);
+        Saint-Pierre-and-Miquelon = '508'*(Num);
+        Saint-Vincent-and-the-Grenadines = {'1' + Delimiter + '784'*(Num), '1784'*(Num)};
+        Samoa = '685'*(Num);
+        San-Marino = '378'*(Num);
+        Sao-Tome-and-Principe = '239'*(Num);
+        Saudi-Arabia = '966'*(Num);
+        Senegal = '221'*(Num);
+        Serbia = '381'*(Num);
+        Seychelles = '248'*(Num);
+        Sierra-Leone = '232'*(Num);
+        Singapore = '65'*(Num);
+        Sint-Eustatius = '599'*(Num);
+        Sint-Maarten-Dutch-side = {'1' + Delimiter + '721'*(Num), '1721'*(Num)};
+        Slovakia = '421'*(Num);
+        Slovenia = '386'*(Num);
+        Solomon-Islands = '677'*(Num);
+        Somalia = '252'*(Num);
+        South-Africa = '27'*(Num);
+        South-Korea = '82'*(Num);
+        South-Sudan = '211'*(Num);
+        Spain = '34'*(Num);
+        Sri-Lanka = '94'*(Num);
+        Sudan = '249'*(Num);
+        Suriname = '597'*(Num);
+        Sweden = '46'*(Num);
+        Switzerland = '41'*(Num);
+        Syria = '963'*(Num);
+        Taiwan = '886'*(Num);
+        Tajikistan = '992'*(Num);
+        Tanzania = '255'*(Num);
+        Thailand = '66'*(Num);
+        Timor-Leste = '670'*(Num);
+        Togo = '228'*(Num);
+        Tokelau = '690'*(Num);
+        Tonga = '676'*(Num);
+        Trinidad-and-Tobago = {'1' + Delimiter + '868'*(Num), '1868'*(Num)};
+        Tristan-da-Cunha = '290'*(Num);
+        Tunisia = '216'*(Num);
+        Turkey = '90'*(Num);
+        Turkmenistan = '993'*(Num);
+        Turks-and-Caicos-Islands = {'1' + Delimiter + '649'*(Num), '1649'*(Num)};
+        Tuvalu = '688'*(Num);
+        Uganda = '256'*(Num);
+        Ukraine = '380'*(Num);
+        United-Arab-Emirates = '971'*(Num);
+        United-Kingdom = '44'*(Num);
+        United-States-of-America = '1'*(Num);
+        Uruguay = '598'*(Num);
+        Uzbekistan = '998'*(Num);
+        Vanuatu = '678'*(Num);
+        Vatican-City-State = '39'*(Num);
+        Venezuela = '58'*(Num);
+        Vietnam = '84'*(Num);
+        US-Virgin-Islands = {'1' + Delimiter + '340'*(Num), '1340'*(Num)};
+        Wallis-and-Futuna = '681'*(Num);
+        Yemen = '967'*(Num);
+        Zambia = '260'*(Num);
+        Zimbabwe = '263'*(Num);
+    };
+
+    CountryCodeWithSuffix6 = {
+        Afghanistan,
+        Albania,
+        Algeria,
+        American-Samoa,
+        Andorra,
+        Angola,
+        Anguilla,
+        Antarctica-Australian-bases,
+        Antigua-and-Barbuda,
+        Argentina,
+        Armenia,
+        Aruba,
+        Ascension,
+        Australia,
+        Austria,
+        Azerbaijan,
+        Bahamas,
+        Bahrain,
+        Bangladesh,
+        Barbados,
+        Belarus,
+        Belgium,
+        Belize,
+        Benin,
+        Bermuda,
+        Bhutan,
+        Bolivia,
+        Bonaire,
+        Bosnia-and-Herzegovina,
+        Botswana,
+        Brazil,
+        British-Virgin-Islands,
+        Brunei,
+        Bulgaria,
+        Burkina-Faso,
+        Burundi,
+        Cabo-Verde,
+        Cambodia,
+        Cameroon,
+        Canada,
+        Cayman-Islands,
+        Central-African-Republic,
+        Chad,
+        Chile,
+        China,
+        Colombia,
+        Comoros,
+        Democratic-Republic-of-the-Congo,
+        Republic-of-the-Congo,
+        Cook-Islands,
+        Costa-Rica,
+        Cote-dIvoire,
+        Croatia,
+        Cuba,
+        Curacao,
+        Cyprus,
+        Czech-Republic,
+        Denmark,
+        Diego-Garcia,
+        Djibouti,
+        Dominica,
+        Dominican-Republic,
+        Ecuador,
+        Egypt,
+        El-Salvador,
+        Equatorial-Guinea,
+        Eritrea,
+        Estonia,
+        Eswatini,
+        Ethiopia,
+        Falkland-Islands,
+        Faroe-Islands,
+        Fiji,
+        Finland,
+        France,
+        French-Guiana,
+        French-Polynesia,
+        Gabon,
+        Gambia,
+        Georgia,
+        Germany,
+        Ghana,
+        Gibraltar,
+        Greece,
+        Greenland,
+        Grenada,
+        Guadeloupe,
+        Guam,
+        Guatemala,
+        Guinea,
+        Guinea-Bissau,
+        Guyana,
+        Haiti,
+        Honduras,
+        Hong-Kong,
+        Hungary,
+        Iceland,
+        India,
+        Indonesia,
+        Iran,
+        Iraq,
+        Ireland-Eire,
+        Israel,
+        Italy,
+        Jamaica,
+        Japan,
+        Jordan,
+        Kazakhstan,
+        Kenya,
+        Kiribati,
+        Kosovo,
+        Kuwait,
+        Kyrgyzstan,
+        Laos,
+        Latvia,
+        Lebanon,
+        Lesotho,
+        Liberia,
+        Libya,
+        Liechtenstein,
+        Lithuania,
+        Luxembourg,
+        Macau,
+        Madagascar,
+        Malawi,
+        Malaysia,
+        Maldives,
+        Mali,
+        Malta,
+        Marshall-Islands,
+        Martinique,
+        Mauritania,
+        Mauritius,
+        Mayotte,
+        Mexico,
+        Federated-States-of-Micronesia,
+        Moldova,
+        Monaco,
+        Mongolia,
+        Montenegro,
+        Montserrat,
+        Morocco,
+        Mozambique,
+        Myanmar,
+        Namibia,
+        Nauru,
+        Nepal,
+        Netherlands,
+        New-Caledonia,
+        New-Zealand,
+        Nicaragua,
+        Niger,
+        Nigeria,
+        Niue,
+        Norfolk-Island,
+        North-Korea,
+        North-Macedonia,
+        Northern-Mariana-Islands,
+        Norway,
+        Oman,
+        Pakistan,
+        Palau,
+        Palestine,
+        Panama,
+        Papua-New-Guinea,
+        Paraguay,
+        Peru,
+        Philippines,
+        Poland,
+        Portugal,
+        Puerto-Rico,
+        Qatar,
+        Reunion,
+        Romania,
+        Russia,
+        Rwanda,
+        Saba,
+        Saint-Barthelemy,
+        Saint-Helena,
+        Saint-Kitts-and-Nevis,
+        Saint-Lucia,
+        Saint-Martin-French-side,
+        Saint-Pierre-and-Miquelon,
+        Saint-Vincent-and-the-Grenadines,
+        Samoa,
+        San-Marino,
+        Sao-Tome-and-Principe,
+        Saudi-Arabia,
+        Senegal,
+        Serbia,
+        Seychelles,
+        Sierra-Leone,
+        Singapore,
+        Sint-Eustatius,
+        Sint-Maarten-Dutch-side,
+        Slovakia,
+        Slovenia,
+        Solomon-Islands,
+        Somalia,
+        South-Africa,
+        South-Korea,
+        South-Sudan,
+        Spain,
+        Sri-Lanka,
+        Sudan,
+        Suriname,
+        Sweden,
+        Switzerland,
+        Syria,
+        Taiwan,
+        Tajikistan,
+        Tanzania,
+        Thailand,
+        Timor-Leste,
+        Togo,
+        Tokelau,
+        Tonga,
+        Trinidad-and-Tobago,
+        Tristan-da-Cunha,
+        Tunisia,
+        Turkey,
+        Turkmenistan,
+        Turks-and-Caicos-Islands,
+        Tuvalu,
+        Uganda,
+        Ukraine,
+        United-Arab-Emirates,
+        United-Kingdom,
+        United-States-of-America,
+        Uruguay,
+        Uzbekistan,
+        Vanuatu,
+        Vatican-City-State,
+        Venezuela,
+        Vietnam,
+        US-Virgin-Islands,
+        Wallis-and-Futuna,
+        Yemen,
+        Zambia,
+        Zimbabwe
+    } @where {
+        Afghanistan = '93'*(Num, 6-13);
+        Albania = '355'*(Num, 6-12);
+        Algeria = '213'*(Num, 6-12);
+        American-Samoa = {'1' + Delimiter + '684'*(Num, 6-12), '1684'*(Num, 6-11)};
+        Andorra = '376'*(Num, 6-12);
+        Angola = '244'*(Num, 6-12);
+        Anguilla = {'1' + Delimiter + '264'*(Num, 6-12), '1264'*(Num, 6-11)};
+        Antarctica-Australian-bases = {'672' + Delimiter + '1'*(Num, 6-14), '6721'*(Num, 6-11)};
+        Antigua-and-Barbuda = {'1' + Delimiter + '268'*(Num, 6-12), '1268'*(Num, 6-11)};
+        Argentina = '54'*(Num, 6-13);
+        Armenia = '374'*(Num, 6-12);
+        Aruba = '297'*(Num, 6-12);
+        Ascension = '247'*(Num, 6-12);
+        Australia = '61'*(Num, 6-13);
+        Austria = '43'*(Num, 6-13);
+        Azerbaijan = '994'*(Num, 6-12);
+        Bahamas = {'1' + Delimiter + '242'*(Num, 6-12), '1242'*(Num, 6-11)};
+        Bahrain = '973'*(Num, 6-12);
+        Bangladesh = '880'*(Num, 6-12);
+        Barbados = {'1' + Delimiter + '246'*(Num, 6-12), '1246'*(Num, 6-11)};
+        Belarus = '375'*(Num, 6-12);
+        Belgium = '32'*(Num, 6-13);
+        Belize = '501'*(Num, 6-12);
+        Benin = '229'*(Num, 6-12);
+        Bermuda = {'1' + Delimiter + '441'*(Num, 6-12), '1441'*(Num, 6-11)};
+        Bhutan = '975'*(Num, 6-12);
+        Bolivia = '591'*(Num, 6-12);
+        Bonaire = '599'*(Num, 6-12);
+        Bosnia-and-Herzegovina = '387'*(Num, 6-12);
+        Botswana = '267'*(Num, 6-12);
+        Brazil = '55'*(Num, 6-13);
+        British-Virgin-Islands = {'1' + Delimiter + '284'*(Num, 6-12), '1284'*(Num, 6-11)};
+        Brunei = '673'*(Num, 6-12);
+        Bulgaria = '359'*(Num, 6-12);
+        Burkina-Faso = '226'*(Num, 6-12);
+        Burundi = '257'*(Num, 6-12);
+        Cabo-Verde = '238'*(Num, 6-12);
+        Cambodia = '855'*(Num, 6-12);
+        Cameroon = '237'*(Num, 6-12);
+        Canada = '1'*(Num, 6-14);
+        Cayman-Islands = {'1' + Delimiter + '345'*(Num, 6-12), '1345'*(Num, 6-11)};
+        Central-African-Republic = '236'*(Num, 6-12);
+        Chad = '235'*(Num, 6-12);
+        Chile = '56'*(Num, 6-13);
+        China = '86'*(Num, 6-13);
+        Colombia = '57'*(Num, 6-13);
+        Comoros = '269'*(Num, 6-12);
+        Democratic-Republic-of-the-Congo = '243'*(Num, 6-12);
+        Republic-of-the-Congo = '242'*(Num, 6-12);
+        Cook-Islands = '682'*(Num, 6-12);
+        Costa-Rica = '506'*(Num, 6-12);
+        Cote-dIvoire = '225'*(Num, 6-12);
+        Croatia = '385'*(Num, 6-12);
+        Cuba = '53'*(Num, 6-13);
+        Curacao = '599'*(Num, 6-12);
+        Cyprus = '357'*(Num, 6-12);
+        Czech-Republic = '420'*(Num, 6-12);
+        Denmark = '45'*(Num, 6-13);
+        Diego-Garcia = '246'*(Num, 6-12);
+        Djibouti = '253'*(Num, 6-12);
+        Dominica = {'1' + Delimiter + '767'*(Num, 6-12), '1767'*(Num, 6-11)};
+        Dominican-Republic = {'1' + Delimiter + '809'*(Num, 6-12), '1' + Delimiter + '829'*(Num, 6-12), '1' + Delimiter + '849'*(Num, 6-12), '1809'*(Num, 6-11), '1829'*(Num, 6-11), '1849'*(Num, 6-11)};
+        Ecuador = '593'*(Num, 6-12);
+        Egypt = '20'*(Num, 6-13);
+        El-Salvador = '503'*(Num, 6-12);
+        Equatorial-Guinea = '240'*(Num, 6-12);
+        Eritrea = '291'*(Num, 6-12);
+        Estonia = '372'*(Num, 6-12);
+        Eswatini = '268'*(Num, 6-12);
+        Ethiopia = '251'*(Num, 6-12);
+        Falkland-Islands = '500'*(Num, 6-12);
+        Faroe-Islands = '298'*(Num, 6-12);
+        Fiji = '679'*(Num, 6-12);
+        Finland = '358'*(Num, 6-12);
+        France = '33'*(Num, 6-13);
+        French-Guiana = '594'*(Num, 6-12);
+        French-Polynesia = '689'*(Num, 6-12);
+        Gabon = '241'*(Num, 6-12);
+        Gambia = '220'*(Num, 6-12);
+        Georgia = '995'*(Num, 6-12);
+        Germany = '49'*(Num, 6-13);
+        Ghana = '233'*(Num, 6-12);
+        Gibraltar = '350'*(Num, 6-12);
+        Greece = '30'*(Num, 6-13);
+        Greenland = '299'*(Num, 6-12);
+        Grenada = {'1' + Delimiter + '473'*(Num, 6-12), '1473'*(Num, 6-11)};
+        Guadeloupe = '590'*(Num, 6-12);
+        Guam = {'1' + Delimiter + '671'*(Num, 6-12), '1671'*(Num, 6-11)};
+        Guatemala = '502'*(Num, 6-12);
+        Guinea = '224'*(Num, 6-12);
+        Guinea-Bissau = '245'*(Num, 6-12);
+        Guyana = '592'*(Num, 6-12);
+        Haiti = '509'*(Num, 6-12);
+        Honduras = '504'*(Num, 6-12);
+        Hong-Kong = '852'*(Num, 6-12);
+        Hungary = '36'*(Num, 6-13);
+        Iceland = '354'*(Num, 6-12);
+        India = '91'*(Num, 6-13);
+        Indonesia = '62'*(Num, 6-13);
+        Iran = '98'*(Num, 6-13);
+        Iraq = '964'*(Num, 6-12);
+        Ireland-Eire = '353'*(Num, 6-12);
+        Israel = '972'*(Num, 6-12);
+        Italy = '39'*(Num, 6-13);
+        Jamaica = {'1' + Delimiter + '658'*(Num, 6-12), '1' + Delimiter + '876'*(Num, 6-12), '1658'*(Num, 6-11), '1876'*(Num, 6-11)};
+        Japan = '81'*(Num, 6-13);
+        Jordan = '962'*(Num, 6-12);
+        Kazakhstan = '7'*(Num, 6-14);
+        Kenya = '254'*(Num, 6-12);
+        Kiribati = '686'*(Num, 6-12);
+        Kosovo = '383'*(Num, 6-12);
+        Kuwait = '965'*(Num, 6-12);
+        Kyrgyzstan = '996'*(Num, 6-12);
+        Laos = '856'*(Num, 6-12);
+        Latvia = '371'*(Num, 6-12);
+        Lebanon = '961'*(Num, 6-12);
+        Lesotho = '266'*(Num, 6-12);
+        Liberia = '231'*(Num, 6-12);
+        Libya = '218'*(Num, 6-12);
+        Liechtenstein = '423'*(Num, 6-12);
+        Lithuania = '370'*(Num, 6-12);
+        Luxembourg = '352'*(Num, 6-12);
+        Macau = '853'*(Num, 6-12);
+        Madagascar = '261'*(Num, 6-12);
+        Malawi = '265'*(Num, 6-12);
+        Malaysia = '60'*(Num, 6-13);
+        Maldives = '960'*(Num, 6-12);
+        Mali = '223'*(Num, 6-12);
+        Malta = '356'*(Num, 6-12);
+        Marshall-Islands = '692'*(Num, 6-12);
+        Martinique = '596'*(Num, 6-12);
+        Mauritania = '222'*(Num, 6-12);
+        Mauritius = '230'*(Num, 6-12);
+        Mayotte = '262'*(Num, 6-12);
+        Mexico = '52'*(Num, 6-13);
+        Federated-States-of-Micronesia = '691'*(Num, 6-12);
+        Moldova = '373'*(Num, 6-12);
+        Monaco = '377'*(Num, 6-12);
+        Mongolia = '976'*(Num, 6-12);
+        Montenegro = '382'*(Num, 6-12);
+        Montserrat = {'1' + Delimiter + '664'*(Num, 6-12), '1664'*(Num, 6-11)};
+        Morocco = '212'*(Num, 6-12);
+        Mozambique = '258'*(Num, 6-12);
+        Myanmar = '95'*(Num, 6-13);
+        Namibia = '264'*(Num, 6-12);
+        Nauru = '674'*(Num, 6-12);
+        Nepal = '977'*(Num, 6-12);
+        Netherlands = '31'*(Num, 6-13);
+        New-Caledonia = '687'*(Num, 6-12);
+        New-Zealand = '64'*(Num, 6-13);
+        Nicaragua = '505'*(Num, 6-12);
+        Niger = '227'*(Num, 6-12);
+        Nigeria = '234'*(Num, 6-12);
+        Niue = '683'*(Num, 6-12);
+        Norfolk-Island = {'672' + Delimiter + '3'*(Num, 6-14), '6723'*(Num, 6-11)};
+        North-Korea = '850'*(Num, 6-12);
+        North-Macedonia = '389'*(Num, 6-12);
+        Northern-Mariana-Islands = {'1' + Delimiter + '670'*(Num, 6-12), '1670'*(Num, 6-11)};
+        Norway = '47'*(Num, 6-13);
+        Oman = '968'*(Num, 6-12);
+        Pakistan = '92'*(Num, 6-13);
+        Palau = '680'*(Num, 6-12);
+        Palestine = '970'*(Num, 6-12);
+        Panama = '507'*(Num, 6-12);
+        Papua-New-Guinea = '675'*(Num, 6-12);
+        Paraguay = '595'*(Num, 6-12);
+        Peru = '51'*(Num, 6-13);
+        Philippines = '63'*(Num, 6-13);
+        Poland = '48'*(Num, 6-13);
+        Portugal = '351'*(Num, 6-12);
+        Puerto-Rico = {'1' + Delimiter + '787'*(Num, 6-12), '1' + Delimiter + '939'*(Num, 6-12), '1787'*(Num, 6-11), '1939'*(Num, 6-11)};
+        Qatar = '974'*(Num, 6-12);
+        Reunion = '262'*(Num, 6-12);
+        Romania = '40'*(Num, 6-13);
+        Russia = '7'*(Num, 6-14);
+        Rwanda = '250'*(Num, 6-12);
+        Saba = '599'*(Num, 6-12);
+        Saint-Barthelemy = '590'*(Num, 6-12);
+        Saint-Helena = '290'*(Num, 6-12);
+        Saint-Kitts-and-Nevis = {'1' + Delimiter + '869'*(Num, 6-12), '1869'*(Num, 6-11)};
+        Saint-Lucia = {'1' + Delimiter + '758'*(Num, 6-12), '1758'*(Num, 6-11)};
+        Saint-Martin-French-side = '590'*(Num, 6-12);
+        Saint-Pierre-and-Miquelon = '508'*(Num, 6-12);
+        Saint-Vincent-and-the-Grenadines = {'1' + Delimiter + '784'*(Num, 6-12), '1784'*(Num, 6-11)};
+        Samoa = '685'*(Num, 6-12);
+        San-Marino = '378'*(Num, 6-12);
+        Sao-Tome-and-Principe = '239'*(Num, 6-12);
+        Saudi-Arabia = '966'*(Num, 6-12);
+        Senegal = '221'*(Num, 6-12);
+        Serbia = '381'*(Num, 6-12);
+        Seychelles = '248'*(Num, 6-12);
+        Sierra-Leone = '232'*(Num, 6-12);
+        Singapore = '65'*(Num, 6-13);
+        Sint-Eustatius = '599'*(Num, 6-12);
+        Sint-Maarten-Dutch-side = {'1' + Delimiter + '721'*(Num, 6-12), '1721'*(Num, 6-11)};
+        Slovakia = '421'*(Num, 6-12);
+        Slovenia = '386'*(Num, 6-12);
+        Solomon-Islands = '677'*(Num, 6-12);
+        Somalia = '252'*(Num, 6-12);
+        South-Africa = '27'*(Num, 6-13);
+        South-Korea = '82'*(Num, 6-13);
+        South-Sudan = '211'*(Num, 6-12);
+        Spain = '34'*(Num, 6-13);
+        Sri-Lanka = '94'*(Num, 6-13);
+        Sudan = '249'*(Num, 6-12);
+        Suriname = '597'*(Num, 6-12);
+        Sweden = '46'*(Num, 6-13);
+        Switzerland = '41'*(Num, 6-13);
+        Syria = '963'*(Num, 6-12);
+        Taiwan = '886'*(Num, 6-12);
+        Tajikistan = '992'*(Num, 6-12);
+        Tanzania = '255'*(Num, 6-12);
+        Thailand = '66'*(Num, 6-13);
+        Timor-Leste = '670'*(Num, 6-12);
+        Togo = '228'*(Num, 6-12);
+        Tokelau = '690'*(Num, 6-12);
+        Tonga = '676'*(Num, 6-12);
+        Trinidad-and-Tobago = {'1' + Delimiter + '868'*(Num, 6-12), '1868'*(Num, 6-11)};
+        Tristan-da-Cunha = '290'*(Num, 6-12);
+        Tunisia = '216'*(Num, 6-12);
+        Turkey = '90'*(Num, 6-13);
+        Turkmenistan = '993'*(Num, 6-12);
+        Turks-and-Caicos-Islands = {'1' + Delimiter + '649'*(Num, 6-12), '1649'*(Num, 6-11)};
+        Tuvalu = '688'*(Num, 6-12);
+        Uganda = '256'*(Num, 6-12);
+        Ukraine = '380'*(Num, 6-12);
+        United-Arab-Emirates = '971'*(Num, 6-12);
+        United-Kingdom = '44'*(Num, 6-13);
+        United-States-of-America = '1'*(Num, 6-14);
+        Uruguay = '598'*(Num, 6-12);
+        Uzbekistan = '998'*(Num, 6-12);
+        Vanuatu = '678'*(Num, 6-12);
+        Vatican-City-State = '39'*(Num, 6-13);
+        Venezuela = '58'*(Num, 6-13);
+        Vietnam = '84'*(Num, 6-13);
+        US-Virgin-Islands = {'1' + Delimiter + '340'*(Num, 6-12), '1340'*(Num, 6-11)};
+        Wallis-and-Futuna = '681'*(Num, 6-12);
+        Yemen = '967'*(Num, 6-12);
+        Zambia = '260'*(Num, 6-12);
+        Zimbabwe = '263'*(Num, 6-12);
+    };
+
+    CountryCode = {
+        Afghanistan,
+        Albania,
+        Algeria,
+        American-Samoa,
+        Andorra,
+        Angola,
+        Anguilla,
+        Antarctica-Australian-bases,
+        Antigua-and-Barbuda,
+        Argentina,
+        Armenia,
+        Aruba,
+        Ascension,
+        Australia,
+        Austria,
+        Azerbaijan,
+        Bahamas,
+        Bahrain,
+        Bangladesh,
+        Barbados,
+        Belarus,
+        Belgium,
+        Belize,
+        Benin,
+        Bermuda,
+        Bhutan,
+        Bolivia,
+        Bonaire,
+        Bosnia-and-Herzegovina,
+        Botswana,
+        Brazil,
+        British-Virgin-Islands,
+        Brunei,
+        Bulgaria,
+        Burkina-Faso,
+        Burundi,
+        Cabo-Verde,
+        Cambodia,
+        Cameroon,
+        Canada,
+        Cayman-Islands,
+        Central-African-Republic,
+        Chad,
+        Chile,
+        China,
+        Colombia,
+        Comoros,
+        Democratic-Republic-of-the-Congo,
+        Republic-of-the-Congo,
+        Cook-Islands,
+        Costa-Rica,
+        Cote-dIvoire,
+        Croatia,
+        Cuba,
+        Curacao,
+        Cyprus,
+        Czech-Republic,
+        Denmark,
+        Diego-Garcia,
+        Djibouti,
+        Dominica,
+        Dominican-Republic,
+        Ecuador,
+        Egypt,
+        El-Salvador,
+        Equatorial-Guinea,
+        Eritrea,
+        Estonia,
+        Eswatini,
+        Ethiopia,
+        Falkland-Islands,
+        Faroe-Islands,
+        Fiji,
+        Finland,
+        France,
+        French-Guiana,
+        French-Polynesia,
+        Gabon,
+        Gambia,
+        Georgia,
+        Germany,
+        Ghana,
+        Gibraltar,
+        Greece,
+        Greenland,
+        Grenada,
+        Guadeloupe,
+        Guam,
+        Guatemala,
+        Guinea,
+        Guinea-Bissau,
+        Guyana,
+        Haiti,
+        Honduras,
+        Hong-Kong,
+        Hungary,
+        Iceland,
+        India,
+        Indonesia,
+        Iran,
+        Iraq,
+        Ireland-Eire,
+        Israel,
+        Italy,
+        Jamaica,
+        Japan,
+        Jordan,
+        Kazakhstan,
+        Kenya,
+        Kiribati,
+        Kosovo,
+        Kuwait,
+        Kyrgyzstan,
+        Laos,
+        Latvia,
+        Lebanon,
+        Lesotho,
+        Liberia,
+        Libya,
+        Liechtenstein,
+        Lithuania,
+        Luxembourg,
+        Macau,
+        Madagascar,
+        Malawi,
+        Malaysia,
+        Maldives,
+        Mali,
+        Malta,
+        Marshall-Islands,
+        Martinique,
+        Mauritania,
+        Mauritius,
+        Mayotte,
+        Mexico,
+        Federated-States-of-Micronesia,
+        Moldova,
+        Monaco,
+        Mongolia,
+        Montenegro,
+        Montserrat,
+        Morocco,
+        Mozambique,
+        Myanmar,
+        Namibia,
+        Nauru,
+        Nepal,
+        Netherlands,
+        New-Caledonia,
+        New-Zealand,
+        Nicaragua,
+        Niger,
+        Nigeria,
+        Niue,
+        Norfolk-Island,
+        North-Korea,
+        North-Macedonia,
+        Northern-Mariana-Islands,
+        Norway,
+        Oman,
+        Pakistan,
+        Palau,
+        Palestine,
+        Panama,
+        Papua-New-Guinea,
+        Paraguay,
+        Peru,
+        Philippines,
+        Poland,
+        Portugal,
+        Puerto-Rico,
+        Qatar,
+        Reunion,
+        Romania,
+        Russia,
+        Rwanda,
+        Saba,
+        Saint-Barthelemy,
+        Saint-Helena,
+        Saint-Kitts-and-Nevis,
+        Saint-Lucia,
+        Saint-Martin-French-side,
+        Saint-Pierre-and-Miquelon,
+        Saint-Vincent-and-the-Grenadines,
+        Samoa,
+        San-Marino,
+        Sao-Tome-and-Principe,
+        Saudi-Arabia,
+        Senegal,
+        Serbia,
+        Seychelles,
+        Sierra-Leone,
+        Singapore,
+        Sint-Eustatius,
+        Sint-Maarten-Dutch-side,
+        Slovakia,
+        Slovenia,
+        Solomon-Islands,
+        Somalia,
+        South-Africa,
+        South-Korea,
+        South-Sudan,
+        Spain,
+        Sri-Lanka,
+        Sudan,
+        Suriname,
+        Sweden,
+        Switzerland,
+        Syria,
+        Taiwan,
+        Tajikistan,
+        Tanzania,
+        Thailand,
+        Timor-Leste,
+        Togo,
+        Tokelau,
+        Tonga,
+        Trinidad-and-Tobago,
+        Tristan-da-Cunha,
+        Tunisia,
+        Turkey,
+        Turkmenistan,
+        Turks-and-Caicos-Islands,
+        Tuvalu,
+        Uganda,
+        Ukraine,
+        United-Arab-Emirates,
+        United-Kingdom,
+        United-States-of-America,
+        Uruguay,
+        Uzbekistan,
+        Vanuatu,
+        Vatican-City-State,
+        Venezuela,
+        Vietnam,
+        US-Virgin-Islands,
+        Wallis-and-Futuna,
+        Yemen,
+        Zambia,
+        Zimbabwe
+    } @where {
+        Afghanistan = '93';
+        Albania = '355';
+        Algeria = '213';
+        American-Samoa = {'1' + Delimiter + '684', '1684'};
+        Andorra = '376';
+        Angola = '244';
+        Anguilla = {'1' + Delimiter + '264', '1264'};
+        Antarctica-Australian-bases = {'672' + Delimiter + '1', '6721'};
+        Antigua-and-Barbuda = {'1' + Delimiter + '268', '1268'};
+        Argentina = '54';
+        Armenia = '374';
+        Aruba = '297';
+        Ascension = '247';
+        Australia = '61';
+        Austria = '43';
+        Azerbaijan = '994';
+        Bahamas = {'1' + Delimiter + '242', '1242'};
+        Bahrain = '973';
+        Bangladesh = '880';
+        Barbados = {'1' + Delimiter + '246', '1246'};
+        Belarus = '375';
+        Belgium = '32';
+        Belize = '501';
+        Benin = '229';
+        Bermuda = {'1' + Delimiter + '441', '1441'};
+        Bhutan = '975';
+        Bolivia = '591';
+        Bonaire = '599';
+        Bosnia-and-Herzegovina = '387';
+        Botswana = '267';
+        Brazil = '55';
+        British-Virgin-Islands = {'1' + Delimiter + '284', '1284'};
+        Brunei = '673';
+        Bulgaria = '359';
+        Burkina-Faso = '226';
+        Burundi = '257';
+        Cabo-Verde = '238';
+        Cambodia = '855';
+        Cameroon = '237';
+        Canada = '1';
+        Cayman-Islands = {'1' + Delimiter + '345', '1345'};
+        Central-African-Republic = '236';
+        Chad = '235';
+        Chile = '56';
+        China = '86';
+        Colombia = '57';
+        Comoros = '269';
+        Democratic-Republic-of-the-Congo = '243';
+        Republic-of-the-Congo = '242';
+        Cook-Islands = '682';
+        Costa-Rica = '506';
+        Cote-dIvoire = '225';
+        Croatia = '385';
+        Cuba = '53';
+        Curacao = '599';
+        Cyprus = '357';
+        Czech-Republic = '420';
+        Denmark = '45';
+        Diego-Garcia = '246';
+        Djibouti = '253';
+        Dominica = {'1' + Delimiter + '767', '1767'};
+        Dominican-Republic = {'1' + Delimiter + '809', '1' + Delimiter + '829', '1' + Delimiter + '849', '1809', '1829', '1849'};
+        Ecuador = '593';
+        Egypt = '20';
+        El-Salvador = '503';
+        Equatorial-Guinea = '240';
+        Eritrea = '291';
+        Estonia = '372';
+        Eswatini = '268';
+        Ethiopia = '251';
+        Falkland-Islands = '500';
+        Faroe-Islands = '298';
+        Fiji = '679';
+        Finland = '358';
+        France = '33';
+        French-Guiana = '594';
+        French-Polynesia = '689';
+        Gabon = '241';
+        Gambia = '220';
+        Georgia = '995';
+        Germany = '49';
+        Ghana = '233';
+        Gibraltar = '350';
+        Greece = '30';
+        Greenland = '299';
+        Grenada = {'1' + Delimiter + '473', '1473'};
+        Guadeloupe = '590';
+        Guam = {'1' + Delimiter + '671', '1671'};
+        Guatemala = '502';
+        Guinea = '224';
+        Guinea-Bissau = '245';
+        Guyana = '592';
+        Haiti = '509';
+        Honduras = '504';
+        Hong-Kong = '852';
+        Hungary = '36';
+        Iceland = '354';
+        India = '91';
+        Indonesia = '62';
+        Iran = '98';
+        Iraq = '964';
+        Ireland-Eire = '353';
+        Israel = '972';
+        Italy = '39';
+        Jamaica = {'1' + Delimiter + '658', '1' + Delimiter + '876', '1658', '1876'};
+        Japan = '81';
+        Jordan = '962';
+        Kazakhstan = '7';
+        Kenya = '254';
+        Kiribati = '686';
+        Kosovo = '383';
+        Kuwait = '965';
+        Kyrgyzstan = '996';
+        Laos = '856';
+        Latvia = '371';
+        Lebanon = '961';
+        Lesotho = '266';
+        Liberia = '231';
+        Libya = '218';
+        Liechtenstein = '423';
+        Lithuania = '370';
+        Luxembourg = '352';
+        Macau = '853';
+        Madagascar = '261';
+        Malawi = '265';
+        Malaysia = '60';
+        Maldives = '960';
+        Mali = '223';
+        Malta = '356';
+        Marshall-Islands = '692';
+        Martinique = '596';
+        Mauritania = '222';
+        Mauritius = '230';
+        Mayotte = '262';
+        Mexico = '52';
+        Federated-States-of-Micronesia = '691';
+        Moldova = '373';
+        Monaco = '377';
+        Mongolia = '976';
+        Montenegro = '382';
+        Montserrat = {'1' + Delimiter + '664', '1664'};
+        Morocco = '212';
+        Mozambique = '258';
+        Myanmar = '95';
+        Namibia = '264';
+        Nauru = '674';
+        Nepal = '977';
+        Netherlands = '31';
+        New-Caledonia = '687';
+        New-Zealand = '64';
+        Nicaragua = '505';
+        Niger = '227';
+        Nigeria = '234';
+        Niue = '683';
+        Norfolk-Island = {'672' + Delimiter + '3', '6723'};
+        North-Korea = '850';
+        North-Macedonia = '389';
+        Northern-Mariana-Islands = {'1' + Delimiter + '670', '1670'};
+        Norway = '47';
+        Oman = '968';
+        Pakistan = '92';
+        Palau = '680';
+        Palestine = '970';
+        Panama = '507';
+        Papua-New-Guinea = '675';
+        Paraguay = '595';
+        Peru = '51';
+        Philippines = '63';
+        Poland = '48';
+        Portugal = '351';
+        Puerto-Rico = {'1' + Delimiter + '787', '1' + Delimiter + '939', '1787', '1939'};
+        Qatar = '974';
+        Reunion = '262';
+        Romania = '40';
+        Russia = '7';
+        Rwanda = '250';
+        Saba = '599';
+        Saint-Barthelemy = '590';
+        Saint-Helena = '290';
+        Saint-Kitts-and-Nevis = {'1' + Delimiter + '869', '1869'};
+        Saint-Lucia = {'1' + Delimiter + '758', '1758'};
+        Saint-Martin-French-side = '590';
+        Saint-Pierre-and-Miquelon = '508';
+        Saint-Vincent-and-the-Grenadines = {'1' + Delimiter + '784', '1784'};
+        Samoa = '685';
+        San-Marino = '378';
+        Sao-Tome-and-Principe = '239';
+        Saudi-Arabia = '966';
+        Senegal = '221';
+        Serbia = '381';
+        Seychelles = '248';
+        Sierra-Leone = '232';
+        Singapore = '65';
+        Sint-Eustatius = '599';
+        Sint-Maarten-Dutch-side = {'1' + Delimiter + '721', '1721'};
+        Slovakia = '421';
+        Slovenia = '386';
+        Solomon-Islands = '677';
+        Somalia = '252';
+        South-Africa = '27';
+        South-Korea = '82';
+        South-Sudan = '211';
+        Spain = '34';
+        Sri-Lanka = '94';
+        Sudan = '249';
+        Suriname = '597';
+        Sweden = '46';
+        Switzerland = '41';
+        Syria = '963';
+        Taiwan = '886';
+        Tajikistan = '992';
+        Tanzania = '255';
+        Thailand = '66';
+        Timor-Leste = '670';
+        Togo = '228';
+        Tokelau = '690';
+        Tonga = '676';
+        Trinidad-and-Tobago = {'1' + Delimiter + '868', '1868'};
+        Tristan-da-Cunha = '290';
+        Tunisia = '216';
+        Turkey = '90';
+        Turkmenistan = '993';
+        Turks-and-Caicos-Islands = {'1' + Delimiter + '649', '1649'};
+        Tuvalu = '688';
+        Uganda = '256';
+        Ukraine = '380';
+        United-Arab-Emirates = '971';
+        United-Kingdom = '44';
+        United-States-of-America = '1';
+        Uruguay = '598';
+        Uzbekistan = '998';
+        Vanuatu = '678';
+        Vatican-City-State = '39';
+        Venezuela = '58';
+        Vietnam = '84';
+        US-Virgin-Islands = {'1' + Delimiter + '340', '1340'};
+        Wallis-and-Futuna = '681';
+        Yemen = '967';
+        Zambia = '260';
+        Zimbabwe = '263';
+    };
+}

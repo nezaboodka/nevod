@@ -1,0 +1,81 @@
+@namespace Basic.Number {
+    @search @pattern IntegerNumber = { OrdinalSuffix1to31, SuffixBasicOrdinal, AllInt };
+    @search @pattern FloatNumber = AllFloat @outside {Num + [2+ FractionalPart], [1+ '.' + Num + FractionalPart]}
+    @where {
+        FractionalPart = {'.', ','} + {Num, NumAlpha + ?(?{'-', '+'} + Num)};
+    };
+    @search @pattern ThousandSeparatedInteger = ?'-' + Num + [1+ ThousandSeparator + Num] @outside ThousandSeparatedFloat;
+    @search @pattern ThousandSeparatedFloat = ?'-' + Num + [1+ ThousandSeparator + Num] + '.' + {Num, NumAlpha + ?(?{'-', '+'} + Num)};
+    
+    ThousandSeparator = ',';
+    
+    // (?<=\b)(?:(\d*(1st|2nd|3rd|[4-90]th))|(1[1-2]th))(?=\b)
+    OrdinalSuffix1to31 = {
+       '1st', '11th', '21st', '31st',
+       '2nd', '12th', '21nd',
+       '3rd', '13th', '23rd',
+       '4th', '14th', '24th',
+       '5th', '15th', '25th',
+       '6th', '16th', '26th',
+       '7th', '17th', '27th',
+       '8th', '18th', '28th',
+       '9th', '19th', '29th',
+      '10th', '20th', '30th'
+    };
+
+    // (?:(((({TensNumberIntegerRegex}(\s+(and\s+)?|\s*-\s*){ZeroToNineIntegerRegex})|{TensNumberIntegerRegex}|{ZeroToNineIntegerRegex}|{AnIntRegex})(\s+{RoundNumberIntegerRegex})+)\s+(and\s+)?)*({TensNumberIntegerRegex}(\s+|\s*-\s*))?{BasicOrdinalRegex})
+    SuffixBasicOrdinal = [0+ 
+        { TensNumberInteger + { Space + ?('and' + Space), ?Space + '-' + ?Space } + ZeroToNineInteger, TensNumberInteger, ZeroToNineInteger, AnInt } 
+        + [1+ Space + RoundNumberInteger]
+        + Space + ?('and' + Space)
+    ] 
+    + ?(TensNumberInteger + { Space, ?Space + '-' + ?Space })
+    + BasicOrdinal;
+
+    // (?:seventy|twenty|thirty|eighty|ninety|forty|fifty|sixty)
+    TensNumberInteger = { 'seventy', 'twenty', 'thirty', 'eighty', 'ninety', 'forty', 'fifty', 'sixty' };
+
+    // (?:three|seven|eight|four|five|zero|nine|one|two|six)
+    ZeroToNineInteger = { 'three', 'seven', 'eight', 'four', 'five', 'zero', 'nine', 'one', 'two', 'six' };
+
+    // (an?)(?=\s)
+    AnInt = { 'a', 'an' };
+
+    // (?:hundred|thousand|million|billion|trillion|lakh|crore)
+    // TODO: пока ограничимся 'thousand', чтобы не делать @having 'thousand' в пока единственном сценарии использования: год в датах (@having 'thousand' дает существенное замедление)
+    // TODO: ↑ это не влияет на количество пройденных тестов, но нужно для Currency...
+    RoundNumberInteger = {'hundred', 'thousand', 'million', 'billion', 'trillion', 'lakh', 'crore'};
+
+    // ({NumberOrdinalRegex}|{RelativeOrdinalRegex})
+    BasicOrdinal = { NumberOrdinal, RelativeOrdinal };
+
+    // (?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth|thirteenth|fourteenth|fifteenth|sixteenth|seventeenth|eighteenth|nineteenth|twentieth|thirtieth|fortieth|fiftieth|sixtieth|seventieth|eightieth|ninetieth)
+    NumberOrdinal = { 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth',
+        'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth', 'twentieth',
+        'thirtieth', 'fortieth', 'fiftieth', 'sixtieth', 'seventieth', 'eightieth', 'ninetieth' };
+
+    // (?<relativeOrdinal>(next|previous|current)\s+one|(the\s+second|next)\s+to\s+last|the\s+one\s+before\s+the\s+last(\s+one)?|the\s+last\s+but\s+one|(ante)?penultimate|last|next|previous|current)
+    RelativeOrdinal = {
+        { 'next', 'previous', 'current' } + Space + 'one',
+        {'the second', 'next'} + Space + 'to last',
+        'the one before the last' + ?(Space + 'one'),
+        'the last but one',
+        'antepenultimate', 'penultimate',
+        'last', 'next', 'previous', 'current'
+    };
+    
+    // (?:((({TenToNineteenIntegerRegex}|({TensNumberIntegerRegex}(\s+(and\s+)?|\s*-\s*){ZeroToNineIntegerRegex})|{TensNumberIntegerRegex}|{ZeroToNineIntegerRegex}|{AnIntRegex})(\s+{RoundNumberIntegerRegex})+)\s+(and\s+)?)*{SeparaIntRegex})
+    AllInt = {
+        { TenToNineteenInteger,
+            TensNumberInteger + { Space + ?('and' + Space), ?Space + '-' + ?Space } + ZeroToNineInteger,
+            TensNumberInteger,
+            ZeroToNineInteger,
+            Num
+        } + [0+ Space + RoundNumberInteger],
+        AnInt + [1+ Space + RoundNumberInteger]
+    };
+    
+    AllFloat = Num + [1+ {'.', ','} + Num] + ?(Space + RoundNumberInteger);
+
+    TenToNineteenInteger = { 'seventeen', 'thirteen', 'fourteen', 'eighteen', 'nineteen', 'fifteen', 'sixteen', 'eleven', 'twelve', 'ten' };
+}

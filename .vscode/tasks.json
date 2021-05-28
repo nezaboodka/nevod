@@ -1,0 +1,160 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Nevod (Release)",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/Source/Nezaboodka.Nevod.sln",
+                "--configuration",
+                "Release"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Build Nevod (Debug)",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/Source/Nezaboodka.Nevod.sln",
+                "--configuration",
+                "Debug"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Test Nevod",
+            "group": "test",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "test",
+                "${workspaceFolder}/Source/Engine.Tests/Nezaboodka.Nevod.Engine.Tests.csproj",
+                "--configuration",
+                "Release",
+                "--framework",
+                "netcoreapp3.1",
+                "--settings",
+                "${workspaceFolder}/Source/Engine.Tests/Nezaboodka.Nevod.Engine.Tests.runsettings",
+                "--verbosity",
+                "normal"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Test Nevod with Code Coverage",
+            "group": "test",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "test",
+                "${workspaceFolder}/Source/Engine.Tests/Nezaboodka.Nevod.Engine.Tests.csproj",
+                "--configuration",
+                "Release",
+                "--framework",
+                "netcoreapp3.1",
+                "--settings",
+                "${workspaceFolder}/Source/Engine.Tests/Nezaboodka.Nevod.Engine.Tests.runsettings",
+                "--verbosity",
+                "normal",
+                "/p:CollectCoverage=true",
+                "/p:CoverletOutputFormat=lcov",
+                "/p:CoverletOutput=${workspaceFolder}/Source/Tests/lcov.info"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Test Nevod (vstest)",
+            "group": "test",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "vstest",
+                "${workspaceFolder}/Build/Debug/bin/Nezaboodka.Nevod.Engine.Tests/Nezaboodka.Nevod.Engine.Tests.dll",
+                "--Settings:${workspaceFolder}/Source/Engine.Tests/Nezaboodka.Nevod.Engine.Tests.runsettings",
+                "--Platform:X64",
+                "--Framework:.NETCoreApp,Version=v2.2",
+                "--Parallel"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Test Text",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "test",
+                "${workspaceFolder}/Source/Text.Tests/Nezaboodka.Text.Tests.csproj",
+                "--configuration",
+                "Release",
+                "--verbosity",
+                "normal"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Test Text with Code Coverage",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "test",
+                "${workspaceFolder}/Source/Text.Tests/Nezaboodka.Text.Tests.csproj",
+                "--configuration",
+                "Release",
+                "--verbosity",
+                "normal",
+                "/p:CollectCoverage=true",
+                "/p:CoverletOutputFormat=lcov",
+                "/p:CoverletOutput=./lcov.info"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Test Negrep (Release)",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "test",
+                "--configuration",
+                "Release",
+                "${workspaceFolder}/Source/Negrep.Tests/Nezaboodka.Nevod.Negrep.Tests.csproj"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Test Negrep with coverage (Release)",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "test",
+                "--configuration",
+                "Release",
+                "${workspaceFolder}/Source/Negrep.Tests/Nezaboodka.Nevod.Negrep.Tests.csproj",
+                "/p:CollectCoverage=true",
+                "/p:CoverletOutputFormat=lcov",
+                "/p:CoverletOutput=./lcov.info",
+                "/p:Include=\"[*.Negrep]*\""
+            ],
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        }
+    ]
+}

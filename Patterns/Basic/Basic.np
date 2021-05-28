@@ -1,0 +1,34 @@
+@require "BankCardNumber/Basic.BankCardNumber.np";
+@require "Basic.Currency.np";
+@require "Basic.Date.np";
+@require "Basic.DateTime.np";
+@require "Basic.Time.np";
+@require "Basic.Email.np";
+@require "Basic.IpAddress.np";
+@require "Basic.Url.np";
+@require "Basic.HashTag.np";
+@require "Basic.Mention.np";
+@require "Basic.GUID.np";
+@require "Basic.Number.np";
+@require "Basic.PhoneNumber.np";
+
+@namespace Basic {
+  @search @pattern BankCardNumber = Basic.BankCardNumber.Target;
+  @search @pattern Currency = Basic.NumberWithUnit.Currency.Target;
+  @search @pattern Date = Basic.Date.Target;
+  @search @pattern DateTime = Basic.DateTime.Target;
+  @search @pattern Email = Basic.Email.Target;
+  @search @pattern GUID = Basic.GUID.Target;
+  @search @pattern HashTag = Basic.HashTag.Target;
+  @search @pattern IpAddress = Basic.IpAddress.Target;
+  @search @pattern Mention = Basic.Mention.Target;
+  
+  @search @pattern Integer = Basic.Number.IntegerNumber;
+  @search @pattern Float = Basic.Number.FloatNumber;
+  @search @pattern ThousandSeparatedInteger = Basic.Number.ThousandSeparatedInteger;
+  @search @pattern ThousandSeparatedFloat = Basic.Number.ThousandSeparatedFloat;
+  
+  @search @pattern PhoneNumber = Basic.PhoneNumber.Target;
+  @search @pattern Time = Basic.Time.Target;
+  @search @pattern Url = Basic.Url.Target;
+}

@@ -1,0 +1,318 @@
+@require "Basic.Number.np";
+@require "Basic.Currency.Generated.np";
+
+@namespace Basic.NumberWithUnit.Currency {
+    @search @pattern Target = {
+        Number + ?Space + {ISOCode, Basic.Currency.Generated.CurrencySuffixList},
+        {ISOCode, Basic.Currency.Generated.CurrencyPrefixList} + ?Space + Number
+    } @where {
+        Number = {
+            Num,
+            Basic.Number.IntegerNumber,
+            Basic.Number.FloatNumber,
+            ~Basic.Number.NumberOrdinal};
+        ISOCode = {
+            AngolanNewKwanza, AngolanReadjustedKwanza, ArgentineAustral, ArgentinePeso, ArgentinePesoLey,
+            ArmenianDram, ArubanFlorin, AustralianDollar, AustrianSchilling, AzerbaijaniManat,
+            BahamianDollar, BahrainiDinar, BangladeshiTaka, BarbadianDollar, BelarusianRuble,
+            BelgianFranc, BelizeDollar, BermudanDollar, BhutaneseNgultrum, BolivianBoliviano,
+            BolivianMvdol, BolivianPeso, BosniaHerzegovinaConvertibleMark, BosniaHerzegovinaDinar, BosniaHerzegovinaNewDinar,
+            BotswananPula, BrazilianCruzado, BrazilianCruzeiro, BrazilianNewCruzado, BrazilianNewCruzeiro,
+            BrazilianReal, BritishPound, BruneiDollar, BulgarianHardLev, BulgarianLev,
+            BulgarianSocialistLev, BurmeseKyat, BurundianFranc, CFPFranc, CambodianRiel,
+            CanadianDollar, CapeVerdeanEscudo, CaymanIslandsDollar, CentralAfricanCFAFranc, ChileanEscudo,
+            ChileanPeso, ChileanUnitofAccount, ChinesePeoplesBankDollar, ChineseYuan, ColombianPeso,
+            ColombianRealValueUnit, ComorianFranc, CongoleseFranc, CostaRicanColon, CroatianDinar,
+            CroatianKuna, CubanConvertiblePeso, CubanPeso, CypriotPound, CzechKoruna,
+            CzechoslovakHardKoruna, DanishKrone, DjiboutianFranc, DominicanPeso, DutchGuilder,
+            EastCaribbeanDollar, EastGermanMark, EcuadorianSucre, EcuadorianUnitofConstantValue, EgyptianPound,
+            EquatorialGuineanEkwele, EritreanNakfa, EstonianKroon, EthiopianBirr, Euro,
+            EuropeanCurrencyUnit, FalklandIslandsPound, FijianDollar, FinnishMarkka, FrenchFranc,
+            FrenchGoldFranc, FrenchUICFranc, GambianDalasi, GeorgianKuponLarit, GeorgianLari,
+            GermanMark, GhanaianCedi, GibraltarPound, GreekDrachma, GuatemalanQuetzal,
+            GuineaBissauPeso, GuineanFranc, GuineanSyli, GuyanaeseDollar, HaitianGourde,
+            HonduranLempira, HongKongDollar, HungarianForint, IcelandicKrona, IndianRupee,
+            IndonesianRupiah, IranianRial, IraqiDinar, IrishPound, IsraeliNewShekel,
+            IsraeliPound, IsraeliShekel, ItalianLira, JamaicanDollar, JapaneseYen,
+            JordanianDinar, KazakhstaniTenge, KenyanShilling, KuwaitiDinar, KyrgystaniSom,
+            LaotianKip, LatvianLats, LatvianRuble, LebanesePound, LesothoLoti,
+            LiberianDollar, LibyanDinar, LithuanianLitas, LithuanianTalonas, LuxembourgFinancialFranc,
+            LuxembourgianConvertibleFranc, LuxembourgianFranc, MacanesePataca, MacedonianDenar, MalagasyAriary,
+            MalagasyFranc, MalawianKwacha, MalaysianRinggit, MaldivianRufiyaa, MaldivianRupee,
+            MalianFranc, MalteseLira, MaltesePound, MauritanianOuguiya, MauritianRupee,
+            MexicanInvestmentUnit, MexicanPeso, MexicanSilverPeso, MoldovanCupon, MoldovanLeu,
+            MonegasqueFranc, MongolianTugrik, MoroccanDirham, MoroccanFranc, MozambicanEscudo,
+            MozambicanMetical, MyanmarKyat, NamibianDollar, NepaleseRupee, NetherlandsAntilleanGuilder,
+            NewTaiwanDollar, NewZealandDollar, NicaraguanCordoba, NigerianNaira, NorthKoreanWon,
+            NorwegianKrone, OmaniRial, PakistaniRupee, PanamanianBalboa, PapuaNewGuineanKina,
+            ParaguayanGuarani, PeruvianInti, PeruvianSol, PhilippinePeso, PolishZloty,
+            PortugueseEscudo, PortugueseGuineaEscudo, QatariRial, RINETFunds, RhodesianDollar,
+            RomanianLeu, RussianRuble, RwandanFranc, SalvadoranColon, SamoanTala,
+            SaudiRiyal, SerbianDinar, SeychelloisRupee, SierraLeoneanLeone, SingaporeDollar,
+            SlovakKoruna, SlovenianTolar, SolomonIslandsDollar, SomaliShilling, SouthAfricanRand,
+            SouthKoreanHwan, SouthKoreanWon, SouthSudanesePound, SovietRouble, SpanishPeseta,
+            SpanishPesetaAaccount, SpanishPesetaConvertibleAccount, SriLankanRupee, St.HelenaPound, SudaneseDinar,
+            SudanesePound, SurinameseDollar, SurinameseGuilder, SwaziLilangeni, SwedishKrona,
+            SwissFranc, SyrianPound, SaoTomePrincipeDobra, TajikistaniRuble, TajikistaniSomoni,
+            TanzanianShilling, ThaiBaht, TimoreseEscudo, TonganPaanga, TrinidadAndTobagoDollar,
+            TunisianDinar, TurkishLira, TurkmenistaniManat, USDollar, USDollarNextday,
+            USDollarSameday, UgandanShilling, UkrainianHryvnia, UkrainianKarbovanets, UnitedArabEmiratesDirham,
+            UruguayanPeso, UruguayanPesoIndexedUnits, UzbekistaniSom, VanuatuVatu, VenezuelanBolivar,
+            VietnameseDong, WIREuro, WIRFranc, WestAfricanCFAFranc, YemeniDinar,
+            YemeniRial, YugoslavianConvertibleDinar, YugoslavianHardDinar, YugoslavianNewDinar, YugoslavianReformedDinar,
+            ZaireanNewZaire, ZaireanZaire, ZambianKwacha, ZimbabweanDollar
+        }
+        @where
+        {
+            AfghanAfghani = {'AFN', 'AFA'};
+            AlbanianLek = {'ALL', 'ALK'};
+            AlgerianDinar = 'DZD';
+            AndorranPeseta = 'ADP';
+            AngolanKwanza = {'AOA', 'AOK'};
+            AngolanNewKwanza = 'AON';
+            AngolanReadjustedKwanza = 'AOR';
+            ArgentineAustral = 'ARA';
+            ArgentinePeso = {'ARS', 'ARM', 'ARP'};
+            ArgentinePesoLey = 'ARL';
+            ArmenianDram = 'AMD';
+            ArubanFlorin = 'AWG';
+            AustralianDollar = 'AUD';
+            AustrianSchilling = 'ATS';
+            AzerbaijaniManat = {'AZN', 'AZM'};
+            BahamianDollar = 'BSD';
+            BahrainiDinar = 'BHD';
+            BangladeshiTaka = 'BDT';
+            BarbadianDollar = 'BBD';
+            BelarusianRuble = {'BYN', 'BYB', 'BYR'};
+            BelgianFranc = {'BEF', 'BEC','BEL'};
+            BelizeDollar = 'BZD';
+            BermudanDollar = 'BMD';
+            BhutaneseNgultrum = 'BTN';
+            BolivianBoliviano = {'BOB', 'BOL'};
+            BolivianMvdol = 'BOV';
+            BolivianPeso = 'BOP';
+            BosniaHerzegovinaConvertibleMark = 'BAM';
+            BosniaHerzegovinaDinar = 'BAD';
+            BosniaHerzegovinaNewDinar = 'BAN';
+            BotswananPula = 'BWP';
+            BrazilianCruzado = 'BRC';
+            BrazilianCruzeiro = {'BRZ', 'BRE', 'BRR'};
+            BrazilianNewCruzado = 'BRN';
+            BrazilianNewCruzeiro = 'BRB';
+            BrazilianReal = 'BRL';
+            BritishPound = 'GBP';
+            BruneiDollar = 'BND';
+            BulgarianHardLev = 'BGL';
+            BulgarianLev = {'BGN', 'BGO'};
+            BulgarianSocialistLev = 'BGM';
+            BurmeseKyat = 'BUK';
+            BurundianFranc = 'BIF';
+            CFPFranc = 'XPF';
+            CambodianRiel = 'KHR';
+            CanadianDollar = 'CAD';
+            CapeVerdeanEscudo = 'CVE';
+            CaymanIslandsDollar = 'KYD';
+            CentralAfricanCFAFranc = 'XAF';
+            ChileanEscudo = 'CLE';
+            ChileanPeso = 'CLP';
+            ChileanUnitofAccount = 'CLF';
+            ChinesePeoplesBankDollar = 'CNX';
+            ChineseYuan = 'CNY';
+            ColombianPeso = 'COP';
+            ColombianRealValueUnit = 'COU';
+            ComorianFranc = 'KMF';
+            CongoleseFranc = 'CDF';
+            CostaRicanColon = 'CRC';
+            CroatianDinar = 'HRD';
+            CroatianKuna = 'HRK';
+            CubanConvertiblePeso = 'CUC';
+            CubanPeso = 'CUP';
+            CypriotPound = 'CYP';
+            CzechKoruna = 'CZK';
+            CzechoslovakHardKoruna = 'CSK';
+            DanishKrone = 'DKK';
+            DjiboutianFranc = 'DJF';
+            DominicanPeso = 'DOP';
+            DutchGuilder = 'NLG';
+            EastCaribbeanDollar = 'XCD';
+            EastGermanMark = 'DDM';
+            EcuadorianSucre = 'ECS';
+            EcuadorianUnitofConstantValue = 'ECV';
+            EgyptianPound = 'EGP';
+            EquatorialGuineanEkwele = 'GQE';
+            EritreanNakfa = 'ERN';
+            EstonianKroon = 'EEK';
+            EthiopianBirr = 'ETB';
+            Euro = 'EUR';
+            EuropeanCurrencyUnit = 'XEU';
+            FalklandIslandsPound = 'FKP';
+            FijianDollar = 'FJD';
+            FinnishMarkka = 'FIM';
+            FrenchFranc = 'FRF';
+            FrenchGoldFranc = 'XFO';
+            FrenchUICFranc = 'XFU';
+            GambianDalasi = 'GMD';
+            GeorgianKuponLarit = 'GEK';
+            GeorgianLari = 'GEL';
+            GermanMark = 'DEM';
+            GhanaianCedi = {'GHS', 'GHC'};
+            GibraltarPound = 'GIP';
+            GreekDrachma = 'GRD';
+            GuatemalanQuetzal = 'GTQ';
+            GuineaBissauPeso = 'GWP';
+            GuineanFranc = 'GNF';
+            GuineanSyli = 'GNS';
+            GuyanaeseDollar = 'GYD';
+            HaitianGourde = 'HTG';
+            HonduranLempira = 'HNL';
+            HongKongDollar = 'HKD';
+            HungarianForint = 'HUF';
+            IcelandicKrona = {'ISK', 'ISJ'};
+            IndianRupee = 'INR';
+            IndonesianRupiah = 'IDR';
+            IranianRial = 'IRR';
+            IraqiDinar = 'IQD';
+            IrishPound = 'IEP';
+            IsraeliNewShekel = 'ILS';
+            IsraeliPound = 'ILP';
+            IsraeliShekel = 'ILR';
+            ItalianLira = 'ITL';
+            JamaicanDollar = 'JMD';
+            JapaneseYen = 'JPY';
+            JordanianDinar = 'JOD';
+            KazakhstaniTenge = 'KZT';
+            KenyanShilling = 'KES';
+            KuwaitiDinar = 'KWD';
+            KyrgystaniSom = 'KGS';
+            LaotianKip = 'LAK';
+            LatvianLats = 'LVL';
+            LatvianRuble = 'LVR';
+            LebanesePound = 'LBP';
+            LesothoLoti = 'LSL';
+            LiberianDollar = 'LRD';
+            LibyanDinar = 'LYD';
+            LithuanianLitas = 'LTL';
+            LithuanianTalonas = 'LTT';
+            LuxembourgFinancialFranc = 'LUL';
+            LuxembourgianConvertibleFranc = 'LUC';
+            LuxembourgianFranc = 'LUF';
+            MacanesePataca = 'MOP';
+            MacedonianDenar = {'MKD', 'MKN'};
+            MalagasyAriary = 'MGA';
+            MalagasyFranc = 'MGF';
+            MalawianKwacha = 'MWK';
+            MalaysianRinggit = 'MYR';
+            MaldivianRufiyaa = 'MVR';
+            MaldivianRupee = 'MVP';
+            MalianFranc = 'MLF';
+            MalteseLira = 'MTL';
+            MaltesePound = 'MTP';
+            MauritanianOuguiya = 'MRO';
+            MauritianRupee = 'MUR';
+            MexicanInvestmentUnit = 'MXV';
+            MexicanPeso = 'MXN';
+            MexicanSilverPeso = 'MXP';
+            MoldovanCupon = 'MDC';
+            MoldovanLeu = 'MDL';
+            MonegasqueFranc = 'MCF';
+            MongolianTugrik = 'MNT';
+            MoroccanDirham = 'MAD';
+            MoroccanFranc = 'MAF';
+            MozambicanEscudo = 'MZE';
+            MozambicanMetical = {'MZN', 'MZM'};
+            MyanmarKyat = 'MMK';
+            NamibianDollar = 'NAD';
+            NepaleseRupee = 'NPR';
+            NetherlandsAntilleanGuilder = 'ANG';
+            NewTaiwanDollar = 'TWD';
+            NewZealandDollar = 'NZD';
+            NicaraguanCordoba = {'NIO', 'NIC'};
+            NigerianNaira = 'NGN';
+            NorthKoreanWon = 'KPW';
+            NorwegianKrone = 'NOK';
+            OmaniRial = 'OMR';
+            PakistaniRupee = 'PKR';
+            PanamanianBalboa = 'PAB';
+            PapuaNewGuineanKina = 'PGK';
+            ParaguayanGuarani = 'PYG';
+            PeruvianInti = 'PEI';
+            PeruvianSol = {'PEN', 'PES'};
+            PhilippinePeso = 'PHP';
+            PolishZloty = {'PLN', 'PLZ'};
+            PortugueseEscudo = 'PTE';
+            PortugueseGuineaEscudo = 'GWE';
+            QatariRial = 'QAR';
+            RINETFunds = 'XRE';
+            RhodesianDollar = 'RHD';
+            RomanianLeu = {'RON', 'ROL'};
+            RussianRuble = {'RUB', 'RUR'};
+            RwandanFranc = 'RWF';
+            SalvadoranColon = 'SVC';
+            SamoanTala = 'WST';
+            SaudiRiyal = 'SAR';
+            SerbianDinar = {'RSD', 'CSD'};
+            SeychelloisRupee = 'SCR';
+            SierraLeoneanLeone = 'SLL';
+            SingaporeDollar = 'SGD';
+            SlovakKoruna = 'SKK';
+            SlovenianTolar = 'SIT';
+            SolomonIslandsDollar = 'SBD';
+            SomaliShilling = 'SOS';
+            SouthAfricanRand = {'ZAR', 'ZAL'};
+            SouthKoreanHwan = 'KRH';
+            SouthKoreanWon = {'KRW', 'KRO'};
+            SouthSudanesePound = 'SSP';
+            SovietRouble = 'SUR';
+            SpanishPeseta = 'ESP';
+            SpanishPesetaAaccount = 'ESA';
+            SpanishPesetaConvertibleAccount = 'ESB';
+            SriLankanRupee = 'LKR';
+            St.HelenaPound = 'SHP';
+            SudaneseDinar = 'SDD';
+            SudanesePound = {'SDG', 'SDP'};
+            SurinameseDollar = 'SRD';
+            SurinameseGuilder = 'SRG';
+            SwaziLilangeni = 'SZL';
+            SwedishKrona = 'SEK';
+            SwissFranc = 'CHF';
+            SyrianPound = 'SYP';
+            SaoTomePrincipeDobra = 'STD';
+            TajikistaniRuble = 'TJR';
+            TajikistaniSomoni = 'TJS';
+            TanzanianShilling = 'TZS';
+            ThaiBaht = 'THB';
+            TimoreseEscudo = 'TPE';
+            TonganPaanga = 'TOP';
+            TrinidadAndTobagoDollar = 'TTD';
+            TunisianDinar = 'TND';
+            TurkishLira = {'TRY', 'TRL'};
+            TurkmenistaniManat = {'TMT', 'TMM'};
+            USDollar = 'USD';
+            USDollarNextday = 'USN';
+            USDollarSameday = 'USS';
+            UgandanShilling = {'UGX', 'UGS'};
+            UkrainianHryvnia = 'UAH';
+            UkrainianKarbovanets = 'UAK';
+            UnitedArabEmiratesDirham = 'AED';
+            UruguayanPeso = {'UYU', 'UYP'};
+            UruguayanPesoIndexedUnits = 'UYI';
+            UzbekistaniSom = 'UZS';
+            VanuatuVatu = 'VUV';
+            VenezuelanBolivar = {'VEF', 'VEB'};
+            VietnameseDong = {'VND', 'VNN'};
+            WIREuro = 'CHE';
+            WIRFranc = 'CHW';
+            WestAfricanCFAFranc = 'XOF';
+            YemeniDinar = 'YDD';
+            YemeniRial = 'YER';
+            YugoslavianConvertibleDinar = 'YUN';
+            YugoslavianHardDinar = 'YUD';
+            YugoslavianNewDinar = 'YUM';
+            YugoslavianReformedDinar = 'YUR';
+            ZaireanNewZaire = 'ZRN';
+            ZaireanZaire = 'ZRZ';
+            ZambianKwacha = {'ZMW', 'ZMK'};
+            ZimbabweanDollar = {'ZWD','ZWR', 'ZWL'};
+        };
+    };
+}

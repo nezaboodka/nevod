@@ -1,0 +1,5 @@
+SentenceSeparator = {End, ".", "!", "?", [2 LineBreak], ~"."+Word};
+Sentence = Word ... SentenceSeparator;
+#Headline = Start + Sentence;
+#IPhoneAndAndroidInOneSentence = ("iphone" & "android") @inside Sentence;
+#Company = {"Apple", "Google", "Samsung", "HTC", "LG", "Motorola"};

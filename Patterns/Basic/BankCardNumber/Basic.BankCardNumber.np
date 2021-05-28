@@ -1,0 +1,33 @@
+@require "AmericanExpress.np";
+@require "ChinaUnionPay.np";
+@require "Dankort.np";
+@require "DinersClubCarteBlanche.np";
+@require "DinersClubInternational.np";
+@require "DinersClubUnitedStatesAndCanada.np";
+@require "Discover.np";
+@require "InterPayment.np";
+@require "JCB.np";
+@require "Maestro.np";
+@require "MasterCard.np";
+@require "UATP.np";
+@require "Visa.np";
+@require "VisaElectron.np";
+
+@namespace Basic.BankCardNumber {
+  @search @pattern Target = {
+    AmericanExpress,
+    ChinaUnionPay,
+    Dankort,
+    DinersClubCarteBlanche,
+    DinersClubInternational,
+    DinersClubUnitedStatesAndCanada,
+    Discover,
+    InterPayment,
+    JCB,
+    Maestro,
+    MasterCard,
+    UATP,
+    Visa,
+    VisaElectron
+  };
+}

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -e
+[ -e /usr/bin/negrep ] && unlink /usr/bin/negrep
+ln -s /usr/share/negrep/negrep /usr/bin/negrep

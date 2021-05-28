@@ -1,0 +1,121 @@
+@require "Basic.Date.np";
+@require "Basic.Time.np";
+@require "Basic.Duration.np";
+@require "Basic.ConnectNum.Generated.np";
+
+@namespace Basic.DateTime {
+    @search @pattern Target = {
+        MergeDateAndTime,
+        Now,
+        TimeOfTodayBefore,
+        SimpleTimeOfTodayBefore,
+        TimeOfTodayAfter,
+        SimpleTimeOfTodayAfter,
+        SpecialTimeOfDate,
+        DurationWithBeforeAndAfter,
+        FullDateAndTimeWithT
+    };
+
+    // Root
+    // BaseDateTimeExtractor.MergeDateAndTime
+    MergeDateAndTime = {
+        Basic.Date.Target + Connector + Basic.Time.Target + ?(Space + Basic.Date.Year),
+        Basic.Time.Target + Connector + Basic.Date.Target
+    } + ?(Space + Suffix) @where {
+        Connector = ?Space + ?({Basic.DateTime.Connector, Preposition} + ?Space);
+    };
+
+    // Root
+    // \b(?<now>(right\s+)?now|as soon as possible|asap|recently|previously)\b
+    Now = {'now', 'right now', 'at' + Space + {'the', 'this'} + Space + 'minute', 'as soon as possible', 'asap', 'recently', 'previously'};
+
+    // Root
+    // \b{DateTimeSpecificTimeOfDayRegex}(\s*,)?(\s+(at|around))?\s*({HourNumRegex}|{BaseDateTime.HourRegex})\b
+    SimpleTimeOfTodayBefore = DateTimeSpecificTimeOfDay + ?(?Space + ',') + ?(Space + {'at', 'around'}) + 
+        ?Space + { HourNum, Hour24 };
+
+    // Root
+    // (?<!{NonTimeContextTokens}\s*)\b({HourNumRegex}|{BaseDateTime.HourRegex})\s*(,\s*)?(in\s+)?{DateTimeSpecificTimeOfDayRegex}\b
+    // На добавку NonTimeContextTokens нет тестов, так что на количество пройденных тестов ее наличие/отсутствие не влияет, но честным будет добавить.
+    SimpleTimeOfTodayAfter = (Hour @outside (NonTimeContextTokens + Space + Hour)) + ?Space + ?(',' + ?Space) + ?('in' + Space) + DateTimeSpecificTimeOfDay
+    @where {
+        Hour = { HourNum, Hour24 };
+    };
+
+    // Root
+    // BaseDateTimeExtractor.SpecialTimeOfDate
+    SpecialTimeOfDate = {
+        SpecificEndOf + ?Space + Basic.Date.Target,
+        UnspecificEndOf
+    };
+
+    // Root
+    // BaseDateTimeExtractor.TimeOfTodayAfter
+    TimeOfTodayAfter = Basic.Time.Target + TimeOfTodayAfterImpl;
+
+
+    // Root
+    // BaseDateTimeExtractor.TimeOfTodayBefore
+    TimeOfTodayBefore = TimeOfTodayBeforeImpl + Basic.Time.Target;
+
+    // Root
+    // BaseDateTimeExtractor.DurationWithBeforeAndAfter
+    DurationWithBeforeAndAfter = {
+        Basic.Duration.NumberWithUnit + Space + { Basic.Date.Later, Basic.Date.Ago },
+        'in' + Space + Basic.Duration.NumberWithUnit
+    };
+
+    // Root
+    // Отдельный шаблон для дат вида 2016-12-16T12:23:59. 16T12 - один токен, поэтому на merge date и time тут нельзя полагаться.
+    FullDateAndTimeWithT = Basic.Date.Year + Basic.Date.DateDelim + Basic.Date.Month + Basic.Date.DateDelim
+        + Basic.ConnectNum.Generated.ConnectDayTHour + ':' + 
+        {
+            Num60OptionalAmPm,
+            Basic.Time.Num60 + ':' + Num60OptionalAmPm
+        }
+    @where {
+        Num60OptionalAmPm = { Basic.Time.Num60 + ?(?Space + Basic.Time.Desc), Basic.Time.Num60AmPm };
+    };
+
+    // ----------------------------------------------
+
+
+    // \b(({RelativeRegex}\s+{DateTimeTimeOfDayRegex})\b|\btoni(ght|te))\b
+    DateTimeSpecificTimeOfDay = {
+        Basic.Date.Relative + Space + DateTimeTimeOfDay,
+        'tonight', 'tonite'
+    };
+
+    // \b(?<timeOfDay>morning|(?<pm>afternoon|night|evening))\b
+    DateTimeTimeOfDay = { 'morning', 'afternoon', 'night', 'evening' };
+
+    // (building)
+    NonTimeContextTokens = 'building';
+
+    // (the\s+)?end of(\s+the)?\s*$
+    SpecificEndOf = ?('the' + Space) + 'end of' + ?(Space + 'the');
+
+    // \b(the\s+)?(eod|(end\s+of\s+day))\b
+    UnspecificEndOf = ?('the' + Space) + {'eod', 'end of day'};
+
+    // (?<prep>^(at|on|of)(\s+the)?$)
+    Preposition = {'at', 'on', 'of'} + ?(Space + 'the');
+
+    // ^(-|,|for|t|around|@)$
+    Connector = {'-', ',', 'for', 't', 'around', '@' };
+
+    // ^\s*(in the\s+)?(morning|afternoon|evening|night)\b
+    Suffix = ?('in the' + Space) + {'morning', 'afternoon', 'evening', 'night'};
+
+    // TimeOfTodayAfterRegex
+    // ^\s*(,\s*)?(in\s+)?{DateTimeSpecificTimeOfDayRegex}
+    TimeOfTodayAfterImpl = ?Space + ?(',' + ?Space) + ?('in' + Space) + DateTimeSpecificTimeOfDay;
+
+    // TimeOfTodayBeforeRegex
+    // {DateTimeSpecificTimeOfDayRegex}(\s*,)?(\s+(at|around|in|on))?\s*$
+    TimeOfTodayBeforeImpl = DateTimeSpecificTimeOfDay + ?(?Space + ',') + ?(Space + {'at', 'around', 'in', 'on'}) + ?Space;
+
+    // Shortcuts
+    Hour24 = Basic.Time.Hour24;
+    HourNum = Basic.Time.HourNum;
+}

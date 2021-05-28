@@ -1,0 +1,7 @@
+@namespace Basic.Mention {
+    @search @pattern Target = Mention @outside Mention + '.' + Word
+    @where
+    {
+        Mention = '@' + [1+ {Word, '_'}];
+    };
+}
