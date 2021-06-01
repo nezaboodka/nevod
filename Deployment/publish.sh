@@ -12,7 +12,7 @@
 
 # Functions
 
-function publish_netcoreapp {
+publish_netcoreapp() {
     # Argument: RUNTIME_ID
     RUNTIME_ID=$1
     DOCKER_IMAGE_NAME="negrep-publish-${RUNTIME_ID}:${NV_DOCK_TAG}"
