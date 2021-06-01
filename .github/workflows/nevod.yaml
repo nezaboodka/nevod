@@ -41,4 +41,22 @@ jobs:
         if: always()
         with:
           files: Build/TestResults/*-test-result.xml
-          
+  
+  publish-artifacts:
+    runs-on: ubuntu-latest
+    needs:
+      - test-nevod
+      - test-negrep
+    strategy:
+      matrix:
+        target-os: [ "linux_x64", "windows_x64", "windows_x86" ]
+    env:
+      NV_DOCK_TAG: github
+    steps:
+      - uses: actions/checkout@v2
+      - run: chmod +x ./Deployment/publish.sh
+      - run: ./Deployment/publish.sh ${{ matrix.target-os }}
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.target-os }}
+          path: Publish/
