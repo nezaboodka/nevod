@@ -6,7 +6,7 @@
 
 # Functions
 
-function test_package {
+test_package() {
     # Argument: LINUX_DISTRIBUTION
     LINUX_DISTRIBUTION=$1
     DOCKER_IMAGE_NAME="negrep-test-package-${LINUX_DISTRIBUTION}:${NV_DOCK_TAG}"

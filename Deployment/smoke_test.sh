@@ -6,7 +6,7 @@
 
 # Functions
 
-function test_netcoreapp {
+test_netcoreapp() {
     # Argument: LINUX_DISTRIBUTION
     LINUX_DISTRIBUTION=$1
     DOCKER_IMAGE_NAME="negrep-test-${LINUX_DISTRIBUTION}:${NV_DOCK_TAG}"
