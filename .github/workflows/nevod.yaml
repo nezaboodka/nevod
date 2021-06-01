@@ -72,6 +72,9 @@ jobs:
       NV_DOCK_TAG: github
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          path: Publish
       - run: chmod +x ./Deployment/smoke_test.sh
       - run: ./Deployment/smoke_test.sh ${{ matrix.target-os }}
         shell: sh
@@ -83,6 +86,9 @@ jobs:
       NV_DOCK_TAG: github
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          path: Publish
       - run: chmod +x ./Deployment/test_packages.sh
       - run: ./Deployment/test_packages.sh
         shell: sh
