@@ -34,14 +34,14 @@ LINUX_DISTS_1="ubuntu-x64"
 
 LINUX_DISTS="$ubuntu_x64"
 
-if [[ -z $1 ]]; then
+if [ -z $1 ]; then
     for LINUX_DISTRIBUTION in $LINUX_DISTS; do
         L_DIST="$(eval echo \$LINUX_DISTS_$LINUX_DISTRIBUTION)"
         test_package $L_DIST
     done
 else
     LINUX_DISTRIBUTION="$(eval echo \$$1)"
-    if [[ -z $LINUX_DISTRIBUTION ]]; then
+    if [ -z $LINUX_DISTRIBUTION ]; then
         echo "Unknown Linux distribution"
         exit 1
     else

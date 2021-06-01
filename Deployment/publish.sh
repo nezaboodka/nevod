@@ -53,14 +53,14 @@ RIDS_3="win-x86"
 
 RIDS="$linux_x64 $windows_x64 $windows_x86"
 
-if [[ -z $1 ]]; then
+if [ -z $1 ]; then
     for RUNTIME_ID in $RIDS; do
         RID="$(eval echo \$RIDS_$RUNTIME_ID)"
         publish_netcoreapp $RID
     done
 else
     RUNTIME_ID="$(eval echo \$$1)"
-    if [[ -z $RUNTIME_ID ]]; then
+    if [ -z $RUNTIME_ID ]; then
         echo "Unknown runtime identifier"
         exit 1
     else
