@@ -1,0 +1,44 @@
+name: NuGet package and Negrep
+
+on:
+  push:
+    branches:
+      - main
+
+jobs: 
+  test-nevod:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+      - name: Test
+        run: |
+          dotnet test Source/Engine.Tests/Nezaboodka.Nevod.Engine.Tests.csproj -c Release --verbosity normal --test-adapter-path:. \
+            --logger:"junit;LogFilePath=..\..\Build\TestResults\{assembly}-test-result.xml;MethodFormat=Class;FailureBodyFormat=Verbose"
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        with:
+          files: Build/TestResults/*-test-result.xml
+
+  test-negrep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+      - name: Test
+        run: |
+          dotnet test Source/Negrep.Tests/Nezaboodka.Nevod.Negrep.Tests.csproj -c Release --verbosity normal --test-adapter-path:. \
+            --logger:"junit;LogFilePath=..\..\Build\TestResults\{assembly}-test-result.xml;MethodFormat=Class;FailureBodyFormat=Verbose"
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        with:
+          files: Build/TestResults/*-test-result.xml
+          
