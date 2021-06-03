@@ -3,13 +3,17 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Description>Nezaboodka Nevod library provides pattern-based text search.</Description>
-    <PackageId>Nezaboodka.Nevod</PackageId>
     <AssemblyName>Nezaboodka.Nevod</AssemblyName>
     <RootNamespace>Nezaboodka.Nevod</RootNamespace>
-    <Version>1.0.1</Version>
     <Authors>Nezaboodka Team</Authors>
     <Company>Nezaboodka Software LLC</Company>
     <Product>Nezaboodka Nevod</Product>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>Nezaboodka.Nevod</PackageId>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/nezaboodka/nevod</RepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup>

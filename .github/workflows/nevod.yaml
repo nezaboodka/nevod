@@ -2,8 +2,8 @@ name: NuGet package and Negrep
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
 
 jobs: 
   test-nevod:
@@ -42,7 +42,7 @@ jobs:
         with:
           files: Build/TestResults/*-test-result.xml
   
-  build-artifacts:
+  build-negrep-artifacts:
     runs-on: ubuntu-latest
     needs:
       - test-nevod
@@ -62,9 +62,9 @@ jobs:
           name: ${{ matrix.target-os }}
           path: Publish/
 
-  test-artifacts:
+  test-negrep-zip-package:
     runs-on: ubuntu-latest
-    needs: build-artifacts
+    needs: build-negrep-artifacts
     strategy:
       matrix:
         target-os: [ "centos_x64", "ubuntu_x64" ]
@@ -80,9 +80,9 @@ jobs:
       - run: ./Deployment/smoke_test.sh ${{ matrix.target-os }}
         shell: sh
   
-  test-packages:
+  test-negrep-deb-package:
     runs-on: ubuntu-latest
-    needs: build-artifacts
+    needs: build-negrep-artifacts
     env:
       NV_DOCK_TAG: github
     steps:
@@ -94,3 +94,25 @@ jobs:
       - run: chmod +x ./Deployment/test_packages.sh
       - run: ./Deployment/test_packages.sh
         shell: sh
+
+  publish-nevod-nuget-package:
+    runs-on: ubuntu-latest
+    needs: 
+      - test-negrep-zip-package
+      - test-negrep-deb-package
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+      - name: Set VERSION variable from tag
+        run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
+      - name: Build
+        run: dotnet build Source/Engine/Nezaboodka.Nevod.Engine.csproj --configuration Release /p:Version=${VERSION}
+      - name: Pack
+        run: dotnet pack Source/Engine/Nezaboodka.Nevod.Engine.csproj --configuration Release /p:Version=${VERSION} --no-build --output .
+      - name: Push
+        run: dotnet nuget push Nezaboodka.Nevod.${VERSION}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${NEVOD_NUGET_TOKEN}
+        env:
+          NEVOD_NUGET_TOKEN: ${{ secrets.NEVOD_NUGET_TOKEN }}
