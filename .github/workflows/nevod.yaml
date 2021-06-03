@@ -46,12 +46,31 @@ jobs:
         if: always()
         with:
           files: Build/TestResults/*-test-result.xml
+
+  test-text:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+      - name: Test
+        run: |
+          dotnet test Source/Text.Tests/Nezaboodka.Text.Tests.csproj -c Release --verbosity normal --test-adapter-path:. \
+            --logger:"junit;LogFilePath=..\..\Build\TestResults\{assembly}-test-result.xml;MethodFormat=Class;FailureBodyFormat=Verbose"
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        with:
+          files: Build/TestResults/*-test-result.xml
   
   build-negrep-artifacts:
     runs-on: ubuntu-latest
     needs:
       - test-nevod
       - test-negrep
+      - test-text
     strategy:
       matrix:
         target-os: [ "linux_x64", "windows_x64", "windows_x86" ]
@@ -120,5 +139,28 @@ jobs:
         run: dotnet pack Source/Engine/Nezaboodka.Nevod.Engine.csproj --configuration Release /p:Version=${VERSION} --no-build --output .
       - name: Push
         run: dotnet nuget push Nezaboodka.Nevod.${VERSION}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${NEVOD_NUGET_TOKEN}
+        env:
+          NEVOD_NUGET_TOKEN: ${{ secrets.NEVOD_NUGET_TOKEN }}
+
+  publish-text-nuget-package:
+    if: ${{ success() && startsWith(github.ref, 'refs/tags') }}
+    runs-on: ubuntu-latest
+    needs:
+      - test-negrep-zip-package
+      - test-negrep-deb-package
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+      - name: Set VERSION variable from tag
+        run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
+      - name: Build
+        run: dotnet build Source/Text/Nezaboodka.Text.csproj --configuration Release /p:Version=${VERSION}
+      - name: Pack
+        run: dotnet pack Source/Text/Nezaboodka.Text.csproj --configuration Release /p:Version=${VERSION} --no-build --output .
+      - name: Push
+        run: dotnet nuget push Nezaboodka.Text.${VERSION}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${NEVOD_NUGET_TOKEN}
         env:
           NEVOD_NUGET_TOKEN: ${{ secrets.NEVOD_NUGET_TOKEN }}

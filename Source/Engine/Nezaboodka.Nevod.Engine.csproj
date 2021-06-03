@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <None Include="..\..\LICENSE.txt" Pack="true" PackagePath="LICENSE.txt"/>
+    <None Include="..\..\NOTICE" Pack="true" PackagePath="NOTICE"/>
   </ItemGroup>
 
   <PropertyGroup>
