@@ -57,11 +57,6 @@ jobs:
           dotnet-version: 3.1.x
       - name: Test
         run: dotnet test Source/Text.Tests/Nezaboodka.Text.Tests.csproj -c Release --verbosity normal
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
-        if: always()
-        with:
-          files: Build/TestResults/*-test-result.xml
   
   build-negrep-artifacts:
     runs-on: ubuntu-latest
