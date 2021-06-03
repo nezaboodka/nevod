@@ -56,9 +56,7 @@ jobs:
         with:
           dotnet-version: 3.1.x
       - name: Test
-        run: |
-          dotnet test Source/Text.Tests/Nezaboodka.Text.Tests.csproj -c Release --verbosity normal --test-adapter-path:. \
-            --logger:"junit;LogFilePath=..\..\Build\TestResults\{assembly}-test-result.xml;MethodFormat=Class;FailureBodyFormat=Verbose"
+        run: dotnet test Source/Text.Tests/Nezaboodka.Text.Tests.csproj -c Release --verbosity normal
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()
