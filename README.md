@@ -8,10 +8,10 @@ and the Negrep command-line utility for all supported platforms.
 Nevod is a **language** and technology for **pattern-based** text search. It is specially
 aimed to rapidly reveal entities and their relationships in texts written in the natural language.
 
-Official Website: https://nevod.io/
-Language Tutorial: https://nevod.io/#/tutorial
-Language Reference: https://nevod.io/#/reference
-Playground: https://nevod.io/#/playground
+- Official Website: https://nevod.io/
+- Language Tutorial: https://nevod.io/#/tutorial
+- Language Reference: https://nevod.io/#/reference
+- Playground: https://nevod.io/#/playground
 
 ![Nevod Playground](https://raw.githubusercontent.com/nezaboodka/nevod/main/nevod.jpg)
 
