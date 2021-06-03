@@ -14,7 +14,12 @@
     <PackageId>Nezaboodka.Nevod</PackageId>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/nezaboodka/nevod</RepositoryUrl>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE.txt" Pack="true" PackagePath="LICENSE.txt"/>
+  </ItemGroup>
 
   <PropertyGroup>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
