@@ -4,6 +4,11 @@ on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs: 
   test-nevod:
@@ -96,6 +101,7 @@ jobs:
         shell: sh
 
   publish-nevod-nuget-package:
+    if: contains(github.ref, "refs/tags")
     runs-on: ubuntu-latest
     needs: 
       - test-negrep-zip-package
