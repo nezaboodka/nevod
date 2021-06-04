@@ -19,9 +19,9 @@ aimed to rapidly reveal entities and their relationships in texts written in the
 
 The **Nevod Web site** is also an open-source project, hosted on GitLab: https://gitlab.com/nezaboodka/nevod.web.public
 
-## What is the Programming Platform?
+## The Target Platform
 
-The Nevod technology is written in C# for the .NET Core framework, so it runs on Linux, Windows and macOS.
+The Nevod technology is based on the .NET Standard 2.1. It runs on Linux, Windows and macOS.
 
 ## How Can I Use Nevod in My Project?
 
