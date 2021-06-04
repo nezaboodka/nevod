@@ -14,7 +14,7 @@
     <PackageId>Nezaboodka.Nevod</PackageId>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/nezaboodka/nevod</RepositoryUrl>
-    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>

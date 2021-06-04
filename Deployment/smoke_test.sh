@@ -13,16 +13,11 @@ test_netcoreapp() {
 
     echo "${LINUX_DISTRIBUTION}:" | awk '{print toupper($0)}'
 
-    NG_VERSION=$(grep '<Version>' < Source/Negrep/Nezaboodka.Nevod.Negrep.csproj | sed 's/.*<Version>\(.*\)<\/Version>/\1/' | tr -d '\r')
-    sed 's/$NG_VERSION/'"$NG_VERSION"'/g' Deployment/Test/negrep-test-${LINUX_DISTRIBUTION}.Dockerfile > Deployment/Test/negrep-test-${LINUX_DISTRIBUTION}.Dockerfile.tmp
-
     echo "Building..."
-    docker build -t $DOCKER_IMAGE_NAME -q -f Deployment/Test/negrep-test-${LINUX_DISTRIBUTION}.Dockerfile.tmp . > /dev/null
+    docker build -t $DOCKER_IMAGE_NAME -q -f Deployment/Test/negrep-test-${LINUX_DISTRIBUTION}.Dockerfile . > /dev/null
     echo "Docker image has built successfully."
 
     docker run -t --rm $DOCKER_IMAGE_NAME
-
-    rm Deployment/Test/negrep-test-${LINUX_DISTRIBUTION}.Dockerfile.tmp
 }
 
 # Script

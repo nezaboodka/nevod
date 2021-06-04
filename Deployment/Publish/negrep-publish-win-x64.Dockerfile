@@ -16,7 +16,7 @@ COPY NOTICE publish/nevod.negrep/NOTICE
 COPY Deployment/Publish/THIRD-PARTY-NOTICES.txt publish/nevod.negrep/Deployment/Publish/THIRD-PARTY-NOTICES.txt
 COPY Source/ publish/nevod.negrep/Source
 
-RUN dotnet publish /tmp/publish/nevod.negrep/Source/Negrep -c Release -f netcoreapp3.1 -r win-x64
+RUN dotnet publish /tmp/publish/nevod.negrep/Source/Negrep -c Release -f netcoreapp3.1 -r win-x64 /p:Version=$NG_VERSION
 
 WORKDIR /tmp/publish/out
 
@@ -24,5 +24,5 @@ RUN mkdir ./negrep \
     && cp -r ../nevod.negrep/Build/Release/bin/Nezaboodka.Nevod.Negrep/win-x64/publish/* ./negrep \
     && mv negrep/Nezaboodka.Nevod.Negrep.exe negrep/negrep.exe
 
-RUN zip -r negrep-$NG_VERSION-win-x64.zip negrep
+RUN zip -r negrep-win-x64.zip negrep
 RUN rm -r negrep

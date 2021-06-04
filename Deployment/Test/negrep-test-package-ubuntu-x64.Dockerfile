@@ -2,17 +2,17 @@ FROM ubuntu
 
 WORKDIR /tmp
 
-COPY Publish/negrep-$NG_VERSION-x86_64.deb .
+COPY Publish/negrep-x86_64.deb .
 
     # Configure web servers to bind to port 80 when present
 ENV ASPNETCORE_URLS=http://+:80 \
     # Enable detection of running in a container
     DOTNET_RUNNING_IN_CONTAINER=true
 
-RUN dpkg --install negrep-$NG_VERSION-x86_64.deb
+RUN dpkg --install negrep-x86_64.deb
 RUN dpkg --remove negrep
 RUN test ! -L /usr/bin/negrep
-RUN dpkg --install negrep-$NG_VERSION-x86_64.deb
+RUN dpkg --install negrep-x86_64.deb
 
 WORKDIR /usr/share/negrep/
 RUN test -f NOTICE

@@ -25,8 +25,6 @@ function Publish-NetCoreApp {
 
     New-Item -ItemType Directory -Force -Path Publish
 
-    $NG_VERSION = ([Xml] (Get-Content Source/Negrep/Nezaboodka.Nevod.Negrep.csproj)).Project.PropertyGroup.Version
-    $NG_VERSION = "$NG_VERSION".Trim()
     (Get-Content Deployment/Publish/negrep-publish-${RuntimeId}.Dockerfile) `
         -replace '\$NG_VERSION', $NG_VERSION | Set-Content Deployment/negrep-publish-${RuntimeId}.Dockerfile.tmp
 

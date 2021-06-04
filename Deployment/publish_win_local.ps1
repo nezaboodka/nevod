@@ -13,13 +13,12 @@ function Publish-NetCoreApp {
 
     Remove-Item ./Publish/local -Recurse -Force -ErrorAction Ignore
 
-    $NG_VERSION = ([Xml] (Get-Content Source/Negrep/Nezaboodka.Nevod.Negrep.csproj)).Project.PropertyGroup.Version
-    $NG_VERSION = "$NG_VERSION".Trim()
+    $NG_VERSION = "0.0.1"
     dotnet publish ./Source/Negrep -c Release -f netcoreapp3.1 --self-contained --runtime ${RuntimeId} --output ./Publish/local/${RuntimeId}/negrep
     
     Set-Location ./Publish/local/${RuntimeId}
     Rename-Item "negrep/Nezaboodka.Nevod.Negrep.exe" "negrep.exe"
-    ./../../../Tools/win/zip ../../negrep-${NG_VERSION}-${RuntimeId}.zip negrep/*
+    ./../../../Tools/win/zip ../../negrep-${RuntimeId}.zip negrep/*
 
     Set-Location ../../..
     Remove-Item ./Publish/local -Recurse -Force -ErrorAction Ignore

@@ -1,5 +1,5 @@
-negrep (1.0) unstable; urgency=medium
-2
-3   * Initial release.
-4
-5  -- Nezaboodka Software LLC <contact@nezaboodka.com>  Fri, 28 May 2021 10:00:00 +0300
+negrep ({current-version-value}) unstable; urgency=medium
+
+  * No change notes.
+
+-- Nezaboodka Software LLC <contact@nezaboodka.com>  {current-datetime-value}

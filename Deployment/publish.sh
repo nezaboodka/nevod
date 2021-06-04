@@ -7,8 +7,9 @@
 #   * deletes the docker container
 
 # Usage: ./publish.sh [RUNTIME_ID]
-# Tip: to run this script locally set NV_DOCK_TAG to whatever you want before ./publish.sh (e.g. export NV_DOCK_TAG="local" && ./publish.sh).
+# Tip: to run this script locally set NV_DOCK_TAG and NG_VERSION to whatever you want before ./publish.sh (e.g. export NV_DOCK_TAG="local" && export NG_VERSION="1.0.0" && ./publish.sh).
 #      NV_DOCK_TAG is used as a tag for docker image.
+#      NG_VERSION is used as a version for negrep binaries.
 
 # Functions
 
@@ -23,7 +24,6 @@ publish_netcoreapp() {
 
     mkdir -p Publish
 
-    NG_VERSION=$(grep '<Version>' < Source/Negrep/Nezaboodka.Nevod.Negrep.csproj | sed 's/.*<Version>\(.*\)<\/Version>/\1/' | tr -d '\r')
     sed 's/$NG_VERSION/'"$NG_VERSION"'/g' Deployment/Publish/negrep-publish-${RUNTIME_ID}.Dockerfile > Deployment/negrep-publish-${RUNTIME_ID}.Dockerfile.tmp
 
     docker build -t $DOCKER_IMAGE_NAME -f Deployment/negrep-publish-${RUNTIME_ID}.Dockerfile.tmp .

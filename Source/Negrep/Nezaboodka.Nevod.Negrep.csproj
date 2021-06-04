@@ -10,7 +10,6 @@
     <TrimUnusedDependencies>true</TrimUnusedDependencies>
     <RuntimeIdentifiers>alpine-x64;rhel.6-x64;osx-x64;win-x64;win-x86</RuntimeIdentifiers>
     <OutputType>Exe</OutputType>
-    <Version>1.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>

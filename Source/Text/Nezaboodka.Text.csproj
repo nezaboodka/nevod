@@ -15,12 +15,12 @@
     <PackageId>Nezaboodka.Text</PackageId>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/nezaboodka/nevod</RepositoryUrl>
-    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\LICENSE.txt" Pack="true" PackagePath="LICENSE.txt"/>
-    <None Include="..\..\NOTICE" Pack="true" PackagePath="NOTICE"/>
+    <None Include="..\..\LICENSE.txt" Pack="true" PackagePath="."/>
+    <None Include="..\..\NOTICE" Pack="true" PackagePath="."/>
   </ItemGroup>
 
   <PropertyGroup>

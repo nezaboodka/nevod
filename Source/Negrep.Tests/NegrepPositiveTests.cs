@@ -608,6 +608,20 @@ namespace Nezaboodka.Nevod.Negrep.Tests
             Assert.That(actual.TrimEachLine(), Is.EqualTo(expected.TrimEachLine()));
         }
 
+        [Test]
+        public async Task ShowVersion()
+        {
+            string[] args = { "--version" };
+            string expected = "1.0.0";
+            
+            FakeConsole console = new FakeConsole("");
+            var negrep = new Negrep(args.ToList(), console, isStreamModeEnabled: false);
+            await negrep.Execute();
+            string actual = console.Stdout;
+
+            Assert.That(actual.TrimEachLine(), Is.EqualTo(expected.TrimEachLine()));
+        }
+
         private void ShouldHaveCRLFLineBreaks(string filepath)
         {
             string fileContent = File.ReadAllText(filepath);

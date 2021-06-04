@@ -18,17 +18,11 @@ function Test-NetCoreApp {
 
     Write-Host "${LinuxDistribution}:".ToUpper() -ForegroundColor Blue
 
-    $NG_VERSION = ([Xml] (Get-Content Source/Negrep/Nezaboodka.Nevod.Negrep.csproj)).Project.PropertyGroup.Version
-    (Get-Content Deployment/Test/negrep-test-${LinuxDistribution}.Dockerfile) `
-        -replace '\$NG_VERSION', "$NG_VERSION".Trim() | Set-Content Deployment/Test/negrep-test-${LinuxDistribution}.Dockerfile.tmp
-
     Write-Host "Building..." -ForegroundColor White
-    docker build -t $docker_image_name -q -f Deployment/Test/negrep-test-${LinuxDistribution}.Dockerfile.tmp . | Out-Null
+    docker build -t $docker_image_name -q -f Deployment/Test/negrep-test-${LinuxDistribution}.Dockerfile . | Out-Null
     Write-Host "Docker image has built successfully." -ForegroundColor White
 
     docker run -t --rm $docker_image_name
-
-    Remove-Item Deployment/Test/negrep-test-${LinuxDistribution}.Dockerfile.tmp
 }
 
 if ($null -eq $linux_distributions[$LinuxDistribution])

@@ -100,7 +100,7 @@ namespace Nezaboodka.Nevod.Negrep
         private static string GetVersion()
         {
             Version version = typeof(Negrep).Assembly.GetName().Version;
-            string result = $"{version.Major}.{version.Minor}";
+            string result = $"{version.Major}.{version.Minor}.{version.Revision}";
             return result;
         }
     }
