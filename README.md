@@ -1,5 +1,7 @@
 # Nevod
 
+![Nuget](https://img.shields.io/nuget/v/Nezaboodka.Nevod)
+
 This repo contains the sources of the Nevod library, as well as the code to build the Nevod NuGet package
 and the Negrep command-line utility for all supported platforms.
 
