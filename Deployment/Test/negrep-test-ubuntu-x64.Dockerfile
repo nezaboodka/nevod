@@ -22,5 +22,5 @@ CMD cd /usr/share/negrep/ \
     && echo \
     && cat ./THIRD-PARTY-NOTICES.txt \
     && echo \
-    && negrep -f ./examples/patterns.np ./examples/example.txt
+    && negrep -f ./examples/patterns.np ./examples/example.txt \
     && negrep --version
