@@ -1,4 +1,4 @@
-name: NuGet package and Negrep
+name: Test and Publish
 
 on:
   push:
