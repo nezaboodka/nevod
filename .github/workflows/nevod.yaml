@@ -14,6 +14,7 @@ on:
       version:
         description: 'Artifacts version'
         required: true
+        default: '1.0.0'
 
 jobs: 
   test-nevod:
