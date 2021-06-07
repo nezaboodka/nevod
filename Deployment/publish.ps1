@@ -7,7 +7,7 @@
 # Usage: pwsh ./publish.ps1 -RuntimeIdentifier
 
 param (
-    [string] [ValidateSet("linux_x64", "windows_x64", "windows_x86")] $RuntimeIdentifier
+    [string] [ValidateSet("linux_x64", "windows_x64", "windows_x86", "osx_x64")] $RuntimeIdentifier
 )
 
 # Functions
@@ -46,6 +46,7 @@ $RIDS = @{
     linux_x64 = "rhel.6-x64";
     windows_x64 = "win-x64";
     windows_x86 = "win-x86";
+    osx_x64 = "osx-x64";
 }
 
 if ($null -eq $RIDS[$RuntimeIdentifier])

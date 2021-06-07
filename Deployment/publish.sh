@@ -51,7 +51,10 @@ RIDS_2="win-x64"
 windows_x86=3
 RIDS_3="win-x86"
 
-RIDS="$linux_x64 $windows_x64 $windows_x86"
+osx_x64=4
+RIDS_4="osx-x64"
+
+RIDS="$linux_x64 $windows_x64 $windows_x86 $osx_x64"
 
 if [ -z $1 ]; then
     for RUNTIME_ID in $RIDS; do
