@@ -93,7 +93,7 @@ jobs:
           name: ${{ matrix.target-os }}
           path: Publish/
 
-  test-negrep-zip-package:
+  test-negrep-linux-zip-package:
     runs-on: ubuntu-latest
     needs: build-negrep-artifacts
     strategy:
@@ -110,7 +110,22 @@ jobs:
       - run: chmod +x ./Deployment/smoke_test.sh
       - run: ./Deployment/smoke_test.sh ${{ matrix.target-os }}
         shell: sh
-  
+
+  test-negrep-osx-zip-package:
+    runs-on: macos-latest
+    needs: build-negrep-artifacts
+    env:
+      NV_DOCK_TAG: github
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: osx_x64
+          path: Publish
+      - run: chmod +x ./Deployment/smoke_test_osx.sh
+      - run: ./Deployment/smoke_test_osx.sh
+        shell: sh
+
   test-negrep-deb-package:
     runs-on: ubuntu-latest
     needs: build-negrep-artifacts
@@ -130,7 +145,8 @@ jobs:
     if: ${{ success() && startsWith(github.ref, 'refs/tags') }}
     runs-on: ubuntu-latest
     needs: 
-      - test-negrep-zip-package
+      - test-negrep-linux-zip-package
+      - test-negrep-osx-zip-package
       - test-negrep-deb-package
     steps:
       - uses: actions/checkout@v2
@@ -153,7 +169,8 @@ jobs:
     if: ${{ success() && startsWith(github.ref, 'refs/tags') }}
     runs-on: ubuntu-latest
     needs:
-      - test-negrep-zip-package
+      - test-negrep-linux-zip-package
+      - test-negrep-osx-zip-package
       - test-negrep-deb-package
     steps:
       - uses: actions/checkout@v2
