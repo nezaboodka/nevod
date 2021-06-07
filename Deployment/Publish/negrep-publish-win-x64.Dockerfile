@@ -11,6 +11,7 @@ RUN mkdir -p publish/nevod.negrep \
     && mkdir publish/out
 
 COPY Deployment/Examples publish/nevod.negrep/Deployment/Examples
+COPY Patterns/ publish/nevod.negrep/Patterns
 COPY LICENSE.txt publish/nevod.negrep/LICENSE.txt
 COPY NOTICE publish/nevod.negrep/NOTICE
 COPY Deployment/Publish/THIRD-PARTY-NOTICES.txt publish/nevod.negrep/Deployment/Publish/THIRD-PARTY-NOTICES.txt

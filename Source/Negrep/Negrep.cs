@@ -24,6 +24,7 @@ namespace Nezaboodka.Nevod.Negrep
         private const string ExamplesHeading = @"
             Examples:
 
+            echo domain.com | negrep -p ""@require 'basic/Basic.np'; @search Basic.*;""
             cd <negrep installation directory>/examples
             negrep ""{'Android', 'IPhone'}"" example.txt
             negrep -f patterns.np example.txt

@@ -29,18 +29,24 @@ namespace Nezaboodka.Nevod.Negrep.Tests
             await CompareDataInStdout(args, expected, isInputRedirected: true, isOutputRedirected: true);
         }
 
-        public static async Task CompareDataInStdout(string[] args, string expected, bool isInputRedirected = false,
+        public static Task CompareDataInStdout(string[] args, string expected, bool isInputRedirected = false,
+            bool isOutputRedirected = false)
+        {
+            return CompareDataInStdout(args, StdinValue, expected, isInputRedirected, isOutputRedirected);
+        }
+        
+        public static async Task CompareDataInStdout(string[] args, string stdin, string expected, bool isInputRedirected = false,
             bool isOutputRedirected = false)
         {
             List<string> arguments = args.ToList();
-            await RunNegrep(arguments, expected, isStreamModeEnabled: false, isInputRedirected, isOutputRedirected);
-            await RunNegrep(arguments, expected, isStreamModeEnabled: true, isInputRedirected, isOutputRedirected);
+            await RunNegrep(arguments, stdin, expected, isStreamModeEnabled: false, isInputRedirected, isOutputRedirected);
+            await RunNegrep(arguments, stdin, expected, isStreamModeEnabled: true, isInputRedirected, isOutputRedirected);
         }
 
-        private static async Task RunNegrep(List<string> args, string expected, bool isStreamModeEnabled,
+        private static async Task RunNegrep(List<string> args, string stdin, string expected, bool isStreamModeEnabled,
             bool isInputRedirected, bool isOutputRedirected)
         {
-            FakeConsole console = new FakeConsole(StdinValue, isInputRedirected, isOutputRedirected);
+            FakeConsole console = new FakeConsole(stdin, isInputRedirected, isOutputRedirected);
             var negrep = new Negrep(args, console, isStreamModeEnabled);
             await negrep.Execute();
             string actual = console.Stdout;

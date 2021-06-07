@@ -558,6 +558,16 @@ namespace Nezaboodka.Nevod.Negrep.Tests
             await NegrepTestsRunner.CompareDataInStdoutWhenOutputRedirected(args, expected);
         }
 
+        [Test]
+        public async Task ShouldResolvePatternReferencesBasedOnNegrepLocation()
+        {
+            string[] args = {"-p", "@require 'basic/Basic.np'; @search Basic.*;" };
+            string expected = @"
+                :Basic.Url:domain.com
+            ";
+            await NegrepTestsRunner.CompareDataInStdout(args, "domain.com", expected, isInputRedirected: true, isOutputRedirected: true);
+        }
+
         // Issue #10
         [Test]
         public async Task WhenNoArgumentsInCommandLineShouldPrintUsage()
@@ -594,6 +604,7 @@ namespace Nezaboodka.Nevod.Negrep.Tests
 
                 Examples:
 
+                echo domain.com | negrep -p ""@require 'basic/Basic.np'; @search Basic.*;""
                 cd <negrep installation directory>/examples
                 negrep ""{'Android', 'IPhone'}"" example.txt
                 negrep -f patterns.np example.txt

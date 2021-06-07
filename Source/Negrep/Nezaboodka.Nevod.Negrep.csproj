@@ -50,7 +50,7 @@
     <None Include="..\..\Deployment\Examples\*"
           CopyToOutputDirectory="Always"
           LinkBase="examples" />
-    <None Include="..\..\Data\Basic\**\*"
+    <None Include="..\..\Patterns\Basic\**\*"
           CopyToOutputDirectory="Always"
           LinkBase="basic" />
   </ItemGroup>

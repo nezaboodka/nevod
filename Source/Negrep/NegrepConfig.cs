@@ -3,6 +3,7 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
@@ -195,10 +196,12 @@ namespace Nezaboodka.Nevod.Negrep
 
         private static PackageBuilder GetPackageBuilder()
         {
-            return new PackageBuilder(new PackageBuilderOptions()
+            var packageBuilderOptions = new PackageBuilderOptions
             {
                 SyntaxInformationBinding = true
-            });
+            };
+            return new PackageBuilder(packageBuilderOptions, Environment.CurrentDirectory, PackageCache.Global,
+                NegrepFileContentProvider.FileContentProvider);
         }
     }
 }
