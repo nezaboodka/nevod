@@ -29,7 +29,7 @@ You can use Nevod in the following ways:
 - Download [source code](https://github.com/nezaboodka/nevod) and link it into your source tree.
 - Add reference to the Nevod [NuGet package](https://www.nuget.org/packages/Nezaboodka.Nevod).
 - Download and use the command-line [negrep](https://nevod.io/#/downloads) utility, which is pre-compiled for
-Windows and Linux.
+Windows, Linux and macOS.
 
 ## License
 
