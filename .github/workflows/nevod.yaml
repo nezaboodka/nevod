@@ -141,6 +141,21 @@ jobs:
       - run: chmod +x ./Deployment/test_packages.sh
       - run: ./Deployment/test_packages.sh
         shell: sh
+        
+  test-windows-zip-package:
+    runs-on: windows-latest
+    needs: build-negrep-artifacts
+    strategy:
+      matrix:
+        windows-version: [ "windows_x86", "windows_x64" ]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: ${{ matrix.windows-version }}
+          path: Publish
+      - run: ./Deployment/smoke_test_windows.ps1 ${{ matrix.windows-version }}
+        shell: pwsh
 
   publish-nevod-nuget-package:
     if: ${{ success() && startsWith(github.ref, 'refs/tags') }}
@@ -149,6 +164,7 @@ jobs:
       - test-negrep-linux-zip-package
       - test-negrep-osx-zip-package
       - test-negrep-deb-package
+      - test-windows-zip-package
     steps:
       - uses: actions/checkout@v2
       - name: Setup .NET
@@ -173,6 +189,7 @@ jobs:
       - test-negrep-linux-zip-package
       - test-negrep-osx-zip-package
       - test-negrep-deb-package
+      - test-windows-zip-package
     steps:
       - uses: actions/checkout@v2
       - name: Setup .NET
