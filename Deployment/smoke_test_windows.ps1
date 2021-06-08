@@ -25,8 +25,8 @@ function Test-WindowsZipPackage {
     cat ./NOTICE
     cat ./LICENSE.txt
     cat ./THIRD-PARTY-NOTICES.txt
-    Invoke-NativeCommand ./negrep.exe -f ./examples/patterns.np ./examples/example.txt
-    Invoke-NativeCommand ./negrep.exe --version
+    ./negrep.exe -f ./examples/patterns.np ./examples/example.txt
+    ./negrep.exe --version
 }
 
 function Invoke-NativeCommand() {
