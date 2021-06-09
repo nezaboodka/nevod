@@ -58,7 +58,6 @@ namespace Nezaboodka.Nevod.Negrep
         {
             _console = console;
             FilePaths = new List<string>();
-            IsSourceTextFromStdin = _console.IsInputRedirected;
             IsStreamModeEnabled = isStreamModeEnabled;
 
             var clFormatType = GetCommandLineFormatType(args);
@@ -122,6 +121,8 @@ namespace Nezaboodka.Nevod.Negrep
                     break;
             }
 
+            IsSourceTextFromStdin = _console.IsInputRedirected && !negrepArgs.FilesProvided;
+
             PrefixingMode prefixingMode;
             if (status != NegrepConfigStatus.UsageRequest)
             {
@@ -157,7 +158,7 @@ namespace Nezaboodka.Nevod.Negrep
                 if (_console.IsOutputRedirected)
                     ResultTagsPrinter = new PacketModePrinter(_console, prefixingMode, printMode);
                 else
-                    ResultTagsPrinter = new InteractiveModePrinter(_console, prefixingMode, printMode);
+                    ResultTagsPrinter = new InteractiveModePrinter(_console, prefixingMode, printMode, IsSourceTextFromStdin);
             }
 
             return status;

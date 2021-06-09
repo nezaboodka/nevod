@@ -1,5 +1,7 @@
 #! /bin/sh
 
+set -e
+
 tar -xf Publish/negrep-osx-x64.tar.gz
 cd negrep
 echo '\n./examples/patterns.np:\n'
