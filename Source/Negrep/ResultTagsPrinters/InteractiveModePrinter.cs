@@ -13,12 +13,16 @@ namespace Nezaboodka.Nevod.Negrep.ResultTagsPrinters
 {
     internal class InteractiveModePrinter : ResultTagsPrinter
     {
+        private readonly bool _isSourceTextFromStdin;
+
         private readonly ConsoleColor FilenameColor = ConsoleColor.DarkGray;
         private readonly ConsoleColor TagnameColor = ConsoleColor.Green;
         private readonly ConsoleColor MatchColor = ConsoleColor.Red;
 
-        public InteractiveModePrinter(IConsole console, PrefixingMode prefixingMode, PrintMode printMode)
+        public InteractiveModePrinter(IConsole console, PrefixingMode prefixingMode, PrintMode printMode,
+            bool isSourceTextFromStdin)
         {
+            _isSourceTextFromStdin = isSourceTextFromStdin;
             _console = console;
             _prefixingMode = prefixingMode;
             _printMode = printMode;
@@ -26,7 +30,7 @@ namespace Nezaboodka.Nevod.Negrep.ResultTagsPrinters
 
         public override void Print(SourceTextInfo sourceTextInfo, IEnumerable<ResultTag> resultTags)
         {
-            if (!_console.IsInputRedirected &&
+            if (!_isSourceTextFromStdin &&
                 (_prefixingMode & PrefixingMode.PrefixWithFilename) == PrefixingMode.PrefixWithFilename)
             {
                 _console.WriteLine($"{sourceTextInfo.Path}:", FilenameColor);
