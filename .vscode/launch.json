@@ -16,6 +16,19 @@
       "console": "internalConsole",
       "stopAtEntry": false,
       "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "name": "Example (Debug)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "Build Nevod (Debug)",
+      "program": "${workspaceFolder}/Build/Debug/bin/Nezaboodka.Nevod.Example/Nezaboodka.Nevod.Example.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
+      "console": "internalConsole",
+      "stopAtEntry": false,
+      "internalConsoleOptions": "openOnSessionStart"
     }
   ]
 }
