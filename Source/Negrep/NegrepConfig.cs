@@ -7,10 +7,10 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using System.Reflection;
 using CommandLine;
 using Nezaboodka.Nevod.Negrep.Consoles;
 using Nezaboodka.Nevod.Negrep.ResultTagsPrinters;
-using Nezaboodka.Nevod;
 
 namespace Nezaboodka.Nevod.Negrep
 {
@@ -201,8 +201,15 @@ namespace Nezaboodka.Nevod.Negrep
             {
                 SyntaxInformationBinding = true
             };
-            return new PackageBuilder(packageBuilderOptions, Environment.CurrentDirectory, PackageCache.Global,
-                NegrepFileContentProvider.FileContentProvider);
+
+            var negrepLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var patternsBaseDirectories = new [] 
+            {
+                Environment.CurrentDirectory,
+                negrepLocation
+            };
+
+            return new PackageBuilder(packageBuilderOptions, Environment.CurrentDirectory, PackageCache.Global);
         }
     }
 }
