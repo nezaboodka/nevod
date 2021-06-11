@@ -26,6 +26,7 @@ function Test-WindowsZipPackage {
     cat ./LICENSE.txt
     cat ./THIRD-PARTY-NOTICES.txt
     Invoke-NativeCommand ./negrep.exe -f ./examples/patterns.np ./examples/example.txt
+    echo The official nevod.io site | Invoke-NativeCommand ./negrep.exe -p "@require 'basic/Basic.np'; @search Basic.*;"
     Invoke-NativeCommand ./negrep.exe --version
 }
 

@@ -26,5 +26,5 @@ CMD echo './examples/patterns.np:\n' \
     && cat ./THIRD-PARTY-NOTICES.txt \
     && echo \
     && negrep -f ./examples/patterns.np ./examples/example.txt \
-    && echo domain.com | negrep -p "@require 'basic/Basic.np'; @search Basic.*;" \
+    && echo The official nevod.io site | negrep -p "@require 'basic/Basic.np'; @search Basic.*;" \
     && negrep --version
