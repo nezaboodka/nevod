@@ -614,12 +614,10 @@ namespace Nezaboodka.Nevod.Negrep.Tests
                 files (pos. 0)        
 
                 Examples:
-
-                echo domain.com | negrep -p ""@require 'basic/Basic.np'; @search Basic.*;""
-                cd <negrep installation directory>/examples
-                negrep ""{'Android', 'IPhone'}"" example.txt
-                negrep -f patterns.np example.txt
                 echo Android or IPhone | negrep -e ""{'android', 'iphone'}""
+                negrep ""{'Android', 'IPhone'}"" <negrep directory>/examples/example.txt
+                negrep -f <negrep directory>/examples/patterns.np <negrep directory>/examples/example.txt
+                echo The official nevod.io site | negrep -p ""@require 'basic/Basic.np'; @search Basic.*;""
             ";
 
             FakeConsole console = new FakeConsole("");
