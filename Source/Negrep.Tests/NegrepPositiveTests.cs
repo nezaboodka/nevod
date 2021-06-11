@@ -199,6 +199,17 @@ namespace Nezaboodka.Nevod.Negrep.Tests
         }
 
         [Test]
+        public async Task SearchPatternsFromFileAndOneFileWhenBothRedirected()
+        {
+            string[] args = { "-f", "patterns.np", "file1" };
+            string expected = @"
+                file1:Phone:IS ANDROID OR IPHONE THE BETTER SMARTPHONE?
+                file1:FirstWord:IS ANDROID OR IPHONE THE BETTER SMARTPHONE?
+            ";
+            await NegrepTestsRunner.CompareDataInStdoutWhenBothRedirected(args, expected);
+        }
+
+        [Test]
         public async Task SearchPatternsFromFileWith_h_OptionAndOneFileWhenOutputRedirected()
         {
             string[] args = { "-f", "patterns.np", "-h", "file1" };
