@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Nezaboodka.Text;
 
 namespace Nezaboodka.Nevod
 {
@@ -18,6 +19,11 @@ namespace Nezaboodka.Nevod
             return result;
         }
 
+        public Slice TextSlice { get; set; }
+        public int StartLine { get; set; }
+        public int StartCharacter { get; set; } 
+        public int EndLine { get; set; }
+        public int EndCharacter { get; set; }
         internal virtual bool CanReduce => false;
 
         internal virtual Syntax Reduce()

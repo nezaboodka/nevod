@@ -490,5 +490,209 @@ Identifier = {Alpha, AlphaNum, '_'} + [0+ {Word, '_'}];";
             string text = package.ToString();
             TestPackageIs("#Pattern = " + pattern + ";", text);
         }
+
+        [TestMethod]
+        public void PackageSourceTextInformation()
+        {
+            string patterns =
+@"@namespace Basic {
+    Pattern1 = A + B @where {
+        A = Word + {'Foo', ~'Bar'};
+        B = [1+ Num(2-4) & 'Nezaboodka'];
+    };
+    
+    Pattern2 = A _ B @where {
+        A = 'Company' @outside Pattern1.A;
+        B = Pattern1.B @having Alpha(2-10, TitleCase);
+    };
+
+    Pattern3 = 'Nezaboodka' + ? 'Company';
+    @search @pattern Pattern4 = 'Fo'!* .. [0-2] .. 'Ba'!*(Alpha, 1, Lowercase);
+    #Pattern5 = 'Hello' @inside ('Hello' + 'world');
+    Pattern6(X, Y) = X: 'Nezaboodka' ... Y: 'Company';
+    Pattern7(Q, S) = Pattern6(Q: X, S: Y);
+    Pattern8(X) = [1+ X: Symbol + X];
+    Pattern9(X, ~Y) = {X: Punct + X, Y: Symbol + Y};
+}";
+            var parser = new SyntaxParser();
+            PackageSyntax package = parser.ParsePackageText(patterns);
+            void Pattern1()
+            {
+                var pattern = (PatternSyntax) package.Patterns[0];
+                TestSourceTextInformation(pattern, 1, 4, 4, 5,
+@"Pattern1 = A + B @where {
+        A = Word + {'Foo', ~'Bar'};
+        B = [1+ Num(2-4) & 'Nezaboodka'];
+    };");
+                var sequence = (SequenceSyntax) pattern.Body;
+                TestSourceTextInformation(sequence.Elements[0], 1, 15, 1, 15, "A");
+                TestSourceTextInformation(sequence.Elements[1], 1, 19, 1, 19, "B");
+                void PatternA()
+                {
+                    PatternSyntax patternA = pattern.NestedPatterns[0];
+                    TestSourceTextInformation(patternA, 2, 8, 2, 34, "A = Word + {'Foo', ~'Bar'};");
+                    var sequence = (SequenceSyntax) patternA.Body;
+                    TestSourceTextInformation(sequence.Elements[0], 2, 12, 2, 15, "Word");
+                    var variation = (VariationSyntax) sequence.Elements[1];
+                    TestSourceTextInformation(variation, 2, 19, 2, 33, "{'Foo', ~'Bar'}");
+                    TestSourceTextInformation(variation.Elements[0], 2, 20, 2, 24, "'Foo'");
+                    var exception = (ExceptionSyntax) variation.Elements[1];
+                    TestSourceTextInformation(exception, 2, 27, 2, 32, "~'Bar'");
+                    TestSourceTextInformation(exception.Body, 2, 28, 2, 32, "'Bar'");
+                }
+                void PatternB()
+                {
+                    PatternSyntax patternB = pattern.NestedPatterns[1];
+                    TestSourceTextInformation(patternB, 3, 8, 3, 40, "B = [1+ Num(2-4) & 'Nezaboodka'];");
+                    var span = (SpanSyntax) patternB.Body;
+                    TestSourceTextInformation(span, 3, 12, 3, 39, "[1+ Num(2-4) & 'Nezaboodka']");
+                    var repetition = (RepetitionSyntax) span.Elements[0];
+                    TestSourceTextInformation(repetition, 3, 13, 3, 38, "1+ Num(2-4) & 'Nezaboodka'");
+                    var conjunction = (ConjunctionSyntax) repetition.Body;
+                    TestSourceTextInformation(conjunction.Elements[0], 3, 16, 3, 23, "Num(2-4)");
+                    TestSourceTextInformation(conjunction.Elements[1], 3, 27, 3, 38, "'Nezaboodka'");
+                }
+                PatternA();
+                PatternB();
+            }
+            void Pattern2()
+            {
+                var pattern2 = (PatternSyntax) package.Patterns[1];
+                TestSourceTextInformation(pattern2, 6, 4, 9, 5, 
+@"Pattern2 = A _ B @where {
+        A = 'Company' @outside Pattern1.A;
+        B = Pattern1.B @having Alpha(2-10, TitleCase);
+    };");
+                var wordSequence = (WordSequenceSyntax) pattern2.Body;
+                TestSourceTextInformation(wordSequence.Elements[0], 6, 15, 6, 15, "A");
+                TestSourceTextInformation(wordSequence.Elements[1], 6, 19, 6, 19, "B");
+                void PatternA()
+                {
+                    PatternSyntax patternA = pattern2.NestedPatterns[0];
+                    TestSourceTextInformation(patternA, 7, 8, 7, 41, "A = 'Company' @outside Pattern1.A;");
+                    var outside = (OutsideSyntax) patternA.Body;
+                    TestSourceTextInformation(outside, 7, 12, 7, 40, "'Company' @outside Pattern1.A");
+                    TestSourceTextInformation(outside.Body, 7, 12, 7, 20, "'Company'");
+                    TestSourceTextInformation(outside.Exception, 7, 31, 7, 40, "Pattern1.A");
+                }
+                void PatternB()
+                {
+                    PatternSyntax patternB = pattern2.NestedPatterns[1];
+                    TestSourceTextInformation(patternB, 8, 8, 8, 53, "B = Pattern1.B @having Alpha(2-10, TitleCase);");
+                    var having = (HavingSyntax)patternB.Body;
+                    TestSourceTextInformation(having, 8, 12, 8, 52, "Pattern1.B @having Alpha(2-10, TitleCase)");
+                    TestSourceTextInformation(having.Outer, 8, 12, 8, 21, "Pattern1.B");
+                    TestSourceTextInformation(having.Inner, 8, 31, 8, 52, "Alpha(2-10, TitleCase)");
+                }
+                PatternA();
+                PatternB();
+            }
+            void Pattern3()
+            {
+                var pattern3 = (PatternSyntax) package.Patterns[2];
+                TestSourceTextInformation(pattern3, 11, 4, 11, 41, "Pattern3 = 'Nezaboodka' + ? 'Company';");
+                var sequence = (SequenceSyntax) pattern3.Body;
+                TestSourceTextInformation(sequence, 11, 15, 11, 40, "'Nezaboodka' + ? 'Company'");
+                TestSourceTextInformation(sequence.Elements[0], 11, 15, 11, 26, "'Nezaboodka'");
+                var optionality = (OptionalitySyntax) sequence.Elements[1];
+                TestSourceTextInformation(optionality, 11, 30, 11, 40, "? 'Company'");
+                TestSourceTextInformation(optionality.Body, 11, 32, 11, 40, "'Company'");
+            }
+            void Pattern4()
+            {
+                var pattern4 = (PatternSyntax) package.Patterns[3];
+                TestSourceTextInformation(pattern4, 12, 4, 12, 78, "@search @pattern Pattern4 = 'Fo'!* .. [0-2] .. 'Ba'!*(Alpha, 1, Lowercase);");
+                var wordSpan = (WordSpanSyntax) pattern4.Body;
+                TestSourceTextInformation(wordSpan, 12, 32, 12, 77, "'Fo'!* .. [0-2] .. 'Ba'!*(Alpha, 1, Lowercase)");
+                TestSourceTextInformation(wordSpan.Left, 12, 32, 12, 37, "'Fo'!*");
+                TestSourceTextInformation(wordSpan.Right, 12, 51, 12, 77, "'Ba'!*(Alpha, 1, Lowercase)");
+            }
+            void Pattern5()
+            {
+                var pattern5 = (PatternSyntax) package.Patterns[4];
+                TestSourceTextInformation(pattern5, 13, 4, 13, 51, "#Pattern5 = 'Hello' @inside ('Hello' + 'world');");
+                var inside = (InsideSyntax) pattern5.Body;
+                TestSourceTextInformation(inside.Inner, 13, 16, 13, 22, "'Hello'");
+                TestSourceTextInformation(inside.Outer, 13, 33, 13, 49, "'Hello' + 'world'");
+                var sequence = (SequenceSyntax) inside.Outer;
+                TestSourceTextInformation(sequence.Elements[0], 13, 33, 13, 39, "'Hello'");
+                TestSourceTextInformation(sequence.Elements[1], 13, 43, 13, 49, "'world'");   
+            }
+            void Pattern6()
+            {
+                var pattern6 = (PatternSyntax) package.Patterns[5];
+                TestSourceTextInformation(pattern6, 14, 4, 14, 53, "Pattern6(X, Y) = X: 'Nezaboodka' ... Y: 'Company';");
+                TestSourceTextInformation(pattern6.Fields[0], 14, 13, 14, 13, "X");
+                TestSourceTextInformation(pattern6.Fields[1], 14, 16, 14, 16, "Y");
+                var anySpan = (AnySpanSyntax) pattern6.Body;
+                TestSourceTextInformation(anySpan, 14, 21, 14, 52, "X: 'Nezaboodka' ... Y: 'Company'");
+                var xExtraction = (ExtractionSyntax) anySpan.Left;
+                TestSourceTextInformation(xExtraction, 14, 21, 14, 35, "X: 'Nezaboodka'");
+                TestSourceTextInformation(xExtraction.Body, 14, 24, 14, 35, "'Nezaboodka'");
+                var yExtraction = (ExtractionSyntax) anySpan.Right;
+                TestSourceTextInformation(yExtraction, 14, 41, 14, 52, "Y: 'Company'");
+                TestSourceTextInformation(yExtraction.Body, 14, 44, 14, 52, "'Company'");
+            }
+            void Pattern7()
+            {
+                var pattern7 = (PatternSyntax) package.Patterns[6];
+                TestSourceTextInformation(pattern7, 15, 4, 15, 41, "Pattern7(Q, S) = Pattern6(Q: X, S: Y);");
+                TestSourceTextInformation(pattern7.Fields[0], 15, 13, 15, 13, "Q");
+                TestSourceTextInformation(pattern7.Fields[1], 15, 16, 15, 16, "S");
+                var patternReference = (PatternReferenceSyntax) pattern7.Body;
+                TestSourceTextInformation(patternReference, 15, 21, 15, 40, "Pattern6(Q: X, S: Y)");
+                var extractionQ = (ExtractionFromFieldSyntax) patternReference.ExtractionFromFields[0];
+                TestSourceTextInformation(extractionQ, 15, 30, 15, 33, "Q: X");
+                var extractionS = (ExtractionFromFieldSyntax) patternReference.ExtractionFromFields[1];
+                TestSourceTextInformation(extractionS, 15, 36, 15, 39, "S: Y");
+            }
+            void Pattern8()
+            {
+                var pattern8 = (PatternSyntax) package.Patterns[7];
+                TestSourceTextInformation(pattern8, 16, 4, 16, 36, "Pattern8(X) = [1+ X: Symbol + X];");
+                TestSourceTextInformation(pattern8.Fields[0], 16, 13, 16, 13, "X");
+                var span = (SpanSyntax) pattern8.Body;
+                TestSourceTextInformation(span, 16, 18, 16, 35, "[1+ X: Symbol + X]");
+                var repetition = (RepetitionSyntax) span.Elements[0];
+                TestSourceTextInformation(repetition, 16, 19, 16, 34, "1+ X: Symbol + X");
+                var sequence = (SequenceSyntax) repetition.Body;
+                TestSourceTextInformation(sequence, 16, 22, 16, 34, "X: Symbol + X");
+                var extraction = (ExtractionSyntax) sequence.Elements[0];
+                TestSourceTextInformation(extraction, 16, 22, 16, 30, "X: Symbol");
+                TestSourceTextInformation(extraction.Body, 16, 25, 16, 30, "Symbol");
+                Assert.AreEqual("X", extraction.FieldName);
+                TestSourceTextInformation(sequence.Elements[1], 16, 34, 16, 34, "X");
+            }
+            void Pattern9()
+            {
+                var pattern9 = (PatternSyntax) package.Patterns[8];
+                TestSourceTextInformation(pattern9, 17, 4, 17, 51, "Pattern9(X, ~Y) = {X: Punct + X, Y: Symbol + Y};");
+                TestSourceTextInformation(pattern9.Fields[0], 17, 13, 17, 13, "X");
+                TestSourceTextInformation(pattern9.Fields[1], 17, 16, 17, 17, "~Y");
+                var variation = (VariationSyntax) pattern9.Body;
+                TestSourceTextInformation(variation, 17, 22, 17, 50, "{X: Punct + X, Y: Symbol + Y}");
+                var sequence1 = (SequenceSyntax) variation.Elements[0];
+                TestSourceTextInformation(sequence1, 17, 23, 17, 34, "X: Punct + X");
+                var extractionX = (ExtractionSyntax) sequence1.Elements[0];
+                TestSourceTextInformation(extractionX, 17, 23, 17, 30, "X: Punct");
+                TestSourceTextInformation(extractionX.Body, 17, 26, 17, 30, "Punct");
+                TestSourceTextInformation(sequence1.Elements[1], 17, 34, 17, 34, "X");
+                var sequence2 = (SequenceSyntax) variation.Elements[1];
+                TestSourceTextInformation(sequence2, 17, 37, 17, 49, "Y: Symbol + Y");
+                var extractionY = (ExtractionSyntax) sequence2.Elements[0];
+                TestSourceTextInformation(extractionY, 17, 37, 17, 45, "Y: Symbol");
+                TestSourceTextInformation(extractionY.Body, 17, 40, 17, 45, "Symbol");
+                TestSourceTextInformation(sequence2.Elements[1], 17, 49, 17, 49, "Y");
+            }
+            Pattern1();
+            Pattern2();
+            Pattern3();
+            Pattern4();
+            Pattern5();
+            Pattern6();
+            Pattern7();
+            Pattern8();
+            Pattern9();
+        }
     }
 }

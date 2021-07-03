@@ -40,8 +40,10 @@ namespace Nezaboodka.Nevod
         private int fLineNumber;
         private int fLinePosition;
         private int fLineLength;
+        private int fCharacterPositionInLine;
         private char fCharacter;
         private Token fToken;
+        private Token fLastToken;
         private Dictionary<string, TokenId> fTokenByKeyword;
         private NameScope fCurrentScope;
         private Stack<NameScope> fScopeStack;
@@ -84,6 +86,7 @@ namespace Nezaboodka.Nevod
             fLineNumber = 1;
             fLinePosition = 0;
             fLineLength = 0;
+            fCharacterPositionInLine = -1;
             NextCharacter();
             NextTokenOrComment();
             PackageSyntax result = ParsePackage();
@@ -94,11 +97,19 @@ namespace Nezaboodka.Nevod
         {
             fText = text.Slice();
             fTextPosition = -1;
+            fLineNumber = 1;
+            fLinePosition = 0;
+            fLineLength = 0;
+            fCharacterPositionInLine = -1;
             NextCharacter();
             NextToken();
+            Token startToken = fToken;
             Syntax patternBody = ParseInsideOrOutsideOrHaving();
+            AttachSourceTextInformation(patternBody, startToken);
             PatternSyntax pattern = Syntax.Pattern(isSearchTarget: true, "Pattern", patternBody, null);
+            AttachSourceTextInformation(pattern, startToken);
             var result = Syntax.Package(pattern);
+            AttachSourceTextInformation(result, startToken);
             return result;
         }
 
@@ -155,6 +166,7 @@ namespace Nezaboodka.Nevod
             fPatterns = new List<Syntax>();
             fSearchTargets = new List<Syntax>();
             fPatternByName = new Dictionary<string, PatternSyntax>();
+            Token startToken = fToken;
             foreach (PatternSyntax p in Syntax.StandardPattern.StandardPatterns)
                 fPatternByName.Add(p.FullName, p);
             // 1. Metadata
@@ -167,6 +179,7 @@ namespace Nezaboodka.Nevod
             while (fToken.Id != TokenId.End)
                 ParseNamespacesAndPatterns();
             var result = Syntax.Package(fRequiredPackages, fSearchTargets, fPatterns);
+            AttachSourceTextInformation(result, startToken);
             fCurrentScope = null;
             fScopeStack = null;
             fRequiredPackages = null;
@@ -227,6 +240,7 @@ namespace Nezaboodka.Nevod
 
         private RequiredPackageSyntax ParseRequire()
         {
+            Token startToken = fToken;
             ValidateToken(TokenId.RequireKeyword, TextResource.RequireKeywordExpected);
             NextToken();
             ValidateToken(TokenId.StringLiteral, TextResource.FilePathAsStringLiteralExpected);
@@ -244,6 +258,7 @@ namespace Nezaboodka.Nevod
                 throw SyntaxError(TextResource.RequireOperatorIsNotAllowedInSinglePackageMode);
             ValidateToken(TokenId.Semicolon, TextResource.RequireDefinitionShouldEndWithSemicolon);
             NextToken();
+            AttachSourceTextInformation(result, startToken);
             return result;
         }
 
@@ -256,16 +271,20 @@ namespace Nezaboodka.Nevod
                     ParseNamespace();
                     break;
                 case TokenId.PatternKeyword:
+                    Token startToken1 = fToken;
                     NextToken();
                     PatternSyntax pattern1 = ParsePattern(isSearchTarget: false);
+                    AttachSourceTextInformation(pattern1, startToken1);
                     fPatterns.Add(pattern1);
                     break;
                 case TokenId.SearchKeyword:
+                    Token startToken2 = fToken;
                     NextToken();
                     if (fToken.Id == TokenId.PatternKeyword)
                     {
                         NextToken();
                         PatternSyntax pattern2 = ParsePattern(isSearchTarget: true);
+                        AttachSourceTextInformation(pattern2, startToken2);
                         fPatterns.Add(pattern2);
                     }
                     else
@@ -283,11 +302,13 @@ namespace Nezaboodka.Nevod
 
         private SearchTargetSyntax ParseSearchTarget()
         {
+            Token startToken = fToken;
             string name = ParseMultipartIdentifier(shouldStartFromIdentifier: true, canEndWithWildcard: true);
             string fullName = Syntax.GetFullName(fCurrentScope.Namespace, name);
             ValidateToken(TokenId.Semicolon, TextResource.SearchTargetDefinitionShouldEndWithSemicolon);
             NextToken();
             var result = Syntax.SearchTarget(fullName);
+            AttachSourceTextInformation(result, startToken);
             return result;
         }
 
@@ -346,6 +367,7 @@ namespace Nezaboodka.Nevod
 
         private PatternSyntax ParsePattern(bool isSearchTarget)
         {
+            Token startToken = fToken;
             PatternSyntax pattern;
             if (fToken.Id == TokenId.HashSign)
             {
@@ -390,6 +412,7 @@ namespace Nezaboodka.Nevod
                     NextToken();
                     pattern = new PatternSyntax(fCurrentScope.Namespace, fCurrentScope.MasterPatternName,
                         isSearchTarget, name, fields, body, nestedPatterns);
+                    AttachSourceTextInformation(pattern, startToken);
                     fPatternByName.Add(fullName, pattern);
                 }
                 else
@@ -410,15 +433,19 @@ namespace Nezaboodka.Nevod
                 switch (fToken.Id)
                 {
                     case TokenId.PatternKeyword:
+                        Token startToken1 = fToken;
                         NextToken();
                         PatternSyntax pattern1 = ParsePattern(isSearchTarget: false);
+                        AttachSourceTextInformation(pattern1, startToken1);
                         nestedPatterns.Add(pattern1);
                         break;
                     case TokenId.SearchKeyword:
+                        Token startToken2 = fToken;
                         NextToken();
                         if (fToken.Id == TokenId.PatternKeyword)
                         {
                             PatternSyntax pattern2 = ParsePattern(isSearchTarget: true);
+                            AttachSourceTextInformation(pattern2, startToken2);
                             nestedPatterns.Add(pattern2);
                         }
                         else
@@ -441,6 +468,7 @@ namespace Nezaboodka.Nevod
             do
             {
                 NextToken();
+                Token startToken = fToken;
                 if (fToken.Id != TokenId.CloseParenthesis)
                 {
                     bool isInternal = false;
@@ -457,6 +485,8 @@ namespace Nezaboodka.Nevod
                         fFieldByName.Add(name, field);
                         result.Add(field);
                         NextToken();
+                        // Needs to be called after NextToken because relies on fLastToken
+                        AttachSourceTextInformation(field, startToken);
                     }
                     else
                         throw SyntaxError(TextResource.DuplicatedField, name);
@@ -476,6 +506,7 @@ namespace Nezaboodka.Nevod
 
         private Syntax ParseInsideOrOutsideOrHaving()
         {
+            Token startToken = fToken;
             Syntax result = ParseConjunction();
             if (fToken.Id == TokenId.InsideKeyword || fToken.Id == TokenId.OutsideKeyword
                 || fToken.Id == TokenId.HavingKeyword)
@@ -501,12 +532,14 @@ namespace Nezaboodka.Nevod
                     }
                     fAccessibleFields = fAccessibleFieldsStack.Pop();
                 }
+                AttachSourceTextInformation(result, startToken);
             }
             return result;
         }
 
         private Syntax ParseConjunction()
         {
+            Token startToken = fToken;
             Syntax result = ParseAnySpanOrWordSpan();
             if (fToken.Id == TokenId.Amphersand)
             {
@@ -518,12 +551,14 @@ namespace Nezaboodka.Nevod
                     elements.Add(element);
                 }
                 result = Syntax.Conjunction(elements);
+                AttachSourceTextInformation(result, startToken);
             }
             return result;
         }
 
         private Syntax ParseAnySpanOrWordSpan()
         {
+            Token startToken = fToken;
             fAccessibleFieldsStack.Push(new HashSet<FieldSyntax>(fAccessibleFields));
             Syntax result = ParseWordSequence();
             if (fToken.Id == TokenId.DoublePeriod || fToken.Id == TokenId.Ellipsis)
@@ -573,6 +608,7 @@ namespace Nezaboodka.Nevod
                     else
                         result = Syntax.AnySpan(result, next, extractionOfSpan);
                 }
+                AttachSourceTextInformation(result, startToken);
             }
             fAccessibleFields = fAccessibleFieldsStack.Pop();
             return result;
@@ -582,6 +618,7 @@ namespace Nezaboodka.Nevod
         {
             ValidateToken(TokenId.Identifier, TextResource.IdentifierExpected);
             string fieldName = fToken.TextSlice.ToString();
+            Token startToken = fToken;
             NextToken();
             Syntax result;
             if (fFieldByName.TryGetValue(fieldName, out FieldSyntax field))
@@ -589,6 +626,7 @@ namespace Nezaboodka.Nevod
                 if (fExtractedFields.Add(field))
                 {
                     result = Syntax.Extraction(field);
+                    AttachSourceTextInformation(result, startToken);
                     fAccessibleFields.Add(field);
                 }
                 else
@@ -601,6 +639,7 @@ namespace Nezaboodka.Nevod
 
         private Syntax ParseWordSequence()
         {
+            Token startToken = fToken;
             Syntax result = ParseSequence();
             if (fToken.Id == TokenId.Underscore)
             {
@@ -612,12 +651,14 @@ namespace Nezaboodka.Nevod
                     elements.Add(element);
                 }
                 result = Syntax.WordSequence(elements);
+                AttachSourceTextInformation(result, startToken);
             }
             return result;
         }
 
         private Syntax ParseSequence()
         {
+            Token startToken = fToken;
             Syntax result = ParsePrimaryExpression();
             if (fToken.Id == TokenId.Plus)
             {
@@ -629,6 +670,7 @@ namespace Nezaboodka.Nevod
                     elements.Add(element);
                 }
                 result = Syntax.Sequence(elements);
+                AttachSourceTextInformation(result, startToken);
             }
             return result;
         }
@@ -651,9 +693,11 @@ namespace Nezaboodka.Nevod
                     result = ParseSpan();
                     break;
                 case TokenId.Question:
+                    Token startToken = fToken;
                     NextToken();
                     Syntax body = ParsePrimaryExpression();
                     result = Syntax.Optionality(body);
+                    AttachSourceTextInformation(result, startToken);
                     break;
                 case TokenId.Identifier:
                     result = ParseExtractionOrReference();
@@ -671,6 +715,7 @@ namespace Nezaboodka.Nevod
         {
             ValidateToken(TokenId.OpenCurlyBrace, TextResource.OpenCurlyBraceExpected);
             fAccessibleFieldsStack.Push(new HashSet<FieldSyntax>(fAccessibleFields));
+            Token startToken = fToken;
             var elements = new List<Syntax>();
             do
             {
@@ -686,6 +731,7 @@ namespace Nezaboodka.Nevod
             ValidateToken(TokenId.CloseCurlyBrace, TextResource.CloseCurlyBraceOrCommaExpected);
             NextToken();
             var result = Syntax.Variation(elements);
+            AttachSourceTextInformation(result, startToken);
             fAccessibleFields = fAccessibleFieldsStack.Pop();
             return result;
         }
@@ -693,10 +739,12 @@ namespace Nezaboodka.Nevod
         private ExceptionSyntax ParseException()
         {
             ValidateToken(TokenId.Tilde, TextResource.TildeSignExpected);
+            Token startToken = fToken;
             NextToken();
             fAccessibleFieldsStack.Push(new HashSet<FieldSyntax>(fAccessibleFields));
             Syntax body = ParseInsideOrOutsideOrHaving();
             var result = Syntax.Exception(body);
+            AttachSourceTextInformation(result, startToken);
             fAccessibleFields = fAccessibleFieldsStack.Pop();
             return result;
         }
@@ -704,6 +752,7 @@ namespace Nezaboodka.Nevod
         private SpanSyntax ParseSpan()
         {
             ValidateToken(TokenId.OpenSquareBracket, TextResource.OpenSquareBracketExpected);
+            Token startToken = fToken;
             var elements = new List<Syntax>();
             do
             {
@@ -719,15 +768,18 @@ namespace Nezaboodka.Nevod
             ValidateToken(TokenId.CloseSquareBracket, TextResource.CloseSquareBracketExpected);
             NextToken();
             var result = Syntax.Span(elements);
+            AttachSourceTextInformation(result, startToken);
             return result;
         }
 
         private RepetitionSyntax ParseRepetition()
         {
+            Token startToken = fToken;
             fAccessibleFieldsStack.Push(new HashSet<FieldSyntax>(fAccessibleFields));
             Range repetitionRange = ParseNumericRange();
             Syntax body = ParseInsideOrOutsideOrHaving();
             var result = Syntax.Repetition(repetitionRange.LowBound, repetitionRange.HighBound, body);
+            AttachSourceTextInformation(result, startToken);
             fAccessibleFields = fAccessibleFieldsStack.Pop();
             return result;
         }
@@ -787,6 +839,7 @@ namespace Nezaboodka.Nevod
 
         private Syntax ParseExtractionOrReference()
         {
+            Token startToken = fToken;
             Syntax result;
             string name = ParseMultipartIdentifier(shouldStartFromIdentifier: false, canEndWithWildcard: false);
             if (fFieldByName.TryGetValue(name, out FieldSyntax field))
@@ -813,6 +866,7 @@ namespace Nezaboodka.Nevod
             }
             else
                 result = ParsePatternReference(name);
+            AttachSourceTextInformation(result, startToken);
             return result;
         }
 
@@ -851,6 +905,9 @@ namespace Nezaboodka.Nevod
                     else
                         throw SyntaxError(TextResource.AttributesAreNotAllowedForStandardPattern, patternName);
                 }
+                else if (pattern.Body is TokenSyntax token)
+                    result = new TokenSyntax(token.TokenKind, token.Text, token.IsCaseSensitive, token.TextIsPrefix,
+                        token.TokenAttributes);
                 else
                     result = pattern.Body;
             }
@@ -881,6 +938,7 @@ namespace Nezaboodka.Nevod
         {
             Syntax result;
             ValidateToken(TokenId.Identifier, TextResource.FieldNameExpected);
+            Token startToken = fToken;
             string fieldName = fToken.TextSlice.ToString();
             if (fFieldByName.TryGetValue(fieldName, out FieldSyntax field))
             {
@@ -893,6 +951,7 @@ namespace Nezaboodka.Nevod
                     string fromFieldName = fToken.TextSlice.ToString();
                     NextToken();
                     result = Syntax.ExtractionFromField(field, fromFieldName);
+                    AttachSourceTextInformation(result, startToken);
                     fExtractedFields.Add(field);
                     fAccessibleFields.Add(field);
                 }
@@ -906,6 +965,7 @@ namespace Nezaboodka.Nevod
 
         private TextSyntax ParseText()
         {
+            Token startToken = fToken;
             TextSyntax result;
             bool isCaseSensitive;
             bool textIsPrefix;
@@ -917,6 +977,7 @@ namespace Nezaboodka.Nevod
             }
             else
                 result = Syntax.Text(text, isCaseSensitive, textIsPrefix);
+            AttachSourceTextInformation(result, startToken);
             return result;
         }
 
@@ -1068,6 +1129,8 @@ namespace Nezaboodka.Nevod
                 NextCharacter();
             TokenId tokenId = TokenId.Unknown;
             int tokenPosition = fTextPosition;
+            int line = fLineNumber - 1;
+            int characterPositionInLine = fCharacterPositionInLine;
             switch (fCharacter)
             {
                 case '(':
@@ -1299,10 +1362,16 @@ namespace Nezaboodka.Nevod
                     NextCharacter();
                     break;
             }
+            fLastToken.Id = fToken.Id;
+            fLastToken.TextSlice = fToken.TextSlice;
+            fLastToken.Line = fToken.Line;
+            fLastToken.Character = fToken.Character;
             if (tokenId == TokenId.Unknown && fTextPosition == fText.Length)
                 tokenId = TokenId.End;
             fToken.Id = tokenId;
             fToken.TextSlice = fText.SubSlice(tokenPosition, fTextPosition - tokenPosition);
+            fToken.Line = line;
+            fToken.Character = characterPositionInLine;
         }
 
         private void NextCharacter()
@@ -1317,9 +1386,13 @@ namespace Nezaboodka.Nevod
                     fLineNumber++;
                     fLinePosition = fTextPosition + 1;
                     fLineLength = 0;
+                    fCharacterPositionInLine = -1;
                 }
                 else
+                {
                     fLineLength++;
+                    fCharacterPositionInLine++;
+                }
             }
             else
                 fCharacter = '\0';
@@ -1345,10 +1418,22 @@ namespace Nezaboodka.Nevod
                 throw SyntaxError(fToken.TextSlice.Position, error, args: fToken);
         }
 
+        private void AttachSourceTextInformation(Syntax syntax, Token startToken)
+        {
+            syntax.StartLine = startToken.Line;
+            syntax.StartCharacter = startToken.Character;
+            syntax.EndLine = fLastToken.Line;
+            syntax.EndCharacter = fLastToken.Character + fLastToken.TextSlice.Length - 1;
+            int textSliceLength = fLastToken.TextSlice.End - startToken.TextSlice.Position + 1;
+            syntax.TextSlice = new Slice(fText, startToken.TextSlice.Position, textSliceLength);
+        }
+
         private struct Token
         {
             public TokenId Id;
             public Slice TextSlice;
+            public int Line { get; set; }
+            public int Character { get; set; }
 
             public override string ToString()
             {
