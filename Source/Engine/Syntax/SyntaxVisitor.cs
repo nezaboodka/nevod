@@ -16,7 +16,17 @@ namespace Nezaboodka.Nevod
         {
             Syntax result = null;
             if (node != null)
+            {
                 result = node.Accept(this);
+                if (!ReferenceEquals(result, node))
+                {
+                    result.StartLine = node.StartLine;
+                    result.StartCharacter = node.StartCharacter;
+                    result.EndLine = node.EndLine;
+                    result.EndCharacter = node.EndCharacter;
+                    result.TextSlice = node.TextSlice;
+                }
+            }
             return result;
         }
 
