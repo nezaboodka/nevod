@@ -11,7 +11,7 @@ using System.Text;
 
 namespace Nezaboodka.Nevod
 {
-    internal class PatternLinker : SyntaxVisitor
+    public class PatternLinker : SyntaxVisitor
     {
         internal struct PatternReferenceInContext
         {
@@ -27,7 +27,7 @@ namespace Nezaboodka.Nevod
         private List<Syntax> fExtractedPatterns;
         private int fNextExtractedPatternNumber;
 
-        internal PatternLinker(bool linkRequiredPackages)
+        public PatternLinker(bool linkRequiredPackages)
         {
             fLinkRequiredPackages = linkRequiredPackages;
         }

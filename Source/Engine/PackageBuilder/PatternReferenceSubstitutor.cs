@@ -11,13 +11,13 @@ using System.Text;
 
 namespace Nezaboodka.Nevod
 {
-    internal class PatternReferenceSubstitutor : SyntaxVisitor
+    public class PatternReferenceSubstitutor : SyntaxVisitor
     {
         private HashSet<PatternSyntax> fExcludedPatterns;
         private HashSet<PatternSyntax> fVisitedPatterns;
         private Dictionary<PatternSyntax, PatternSyntax> fPatternSubstitutions;
 
-        internal PatternReferenceSubstitutor()
+        public PatternReferenceSubstitutor()
         {
         }
 

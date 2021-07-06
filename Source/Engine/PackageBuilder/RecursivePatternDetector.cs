@@ -11,13 +11,13 @@ using System.Text;
 
 namespace Nezaboodka.Nevod
 {
-    internal class RecursivePatternDetector : SyntaxVisitor
+    public class RecursivePatternDetector : SyntaxVisitor
     {
         private HashSet<PatternSyntax> fRecursivePatterns;
         private List<PatternSyntax> fPatternStack;
         private HashSet<PatternSyntax> fVisitedPatterns;
 
-        internal RecursivePatternDetector()
+        public RecursivePatternDetector()
         {
         }
 
