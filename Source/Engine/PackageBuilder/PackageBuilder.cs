@@ -98,6 +98,21 @@ namespace Nezaboodka.Nevod
             }
         }
 
+        public void CheckPackageSyntax(PackageSyntax parsedTree)
+        {
+            var linker = new PatternLinker(linkRequiredPackages: false);
+            LinkedPackageSyntax linkedTree = linker.Link(parsedTree);
+            if (fOptions.PatternReferencesInlined)
+            {
+                // Выполнить подстановку всех ссылок на шаблоны, кроме рекурсивных.
+                var recursionDetector = new RecursivePatternDetector();
+                HashSet<PatternSyntax> recursivePatterns = recursionDetector.GetRecursivePatterns(linkedTree);
+                if (recursivePatterns.Count > 0)
+                    throw SyntaxError(TextResource.RecursivePatternsAreNotSupported,
+                        string.Join(" -> ", recursivePatterns.Select(x => x.FullName)));
+            }
+        }
+
         // Internal
 
         LinkedPackageSyntax IPackageLoader.LoadPackage(string filePath)
@@ -180,11 +195,18 @@ namespace Nezaboodka.Nevod
                 innerException);
             return result;
         }
+
+        private Exception SyntaxError(string format, params object[] args)
+        {
+            return new SyntaxException(string.Format(System.Globalization.CultureInfo.CurrentCulture, format, args), 0,
+                0, string.Empty);
+        }
     }
 
     internal static partial class TextResource
     {
         public const string RequiredPackageExceptionFormat = "Error in required package '{0}': {1}";
         public const string RecursiveFileDependencyIsNotSupported = "Recursive file dependency is not supported: {0}";
+        public const string RecursivePatternsAreNotSupported = "Recursive patterns are not supported: {0}";
     }
 }
