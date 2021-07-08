@@ -322,13 +322,10 @@ namespace Nezaboodka.Nevod.Engine.Tests
             return dataDir;
         }
         
-        public static void TestSourceTextInformation(Syntax syntax, int startLine, int startCharacter, int endLine, int endCharacter, string text)
+        public static void TestSourceTextInformation(Syntax syntax, int start, int end)
         {
-            Assert.AreEqual(startLine, syntax.StartLine);
-            Assert.AreEqual(startCharacter, syntax.StartCharacter);
-            Assert.AreEqual(endLine, syntax.EndLine);
-            Assert.AreEqual(endCharacter, syntax.EndCharacter);
-            Assert.AreEqual(text, syntax.TextSlice.ToString());
+            Assert.AreEqual(start, syntax.TextRange.Start);
+            Assert.AreEqual(end, syntax.TextRange.End);
         }
     }
 }
