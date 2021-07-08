@@ -903,8 +903,8 @@ namespace Nezaboodka.Nevod
                     result = pattern.Body switch
                     {
                         TokenSyntax token => new TokenSyntax(token.TokenKind, token.Text, token.IsCaseSensitive, token.TextIsPrefix, token.TokenAttributes),
-                        VariationSyntax variation => new VariationSyntax(variation.Elements, false),
-                        _ => throw SyntaxError(TextResource.UnknownStandardPattern, pattern)
+                        VariationSyntax variation => new VariationSyntax(variation.Elements, checkCanReduce: false),
+                        _ => throw SyntaxError(TextResource.InternalCompilerError)
                     };
             }
             else
@@ -1589,7 +1589,6 @@ namespace Nezaboodka.Nevod
         public const string ColonExpected = "Colon expected, but '{0}' found";
         public const string AssignmentExpected = "Assignment (:=) expected, but '{0}' found";
         public const string AttributesAreNotAllowedForStandardPattern = "Attributes are not allowed for standard pattern '{0}'";
-        public const string UnknownStandardPattern = "Unknown standard pattern: {0}";
         public const string WordAttributeExpected = "Word token attribute expected, but '{0}' found";
         public const string WordClassWasAlreadyDefined = "Word class was already defined";
         public const string CharacterCaseWasAlreadyDefined = "Character case was already defined";

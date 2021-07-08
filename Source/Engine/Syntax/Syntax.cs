@@ -19,7 +19,7 @@ namespace Nezaboodka.Nevod
             string result = SyntaxStringBuilder.SyntaxToString(this);
             return result;
         }
-        
+
         internal virtual bool CanReduce => false;
 
         internal virtual Syntax Reduce()

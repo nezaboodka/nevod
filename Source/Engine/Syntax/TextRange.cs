@@ -2,8 +2,8 @@
 {
     public struct TextRange
     {
-        public int Start { get; set; }
-        public int End { get; set; }
+        public int Start { get; }
+        public int End { get; }
 
         public TextRange(int start, int end)
         {
