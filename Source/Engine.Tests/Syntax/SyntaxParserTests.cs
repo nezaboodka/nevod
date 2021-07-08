@@ -514,43 +514,43 @@ Identifier = {Alpha, AlphaNum, '_'} + [0+ {Word, '_'}];";
     Pattern8(X) = [1+ X: Symbol + X];
     Pattern9(X, ~Y) = {X: Punct + X, Y: Symbol + Y};
     Pattern10 = 'Hello' + WordBreak + 'World' + WordBreak + '!';
-}";
+}".Replace("\r\n", "\n"); // Use \n as line feeds to make positions platform-independent
             var parser = new SyntaxParser();
             PackageSyntax package = parser.ParsePackageText(patterns);
-            TestSourceTextInformation(package, 0, 725);
+            TestSourceTextInformation(package, 0, 706);
             void Pattern1()
             {
                 var pattern = (PatternSyntax) package.Patterns[0];
-                TestSourceTextInformation(pattern, 24, 137);
+                TestSourceTextInformation(pattern, 23, 133);
                 var sequence = (SequenceSyntax) pattern.Body;
-                TestSourceTextInformation(sequence, 35, 40);
-                TestSourceTextInformation(sequence.Elements[0], 35, 36);
-                TestSourceTextInformation(sequence.Elements[1], 39, 40);
+                TestSourceTextInformation(sequence, 34, 39);
+                TestSourceTextInformation(sequence.Elements[0], 34, 35);
+                TestSourceTextInformation(sequence.Elements[1], 38, 39);
                 void PatternA()
                 {
                     PatternSyntax patternA = pattern.NestedPatterns[0];
-                    TestSourceTextInformation(patternA, 59, 86);
+                    TestSourceTextInformation(patternA, 57, 84);
                     var sequence = (SequenceSyntax) patternA.Body;
-                    TestSourceTextInformation(sequence, 63, 85);
-                    TestSourceTextInformation(sequence.Elements[0], 63, 67);
+                    TestSourceTextInformation(sequence, 61, 83);
+                    TestSourceTextInformation(sequence.Elements[0], 61, 65);
                     var variation = (VariationSyntax) sequence.Elements[1];
-                    TestSourceTextInformation(variation, 70, 85);
-                    TestSourceTextInformation(variation.Elements[0], 71, 76);
+                    TestSourceTextInformation(variation, 68, 83);
+                    TestSourceTextInformation(variation.Elements[0], 69, 74);
                     var exception = (ExceptionSyntax) variation.Elements[1];
-                    TestSourceTextInformation(exception, 78, 84);
-                    TestSourceTextInformation(exception.Body, 79, 84);
+                    TestSourceTextInformation(exception, 76, 82);
+                    TestSourceTextInformation(exception.Body, 77, 82);
                 }
                 void PatternB()
                 {
                     PatternSyntax patternB = pattern.NestedPatterns[1];
-                    TestSourceTextInformation(patternB, 96, 129);
+                    TestSourceTextInformation(patternB, 93, 126);
                     var span = (SpanSyntax) patternB.Body;
-                    TestSourceTextInformation(span, 100, 128);
+                    TestSourceTextInformation(span, 97, 125);
                     var repetition = (RepetitionSyntax) span.Elements[0];
-                    TestSourceTextInformation(repetition, 101, 127);
+                    TestSourceTextInformation(repetition, 98, 124);
                     var conjunction = (ConjunctionSyntax) repetition.Body;
-                    TestSourceTextInformation(conjunction.Elements[0], 104, 112);
-                    TestSourceTextInformation(conjunction.Elements[1], 115, 127);
+                    TestSourceTextInformation(conjunction.Elements[0], 101, 109);
+                    TestSourceTextInformation(conjunction.Elements[1], 112, 124);
                 }
                 PatternA();
                 PatternB();
@@ -558,27 +558,27 @@ Identifier = {Alpha, AlphaNum, '_'} + [0+ {Word, '_'}];";
             void Pattern2()
             {
                 var pattern2 = (PatternSyntax) package.Patterns[1];
-                TestSourceTextInformation(pattern2, 149, 282);
+                TestSourceTextInformation(pattern2, 143, 273);
                 var wordSequence = (WordSequenceSyntax) pattern2.Body;
-                TestSourceTextInformation(wordSequence.Elements[0], 160, 161);
-                TestSourceTextInformation(wordSequence.Elements[1], 164, 165);
+                TestSourceTextInformation(wordSequence.Elements[0], 154, 155);
+                TestSourceTextInformation(wordSequence.Elements[1], 158, 159);
                 void PatternA()
                 {
                     PatternSyntax patternA = pattern2.NestedPatterns[0];
-                    TestSourceTextInformation(patternA, 184,  218);
+                    TestSourceTextInformation(patternA, 177,  211);
                     var outside = (OutsideSyntax) patternA.Body;
-                    TestSourceTextInformation(outside, 188, 217);
-                    TestSourceTextInformation(outside.Body, 188, 197);
-                    TestSourceTextInformation(outside.Exception, 207, 217);
+                    TestSourceTextInformation(outside, 181, 210);
+                    TestSourceTextInformation(outside.Body, 181, 190);
+                    TestSourceTextInformation(outside.Exception, 200, 210);
                 }
                 void PatternB()
                 {
                     PatternSyntax patternB = pattern2.NestedPatterns[1];
-                    TestSourceTextInformation(patternB, 228, 274);
+                    TestSourceTextInformation(patternB, 220, 266);
                     var having = (HavingSyntax)patternB.Body;
-                    TestSourceTextInformation(having, 232, 273);
-                    TestSourceTextInformation(having.Outer, 232, 242);
-                    TestSourceTextInformation(having.Inner, 251, 273);
+                    TestSourceTextInformation(having, 224, 265);
+                    TestSourceTextInformation(having.Outer, 224, 234);
+                    TestSourceTextInformation(having.Inner, 243, 265);
                 }
                 PatternA();
                 PatternB();
@@ -586,109 +586,109 @@ Identifier = {Alpha, AlphaNum, '_'} + [0+ {Word, '_'}];";
             void Pattern3()
             {
                 var pattern3 = (PatternSyntax) package.Patterns[2];
-                TestSourceTextInformation(pattern3, 290, 328);
+                TestSourceTextInformation(pattern3, 279, 317);
                 var sequence = (SequenceSyntax) pattern3.Body;
-                TestSourceTextInformation(sequence, 301, 327);
-                TestSourceTextInformation(sequence.Elements[0], 301, 313);
+                TestSourceTextInformation(sequence, 290, 316);
+                TestSourceTextInformation(sequence.Elements[0], 290, 302);
                 var optionality = (OptionalitySyntax) sequence.Elements[1];
-                TestSourceTextInformation(optionality, 316, 327);
-                TestSourceTextInformation(optionality.Body, 318, 327);
+                TestSourceTextInformation(optionality, 305, 316);
+                TestSourceTextInformation(optionality.Body, 307, 316);
             }
             void Pattern4()
             {
                 var pattern4 = (PatternSyntax) package.Patterns[3];
-                TestSourceTextInformation(pattern4, 334, 409);
+                TestSourceTextInformation(pattern4, 322, 397);
                 var wordSpan = (WordSpanSyntax) pattern4.Body;
-                TestSourceTextInformation(wordSpan, 362, 408);
-                TestSourceTextInformation(wordSpan.Left, 362, 368);
-                TestSourceTextInformation(wordSpan.Right, 381, 408);
+                TestSourceTextInformation(wordSpan, 350, 396);
+                TestSourceTextInformation(wordSpan.Left, 350, 356);
+                TestSourceTextInformation(wordSpan.Right, 369, 396);
             }
             void Pattern5()
             {
                 var pattern5 = (PatternSyntax) package.Patterns[4];
-                TestSourceTextInformation(pattern5, 415, 463);
+                TestSourceTextInformation(pattern5, 402, 450);
                 var inside = (InsideSyntax) pattern5.Body;
-                TestSourceTextInformation(inside.Inner, 427, 434);
-                TestSourceTextInformation(inside.Outer, 444, 461);
+                TestSourceTextInformation(inside.Inner, 414, 421);
+                TestSourceTextInformation(inside.Outer, 431, 448);
                 var sequence = (SequenceSyntax) inside.Outer;
-                TestSourceTextInformation(sequence.Elements[0], 444, 451);
-                TestSourceTextInformation(sequence.Elements[1], 454, 461);   
+                TestSourceTextInformation(sequence.Elements[0], 431, 438);
+                TestSourceTextInformation(sequence.Elements[1], 441, 448);   
             }
             void Pattern6()
             {
                 var pattern6 = (PatternSyntax) package.Patterns[5];
-                TestSourceTextInformation(pattern6, 469, 519);
-                TestSourceTextInformation(pattern6.Fields[0], 478, 479);
-                TestSourceTextInformation(pattern6.Fields[1], 481, 482);
+                TestSourceTextInformation(pattern6, 455, 505);
+                TestSourceTextInformation(pattern6.Fields[0], 464, 465);
+                TestSourceTextInformation(pattern6.Fields[1], 467, 468);
                 var anySpan = (AnySpanSyntax) pattern6.Body;
-                TestSourceTextInformation(anySpan, 486, 518);
+                TestSourceTextInformation(anySpan, 472, 504);
                 var xExtraction = (ExtractionSyntax) anySpan.Left;
-                TestSourceTextInformation(xExtraction, 486, 501);
-                TestSourceTextInformation(xExtraction.Body, 489, 501);
+                TestSourceTextInformation(xExtraction, 472, 487);
+                TestSourceTextInformation(xExtraction.Body, 475, 487);
                 var yExtraction = (ExtractionSyntax) anySpan.Right;
-                TestSourceTextInformation(yExtraction, 506, 518);
-                TestSourceTextInformation(yExtraction.Body, 509, 518);
+                TestSourceTextInformation(yExtraction, 492, 504);
+                TestSourceTextInformation(yExtraction.Body, 495, 504);
             }
             void Pattern7()
             {
                 var pattern7 = (PatternSyntax) package.Patterns[6];
-                TestSourceTextInformation(pattern7, 525, 563);
-                TestSourceTextInformation(pattern7.Fields[0], 534, 535);
-                TestSourceTextInformation(pattern7.Fields[1], 537, 538);
+                TestSourceTextInformation(pattern7, 510, 548);
+                TestSourceTextInformation(pattern7.Fields[0], 519, 520);
+                TestSourceTextInformation(pattern7.Fields[1], 522, 523);
                 var patternReference = (PatternReferenceSyntax) pattern7.Body;
-                TestSourceTextInformation(patternReference, 542, 562);
-                TestSourceTextInformation(patternReference.ExtractionFromFields[0], 551, 555);
-                TestSourceTextInformation(patternReference.ExtractionFromFields[1], 557, 561);
+                TestSourceTextInformation(patternReference, 527, 547);
+                TestSourceTextInformation(patternReference.ExtractionFromFields[0], 536, 540);
+                TestSourceTextInformation(patternReference.ExtractionFromFields[1], 542, 546);
             }
             void Pattern8()
             {
                 var pattern8 = (PatternSyntax) package.Patterns[7];
-                TestSourceTextInformation(pattern8, 569, 602);
-                TestSourceTextInformation(pattern8.Fields[0], 578, 579);
+                TestSourceTextInformation(pattern8, 553, 586);
+                TestSourceTextInformation(pattern8.Fields[0], 562, 563);
                 var span = (SpanSyntax) pattern8.Body;
-                TestSourceTextInformation(span, 583, 601);
+                TestSourceTextInformation(span, 567, 585);
                 var repetition = (RepetitionSyntax) span.Elements[0];
-                TestSourceTextInformation(repetition, 584, 600);
+                TestSourceTextInformation(repetition, 568, 584);
                 var sequence = (SequenceSyntax) repetition.Body;
-                TestSourceTextInformation(sequence, 587, 600);
+                TestSourceTextInformation(sequence, 571, 584);
                 var extraction = (ExtractionSyntax) sequence.Elements[0];
-                TestSourceTextInformation(extraction, 587, 596);
-                TestSourceTextInformation(extraction.Body, 590, 596);
+                TestSourceTextInformation(extraction, 571, 580);
+                TestSourceTextInformation(extraction.Body, 574, 580);
                 Assert.AreEqual("X", extraction.FieldName);
-                TestSourceTextInformation(sequence.Elements[1], 599, 600);
+                TestSourceTextInformation(sequence.Elements[1], 583, 584);
             }
             void Pattern9()
             {
                 var pattern9 = (PatternSyntax) package.Patterns[8];
-                TestSourceTextInformation(pattern9, 608, 656);
-                TestSourceTextInformation(pattern9.Fields[0], 617, 618);
-                TestSourceTextInformation(pattern9.Fields[1], 620, 622);
+                TestSourceTextInformation(pattern9, 591, 639);
+                TestSourceTextInformation(pattern9.Fields[0], 600, 601);
+                TestSourceTextInformation(pattern9.Fields[1], 603, 605);
                 var variation = (VariationSyntax) pattern9.Body;
-                TestSourceTextInformation(variation, 626, 655);
+                TestSourceTextInformation(variation, 609, 638);
                 var sequence1 = (SequenceSyntax) variation.Elements[0];
-                TestSourceTextInformation(sequence1, 627, 639);
+                TestSourceTextInformation(sequence1, 610, 622);
                 var extractionX = (ExtractionSyntax) sequence1.Elements[0];
-                TestSourceTextInformation(extractionX, 627, 635);
-                TestSourceTextInformation(extractionX.Body, 630, 635);
-                TestSourceTextInformation(sequence1.Elements[1], 638, 639);
+                TestSourceTextInformation(extractionX, 610, 618);
+                TestSourceTextInformation(extractionX.Body, 613, 618);
+                TestSourceTextInformation(sequence1.Elements[1], 621, 622);
                 var sequence2 = (SequenceSyntax) variation.Elements[1];
-                TestSourceTextInformation(sequence2, 641, 654);
+                TestSourceTextInformation(sequence2, 624, 637);
                 var extractionY = (ExtractionSyntax) sequence2.Elements[0];
-                TestSourceTextInformation(extractionY, 641, 650);
-                TestSourceTextInformation(extractionY.Body, 644, 650);
-                TestSourceTextInformation(sequence2.Elements[1], 653, 654);
+                TestSourceTextInformation(extractionY, 624, 633);
+                TestSourceTextInformation(extractionY.Body, 627, 633);
+                TestSourceTextInformation(sequence2.Elements[1], 636, 637);
             }
             void Pattern10()
             {
                 var pattern10 = (PatternSyntax) package.Patterns[9];
-                TestSourceTextInformation(pattern10, 662, 722);
+                TestSourceTextInformation(pattern10, 644, 704);
                 var sequence = (SequenceSyntax) pattern10.Body;
-                TestSourceTextInformation(sequence, 674, 721);
-                TestSourceTextInformation(sequence.Elements[0], 674, 681);
-                TestSourceTextInformation(sequence.Elements[1], 684, 693);
-                TestSourceTextInformation(sequence.Elements[2], 696, 703);
-                TestSourceTextInformation(sequence.Elements[3], 706, 715);
-                TestSourceTextInformation(sequence.Elements[4], 718, 721);
+                TestSourceTextInformation(sequence, 656, 703);
+                TestSourceTextInformation(sequence.Elements[0], 656, 663);
+                TestSourceTextInformation(sequence.Elements[1], 666, 675);
+                TestSourceTextInformation(sequence.Elements[2], 678, 685);
+                TestSourceTextInformation(sequence.Elements[3], 688, 697);
+                TestSourceTextInformation(sequence.Elements[4], 700, 703);
             }
             Pattern1();
             Pattern2();
