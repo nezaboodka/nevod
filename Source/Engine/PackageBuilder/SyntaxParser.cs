@@ -42,7 +42,6 @@ namespace Nezaboodka.Nevod
         private int fLineLength;
         private char fCharacter;
         private Token fToken;
-        private Token fLastToken;
         private Dictionary<string, TokenId> fTokenByKeyword;
         private NameScope fCurrentScope;
         private Stack<NameScope> fScopeStack;
@@ -99,11 +98,10 @@ namespace Nezaboodka.Nevod
             NextToken();
             int startPosition = fToken.TextSlice.Position;
             Syntax patternBody = ParseInsideOrOutsideOrHaving();
-            AttachSourceTextInformation(patternBody, startPosition);
             PatternSyntax pattern = Syntax.Pattern(isSearchTarget: true, "Pattern", patternBody, null);
-            AttachSourceTextInformation(pattern, startPosition);
+            pattern = SetTextRange(pattern, startPosition);
             var result = Syntax.Package(pattern);
-            AttachSourceTextInformation(result, startPosition);
+            result = SetTextRange(result, startPosition);
             return result;
         }
 
@@ -173,7 +171,7 @@ namespace Nezaboodka.Nevod
             while (fToken.Id != TokenId.End)
                 ParseNamespacesAndPatterns();
             var result = Syntax.Package(fRequiredPackages, fSearchTargets, fPatterns);
-            AttachSourceTextInformation(result, startPosition);
+            result = SetTextRange(result, startPosition);
             fCurrentScope = null;
             fScopeStack = null;
             fRequiredPackages = null;
@@ -252,7 +250,7 @@ namespace Nezaboodka.Nevod
                 throw SyntaxError(TextResource.RequireOperatorIsNotAllowedInSinglePackageMode);
             ValidateToken(TokenId.Semicolon, TextResource.RequireDefinitionShouldEndWithSemicolon);
             NextToken();
-            AttachSourceTextInformation(result, startPosition);
+            result = SetTextRange(result, startPosition);
             return result;
         }
 
@@ -268,7 +266,7 @@ namespace Nezaboodka.Nevod
                     int startPosition1 = fToken.TextSlice.Position;
                     NextToken();
                     PatternSyntax pattern1 = ParsePattern(isSearchTarget: false);
-                    AttachSourceTextInformation(pattern1, startPosition1);
+                    pattern1 = SetTextRange(pattern1, startPosition1);
                     fPatterns.Add(pattern1);
                     break;
                 case TokenId.SearchKeyword:
@@ -278,7 +276,7 @@ namespace Nezaboodka.Nevod
                     {
                         NextToken();
                         PatternSyntax pattern2 = ParsePattern(isSearchTarget: true);
-                        AttachSourceTextInformation(pattern2, startPosition2);
+                        pattern2 = SetTextRange(pattern2, startPosition2);
                         fPatterns.Add(pattern2);
                     }
                     else
@@ -302,7 +300,7 @@ namespace Nezaboodka.Nevod
             ValidateToken(TokenId.Semicolon, TextResource.SearchTargetDefinitionShouldEndWithSemicolon);
             NextToken();
             var result = Syntax.SearchTarget(fullName);
-            AttachSourceTextInformation(result, startPosition);
+            result = SetTextRange(result, startPosition);
             return result;
         }
 
@@ -406,7 +404,7 @@ namespace Nezaboodka.Nevod
                     NextToken();
                     pattern = new PatternSyntax(fCurrentScope.Namespace, fCurrentScope.MasterPatternName,
                         isSearchTarget, name, fields, body, nestedPatterns);
-                    AttachSourceTextInformation(pattern, startPosition);
+                    pattern = SetTextRange(pattern, startPosition);
                     fPatternByName.Add(fullName, pattern);
                 }
                 else
@@ -430,7 +428,7 @@ namespace Nezaboodka.Nevod
                         int startPosition1 = fToken.TextSlice.Position;
                         NextToken();
                         PatternSyntax pattern1 = ParsePattern(isSearchTarget: false);
-                        AttachSourceTextInformation(pattern1, startPosition1);
+                        pattern1 = SetTextRange(pattern1, startPosition1);
                         nestedPatterns.Add(pattern1);
                         break;
                     case TokenId.SearchKeyword:
@@ -439,7 +437,7 @@ namespace Nezaboodka.Nevod
                         if (fToken.Id == TokenId.PatternKeyword)
                         {
                             PatternSyntax pattern2 = ParsePattern(isSearchTarget: true);
-                            AttachSourceTextInformation(pattern2, startPosition2);
+                            pattern2 = SetTextRange(pattern2, startPosition2);
                             nestedPatterns.Add(pattern2);
                         }
                         else
@@ -480,7 +478,7 @@ namespace Nezaboodka.Nevod
                         result.Add(field);
                         NextToken();
                         // Needs to be called after NextToken because relies on fLastToken
-                        AttachSourceTextInformation(field, startPosition);
+                        SetTextRange(field, startPosition);
                     }
                     else
                         throw SyntaxError(TextResource.DuplicatedField, name);
@@ -526,7 +524,7 @@ namespace Nezaboodka.Nevod
                     }
                     fAccessibleFields = fAccessibleFieldsStack.Pop();
                 }
-                AttachSourceTextInformation(result, startPosition);
+                result = SetTextRange(result, startPosition);
             }
             return result;
         }
@@ -545,7 +543,7 @@ namespace Nezaboodka.Nevod
                     elements.Add(element);
                 }
                 result = Syntax.Conjunction(elements);
-                AttachSourceTextInformation(result, startPosition);
+                result = SetTextRange(result, startPosition);
             }
             return result;
         }
@@ -602,7 +600,7 @@ namespace Nezaboodka.Nevod
                     else
                         result = Syntax.AnySpan(result, next, extractionOfSpan);
                 }
-                AttachSourceTextInformation(result, startPosition);
+                result = SetTextRange(result, startPosition);
             }
             fAccessibleFields = fAccessibleFieldsStack.Pop();
             return result;
@@ -620,7 +618,7 @@ namespace Nezaboodka.Nevod
                 if (fExtractedFields.Add(field))
                 {
                     result = Syntax.Extraction(field);
-                    AttachSourceTextInformation(result, startPosition);
+                    result = SetTextRange(result, startPosition);
                     fAccessibleFields.Add(field);
                 }
                 else
@@ -645,7 +643,7 @@ namespace Nezaboodka.Nevod
                     elements.Add(element);
                 }
                 result = Syntax.WordSequence(elements);
-                AttachSourceTextInformation(result, startPosition);
+                result = SetTextRange(result, startPosition);
             }
             return result;
         }
@@ -664,7 +662,7 @@ namespace Nezaboodka.Nevod
                     elements.Add(element);
                 }
                 result = Syntax.Sequence(elements);
-                AttachSourceTextInformation(result, startPosition);
+                result = SetTextRange(result, startPosition);
             }
             return result;
         }
@@ -691,7 +689,7 @@ namespace Nezaboodka.Nevod
                     NextToken();
                     Syntax body = ParsePrimaryExpression();
                     result = Syntax.Optionality(body);
-                    AttachSourceTextInformation(result, startPosition);
+                    result = SetTextRange(result, startPosition);
                     break;
                 case TokenId.Identifier:
                     result = ParseExtractionOrReference();
@@ -725,7 +723,7 @@ namespace Nezaboodka.Nevod
             ValidateToken(TokenId.CloseCurlyBrace, TextResource.CloseCurlyBraceOrCommaExpected);
             NextToken();
             var result = Syntax.Variation(elements);
-            AttachSourceTextInformation(result, startPosition);
+            result = SetTextRange(result, startPosition);
             fAccessibleFields = fAccessibleFieldsStack.Pop();
             return result;
         }
@@ -738,7 +736,7 @@ namespace Nezaboodka.Nevod
             fAccessibleFieldsStack.Push(new HashSet<FieldSyntax>(fAccessibleFields));
             Syntax body = ParseInsideOrOutsideOrHaving();
             var result = Syntax.Exception(body);
-            AttachSourceTextInformation(result, startPosition);
+            result = SetTextRange(result, startPosition);
             fAccessibleFields = fAccessibleFieldsStack.Pop();
             return result;
         }
@@ -762,7 +760,7 @@ namespace Nezaboodka.Nevod
             ValidateToken(TokenId.CloseSquareBracket, TextResource.CloseSquareBracketExpected);
             NextToken();
             var result = Syntax.Span(elements);
-            AttachSourceTextInformation(result, startPosition);
+            result = SetTextRange(result, startPosition);
             return result;
         }
 
@@ -773,7 +771,7 @@ namespace Nezaboodka.Nevod
             Range repetitionRange = ParseNumericRange();
             Syntax body = ParseInsideOrOutsideOrHaving();
             var result = Syntax.Repetition(repetitionRange.LowBound, repetitionRange.HighBound, body);
-            AttachSourceTextInformation(result, startPosition);
+            result = SetTextRange(result, startPosition);
             fAccessibleFields = fAccessibleFieldsStack.Pop();
             return result;
         }
@@ -860,7 +858,7 @@ namespace Nezaboodka.Nevod
             }
             else
                 result = ParsePatternReference(name);
-            AttachSourceTextInformation(result, startPosition);
+            result = SetTextRange(result, startPosition);
             return result;
         }
 
@@ -947,7 +945,7 @@ namespace Nezaboodka.Nevod
                     string fromFieldName = fToken.TextSlice.ToString();
                     NextToken();
                     result = Syntax.ExtractionFromField(field, fromFieldName);
-                    AttachSourceTextInformation(result, startPosition);
+                    result = SetTextRange(result, startPosition);
                     fExtractedFields.Add(field);
                     fAccessibleFields.Add(field);
                 }
@@ -973,7 +971,7 @@ namespace Nezaboodka.Nevod
             }
             else
                 result = Syntax.Text(text, isCaseSensitive, textIsPrefix);
-            AttachSourceTextInformation(result, startPosition);
+            result = SetTextRange(result, startPosition);
             return result;
         }
 
@@ -1356,8 +1354,6 @@ namespace Nezaboodka.Nevod
                     NextCharacter();
                     break;
             }
-            fLastToken.Id = fToken.Id;
-            fLastToken.TextSlice = fToken.TextSlice;
             if (tokenId == TokenId.Unknown && fTextPosition == fText.Length)
                 tokenId = TokenId.End;
             fToken.Id = tokenId;
@@ -1404,10 +1400,11 @@ namespace Nezaboodka.Nevod
                 throw SyntaxError(fToken.TextSlice.Position, error, args: fToken);
         }
 
-        private void AttachSourceTextInformation(Syntax syntax, int start)
+        private T SetTextRange<T>(T syntax, int start) where T : Syntax
         {
-            int end = fLastToken.TextSlice.Position + fLastToken.TextSlice.Length;
+            int end = fToken.TextSlice.Position;
             syntax.TextRange = new TextRange(start, end);
+            return syntax;
         }
 
         private struct Token

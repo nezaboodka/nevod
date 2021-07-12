@@ -10,7 +10,9 @@
             Start = start;
             End = end;
         }
-
+        
+        public int Length => End - Start;
+        
         public bool IsEmpty => Start == End;
     }
 }
