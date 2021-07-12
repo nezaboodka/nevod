@@ -16,10 +16,7 @@ namespace Nezaboodka.Nevod
         {
             Syntax result = null;
             if (node != null)
-            {
                 result = node.Accept(this);
-                result.TextRange = node.TextRange;
-            }
             return result;
         }
 
