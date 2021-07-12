@@ -12,6 +12,8 @@ namespace Nezaboodka.Nevod
 {
     public abstract partial class Syntax
     {
+        public TextRange TextRange { get; set; } 
+        
         public override string ToString()
         {
             string result = SyntaxStringBuilder.SyntaxToString(this);

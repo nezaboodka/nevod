@@ -321,5 +321,11 @@ namespace Nezaboodka.Nevod.Engine.Tests
             }
             return dataDir;
         }
+        
+        public static void TestSourceTextInformation(Syntax syntax, int start, int end)
+        {
+            Assert.AreEqual(start, syntax.TextRange.Start);
+            Assert.AreEqual(end, syntax.TextRange.End);
+        }
     }
 }
