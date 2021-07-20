@@ -37,7 +37,7 @@ namespace Nezaboodka.Nevod
         public override Syntax Visit(Syntax node)
         {
             Syntax result = base.Visit(node);
-            if (result is not null)
+            if (result != null)
             {
                 if (result.CanReduce)
                     result = result.Reduce();

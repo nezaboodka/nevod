@@ -27,7 +27,7 @@ namespace Nezaboodka.Nevod
         public override Syntax Visit(Syntax node)
         {
             Syntax result = base.Visit(node);
-            if (result is not null)
+            if (result != null)
             {
                 if (result.CanReduce)
                     result = result.Reduce();
@@ -77,7 +77,7 @@ namespace Nezaboodka.Nevod
         {
             Syntax newInner = Visit(node.Inner);
             Syntax newOuter = Visit(node.Outer);
-            if (newOuter is not PatternReferenceSyntax)
+            if (!(newOuter is PatternReferenceSyntax))
             {
                 var extractionFromFields = new List<Syntax>();
                 foreach (FieldSyntax field in fCurrentPattern.Fields)
@@ -95,7 +95,7 @@ namespace Nezaboodka.Nevod
         {
             Syntax newBody = Visit(node.Body);
             Syntax newException = Visit(node.Exception);
-            if (newException is not PatternReferenceSyntax)
+            if (!(newException is PatternReferenceSyntax))
             {
                 var pattern = Syntax.Pattern(fCurrentPattern.Namespace, isSearchTarget: false,
                     GetExtractedPatternName(), fCurrentPattern.Fields, newException);
@@ -110,7 +110,7 @@ namespace Nezaboodka.Nevod
         {
             Syntax newOuter = Visit(node.Outer);
             Syntax newInner = Visit(node.Inner);
-            if (newInner is not PatternReferenceSyntax)
+            if (!(newInner is PatternReferenceSyntax))
             {
                 var extractionFromFields = new List<Syntax>();
                 foreach (FieldSyntax field in fCurrentPattern.Fields)
