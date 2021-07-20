@@ -292,7 +292,19 @@ namespace Nezaboodka.Nevod
             string fullName = Syntax.GetFullName(fCurrentScope.Namespace, name);
             ValidateToken(TokenId.Semicolon, TextResource.SearchTargetDefinitionShouldEndWithSemicolon);
             NextToken();
-            return SetTextRange(Syntax.SearchTarget(fullName), startPosition);
+            SearchTargetSyntax result;
+            if (fullName.EndsWith(".*"))
+            {
+                string ns = fullName.TrimEnd('*', '.');
+                var targetReferences = new List<Syntax>();
+                result = new NamespaceSearchTargetSyntax(ns, targetReferences);
+            }
+            else
+            {
+                PatternReferenceSyntax patternReference = SetTextRange(Syntax.PatternReference(fullName), startPosition);
+                result = new PatternSearchTargetSyntax(fullName, patternReference);
+            }
+            return SetTextRange(result, startPosition);
         }
 
         private void ParseNamespace()

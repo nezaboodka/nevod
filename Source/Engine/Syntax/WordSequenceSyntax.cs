@@ -15,6 +15,8 @@ namespace Nezaboodka.Nevod
     {
         public ReadOnlyCollection<Syntax> Elements { get; }
 
+        public bool IsSingleElement() => Elements.Count == 1;
+
         internal override bool CanReduce => true;
 
         internal WordSequenceSyntax(IList<Syntax> elements)
@@ -24,15 +26,21 @@ namespace Nezaboodka.Nevod
 
         internal override Syntax Reduce()
         {
-            var sequenceElements = new List<Syntax>();
-            Syntax wordBreaks = Syntax.Repetition(new Range(0, Range.Max), Syntax.StandardPattern.WordBreak);
-            for (int i = 0, n = Elements.Count; i < n; i++)
+            Syntax result;
+            if (IsSingleElement())
+                result = Elements[0];
+            else
             {
-                sequenceElements.Add(Elements[i]);
-                if (i < n - 1)
-                    sequenceElements.Add(wordBreaks);
+                var sequenceElements = new List<Syntax>();
+                Syntax wordBreaks = Syntax.Repetition(new Range(0, Range.Max), Syntax.StandardPattern.WordBreak);
+                for (int i = 0, n = Elements.Count; i < n; i++)
+                {
+                    sequenceElements.Add(Elements[i]);
+                    if (i < n - 1)
+                        sequenceElements.Add(wordBreaks);
+                } 
+                result = Syntax.Sequence(sequenceElements);
             }
-            Syntax result = Syntax.Sequence(sequenceElements);
             return result;
         }
 

@@ -22,7 +22,7 @@ namespace Nezaboodka.Nevod
             fSystemPatternSubstitutions = new Dictionary<PatternSyntax, PatternSyntax>();
             LinkedPackageSyntax substitutedTree = (LinkedPackageSyntax)Visit(syntaxTree);
             fSystemPatternSubstitutions.Clear();
-            var linker = new PatternLinker(linkRequiredPackages: true);
+            var linker = new NormalizingPatternLinker(linkRequiredPackages: true);
             LinkedPackageSyntax result = linker.Link(substitutedTree);
             return result;
         }

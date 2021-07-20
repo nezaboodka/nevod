@@ -29,8 +29,20 @@ namespace Nezaboodka.Nevod
             fPatternSubstitutions = new Dictionary<PatternSyntax, PatternSyntax>();
             LinkedPackageSyntax substitutedTree = (LinkedPackageSyntax)Visit(syntaxTree);
             fPatternSubstitutions.Clear();
-            var linker = new PatternLinker(linkRequiredPackages: true);
+            var linker = new NormalizingPatternLinker(linkRequiredPackages: true);
             LinkedPackageSyntax result = linker.Link(substitutedTree);
+            return result;
+        }
+
+        public override Syntax Visit(Syntax node)
+        {
+            Syntax result = base.Visit(node);
+            if (result is not null)
+            {
+                if (result.CanReduce)
+                    result = result.Reduce();
+                result.TextRange = node.TextRange;
+            }
             return result;
         }
 

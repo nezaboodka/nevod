@@ -138,7 +138,7 @@ namespace Nezaboodka.Nevod
 
         private LinkedPackageSyntax LinkPackage(PackageSyntax parsedTree)
         {
-            var linker = new PatternLinker(linkRequiredPackages: false);
+            var linker = new NormalizingPatternLinker(linkRequiredPackages: false);
             LinkedPackageSyntax linkedTree = linker.Link(parsedTree);
             if (fOptions.PatternReferencesInlined)
             {

@@ -138,8 +138,6 @@ namespace Nezaboodka.Nevod
         {
             Syntax body = Visit(node.Body);
             Syntax result = node.Update(node.FieldName, body);
-            if (result.CanReduce)
-                result = result.Reduce();
             return result;
         }
 
@@ -151,50 +149,28 @@ namespace Nezaboodka.Nevod
         protected internal virtual Syntax VisitSequence(SequenceSyntax node)
         {
             ReadOnlyCollection<Syntax> newElements = Visit(node.Elements);
-            Syntax result;
-            if (newElements.Count == 1)
-                result = newElements[0];
-            else
-                result = node.Update(newElements);
+            Syntax result = node.Update(newElements);
             return result;
         }
 
         protected internal virtual Syntax VisitWordSequence(WordSequenceSyntax node)
         {
             ReadOnlyCollection<Syntax> newElements = Visit(node.Elements);
-            Syntax result;
-            if (newElements.Count == 1)
-                result = newElements[0];
-            else
-                result = node.Update(newElements);
-            if (result.CanReduce)
-                result = result.Reduce();
+            Syntax result = node.Update(newElements);
             return result;
         }
 
         protected internal virtual Syntax VisitConjunction(ConjunctionSyntax node)
         {
             ReadOnlyCollection<Syntax> newElements = Visit(node.Elements);
-            Syntax result;
-            if (newElements.Count == 1)
-                result = newElements[0];
-            else
-                result = node.Update(newElements);
-            if (result.CanReduce)
-                result = result.Reduce();
+            Syntax result = node.Update(newElements);
             return result;
         }
 
         protected internal virtual Syntax VisitVariation(VariationSyntax node)
         {
             ReadOnlyCollection<Syntax> newElements = Visit(node.Elements);
-            Syntax result;
-            if (newElements.Count == 1)
-                result = newElements[0];
-            else
-                result = node.Update(newElements);
-            if (result.CanReduce)
-                result = result.Reduce();
+            Syntax result = node.Update(newElements);
             return result;
         }
 
@@ -202,8 +178,6 @@ namespace Nezaboodka.Nevod
         {
             ReadOnlyCollection<Syntax> newElements = Visit(node.Elements);
             Syntax result = node.Update(newElements);
-            if (result.CanReduce)
-                result = result.Reduce();
             return result;
         }
 
@@ -212,8 +186,6 @@ namespace Nezaboodka.Nevod
             Syntax newBody = Visit(node.Body);
             Range range = node.RepetitionRange;
             Syntax result = node.Update(newBody, range);
-            if (result.CanReduce)
-                result = result.Reduce();
             return result;
         }
 
@@ -221,8 +193,6 @@ namespace Nezaboodka.Nevod
         {
             Syntax body = Visit(node.Body);
             Syntax result = node.Update(body);
-            if (result.CanReduce)
-                result = result.Reduce();
             return result;
         }
 
@@ -240,8 +210,6 @@ namespace Nezaboodka.Nevod
             Syntax newExclusion = Visit(node.Exclusion);
             Syntax newExtractionOfSpan = Visit(node.ExtractionOfSpan);
             Syntax result = node.Update(newLeft, newRight, newExclusion, newExtractionOfSpan);
-            if (result.CanReduce)
-                result = result.Reduce();
             return result;
         }
 
@@ -251,8 +219,6 @@ namespace Nezaboodka.Nevod
             Syntax newRight = Visit(node.Right);
             Syntax newExtractionOfSpan = Visit(node.ExtractionOfSpan);
             Syntax result = node.Update(newLeft, newRight, newExtractionOfSpan);
-            if (result.CanReduce)
-                result = result.Reduce();
             return result;
         }
 
@@ -282,10 +248,7 @@ namespace Nezaboodka.Nevod
 
         protected internal virtual Syntax VisitText(TextSyntax node)
         {
-            Syntax result = node;
-            if (result.CanReduce)
-                result = result.Reduce();
-            return result;
+            return node;
         }
 
         protected internal virtual Syntax VisitToken(TokenSyntax node)
