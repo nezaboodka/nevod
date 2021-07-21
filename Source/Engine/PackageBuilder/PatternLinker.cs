@@ -20,7 +20,6 @@ namespace Nezaboodka.Nevod
         }
 
         private bool fLinkRequiredPackages;
-        private List<Syntax> fAllPatterns;
         private Dictionary<string, PatternSyntax> fPatternByName;
         private List<PatternReferenceInContext> fPatternReferences;
         private PatternSyntax fCurrentPattern;
@@ -32,7 +31,6 @@ namespace Nezaboodka.Nevod
 
         public virtual LinkedPackageSyntax Link(PackageSyntax syntaxTree)
         {
-            fAllPatterns = new List<Syntax>();
             fPatternByName = new Dictionary<string, PatternSyntax>();
             fPatternReferences = new List<PatternReferenceInContext>();
             LinkedPackageSyntax result = (LinkedPackageSyntax)Visit(syntaxTree);
@@ -51,7 +49,6 @@ namespace Nezaboodka.Nevod
                 ResolvePatternReference(x);
             LinkedPackageSyntax result = Syntax.LinkedPackage(requiredPackages, searchTargets, rootPatterns);
             result.TextRange = node.TextRange;
-            fAllPatterns.Clear();
             fPatternByName.Clear();
             fPatternReferences.Clear();
             return result;
@@ -101,7 +98,6 @@ namespace Nezaboodka.Nevod
             result = (PatternSyntax)base.VisitPattern(node);
             fCurrentPattern = null;
             fPatternByName[result.FullName] = result;
-            fAllPatterns.Add(result);
             return result;
         }
 

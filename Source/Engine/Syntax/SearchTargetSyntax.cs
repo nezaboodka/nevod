@@ -13,7 +13,7 @@ namespace Nezaboodka.Nevod
 {
     public abstract class SearchTargetSyntax : Syntax
     {
-        public new string SearchTarget { get; }
+        public string SearchTarget { get; }
 
         internal SearchTargetSyntax(string searchTarget)
         {
@@ -23,7 +23,7 @@ namespace Nezaboodka.Nevod
 
     public class PatternSearchTargetSyntax : SearchTargetSyntax
     {
-        public new PatternReferenceSyntax PatternReference { get; }
+        public PatternReferenceSyntax PatternReference { get; }
 
         internal PatternSearchTargetSyntax(string patternName, PatternReferenceSyntax patternReference)
             : base(patternName)
