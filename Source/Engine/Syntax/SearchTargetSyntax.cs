@@ -42,16 +42,30 @@ namespace Nezaboodka.Nevod
         public string Namespace { get; }
         public ReadOnlyCollection<Syntax> PatternReferences { get; internal set; }
 
-        internal NamespaceSearchTargetSyntax(string nameSpace, IList<Syntax> patternReferences)
+        internal NamespaceSearchTargetSyntax(string nameSpace)
             : base(nameSpace + ".*")
         {
             Namespace = nameSpace;
-            PatternReferences = new ReadOnlyCollection<Syntax>(patternReferences);
         }
 
         protected internal override Syntax Accept(SyntaxVisitor visitor)
         {
             return visitor.VisitNamespaceSearchTarget(this);
+        }
+    }
+    
+    public partial class Syntax
+    {
+        public static PatternSearchTargetSyntax PatternSearchTarget(string fullName, PatternReferenceSyntax patternReference)
+        {
+            var result = new PatternSearchTargetSyntax(fullName, patternReference);
+            return result;
+        }
+
+        public static NamespaceSearchTargetSyntax NamespaceSearchTarget(string nameSpace)
+        {
+            var result = new NamespaceSearchTargetSyntax(nameSpace);
+            return result;
         }
     }
 }

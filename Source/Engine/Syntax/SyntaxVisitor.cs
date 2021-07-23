@@ -90,11 +90,6 @@ namespace Nezaboodka.Nevod
             return result;
         }
 
-        protected internal virtual Syntax VisitSearchTarget(SearchTargetSyntax node)
-        {
-            return node;
-        }
-
         protected internal virtual Syntax VisitPatternSearchTarget(PatternSearchTargetSyntax node)
         {
             return node;

@@ -296,13 +296,12 @@ namespace Nezaboodka.Nevod
             if (fullName.EndsWith(".*"))
             {
                 string ns = fullName.TrimEnd('*', '.');
-                var targetReferences = new List<Syntax>();
-                result = new NamespaceSearchTargetSyntax(ns, targetReferences);
+                result = Syntax.NamespaceSearchTarget(ns);
             }
             else
             {
                 PatternReferenceSyntax patternReference = SetTextRange(Syntax.PatternReference(fullName), startPosition);
-                result = new PatternSearchTargetSyntax(fullName, patternReference);
+                result = Syntax.PatternSearchTarget(fullName, patternReference);
             }
             return SetTextRange(result, startPosition);
         }
