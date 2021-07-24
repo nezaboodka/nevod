@@ -274,7 +274,7 @@ namespace Nezaboodka.Nevod
                     }
                     else
                     {
-                        SearchTargetSyntax searchTarget = ParseSearchTarget();
+                        SearchTargetSyntax searchTarget = SetTextRange(ParseSearchTarget(), startPosition2);
                         fSearchTargets.Add(searchTarget);
                     }
                     break;
