@@ -15,9 +15,27 @@ namespace Nezaboodka.Nevod
     {
         public ReadOnlyCollection<Syntax> Elements { get; }
 
-        internal ConjunctionSyntax(IList<Syntax> elements)
+        public bool IsSingleElement() => Elements.Count == 1;
+
+        internal override bool CanReduce { get; }
+
+        internal ConjunctionSyntax(IList<Syntax> elements) : this(elements, checkCanReduce: true)
+        {
+        }
+
+        internal ConjunctionSyntax(IList<Syntax> elements, bool checkCanReduce)
         {
             Elements = new ReadOnlyCollection<Syntax>(elements);
+            if (checkCanReduce)
+                CanReduce = IsSingleElement();
+        }
+
+        internal override Syntax Reduce()
+        {
+            Syntax result = this;
+            if (IsSingleElement())
+                result = Elements[0];
+            return result;
         }
 
         internal ConjunctionSyntax Update(ReadOnlyCollection<Syntax> elements)

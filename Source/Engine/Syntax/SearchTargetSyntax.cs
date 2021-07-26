@@ -11,26 +11,19 @@ using System.Text;
 
 namespace Nezaboodka.Nevod
 {
-    public class SearchTargetSyntax : Syntax
+    public abstract class SearchTargetSyntax : Syntax
     {
-        public new string SearchTarget { get; }
-
-        public bool IsNamespaceWithWildcard() => SearchTarget.EndsWith(".*");
+        public string SearchTarget { get; }
 
         internal SearchTargetSyntax(string searchTarget)
         {
             SearchTarget = searchTarget;
         }
-
-        protected internal override Syntax Accept(SyntaxVisitor visitor)
-        {
-            return visitor.VisitSearchTarget(this);
-        }
     }
 
     public class PatternSearchTargetSyntax : SearchTargetSyntax
     {
-        public new Syntax PatternReference { get; }
+        public PatternReferenceSyntax PatternReference { get; }
 
         internal PatternSearchTargetSyntax(string patternName, PatternReferenceSyntax patternReference)
             : base(patternName)
@@ -47,13 +40,12 @@ namespace Nezaboodka.Nevod
     public class NamespaceSearchTargetSyntax : SearchTargetSyntax
     {
         public string Namespace { get; }
-        public ReadOnlyCollection<Syntax> PatternReferences { get; }
+        public ReadOnlyCollection<Syntax> PatternReferences { get; internal set; }
 
-        internal NamespaceSearchTargetSyntax(string nameSpace, IList<Syntax> patternReferences)
+        internal NamespaceSearchTargetSyntax(string nameSpace)
             : base(nameSpace + ".*")
         {
             Namespace = nameSpace;
-            PatternReferences = new ReadOnlyCollection<Syntax>(patternReferences);
         }
 
         protected internal override Syntax Accept(SyntaxVisitor visitor)
@@ -61,12 +53,18 @@ namespace Nezaboodka.Nevod
             return visitor.VisitNamespaceSearchTarget(this);
         }
     }
-
+    
     public partial class Syntax
     {
-        public static SearchTargetSyntax SearchTarget(string searchTarget)
+        public static PatternSearchTargetSyntax PatternSearchTarget(string fullName, PatternReferenceSyntax patternReference)
         {
-            var result = new SearchTargetSyntax(searchTarget);
+            var result = new PatternSearchTargetSyntax(fullName, patternReference);
+            return result;
+        }
+
+        public static NamespaceSearchTargetSyntax NamespaceSearchTarget(string nameSpace)
+        {
+            var result = new NamespaceSearchTargetSyntax(nameSpace);
             return result;
         }
     }

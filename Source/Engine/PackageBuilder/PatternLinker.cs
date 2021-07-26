@@ -20,25 +20,19 @@ namespace Nezaboodka.Nevod
         }
 
         private bool fLinkRequiredPackages;
-        private List<Syntax> fAllPatterns;
         private Dictionary<string, PatternSyntax> fPatternByName;
         private List<PatternReferenceInContext> fPatternReferences;
         private PatternSyntax fCurrentPattern;
-        private List<Syntax> fExtractedPatterns;
-        private int fNextExtractedPatternNumber;
-
+        
         public PatternLinker(bool linkRequiredPackages)
         {
             fLinkRequiredPackages = linkRequiredPackages;
         }
 
-        public LinkedPackageSyntax Link(PackageSyntax syntaxTree)
+        public virtual LinkedPackageSyntax Link(PackageSyntax syntaxTree)
         {
-            fAllPatterns = new List<Syntax>();
             fPatternByName = new Dictionary<string, PatternSyntax>();
             fPatternReferences = new List<PatternReferenceInContext>();
-            fExtractedPatterns = new List<Syntax>();
-            fNextExtractedPatternNumber = 0;
             LinkedPackageSyntax result = (LinkedPackageSyntax)Visit(syntaxTree);
             return result;
         }
@@ -50,33 +44,13 @@ namespace Nezaboodka.Nevod
             ReadOnlyCollection<RequiredPackageSyntax> requiredPackages = Visit(node.RequiredPackages);
             CheckDuplicatedPatternNames(node);
             ReadOnlyCollection<Syntax> rootPatterns = Visit(node.Patterns);
-            List<Syntax> searchTargetsFromPatterns = null;
-            foreach (PatternSyntax p in fAllPatterns.Where(x => ((PatternSyntax)x).IsSearchTarget))
-            {
-                var t = Syntax.SearchTarget(p.FullName);
-                if (searchTargetsFromPatterns == null)
-                    searchTargetsFromPatterns = new List<Syntax>();
-                searchTargetsFromPatterns.Add(t);
-            }
-            ReadOnlyCollection<Syntax> searchTargets;
-            if (searchTargetsFromPatterns != null)
-            {
-                var newSearchTargets = new List<Syntax>(node.SearchTargets);
-                newSearchTargets.AddRange(searchTargetsFromPatterns);
-                searchTargets = new ReadOnlyCollection<Syntax>(newSearchTargets);
-            }
-            else
-                searchTargets = node.SearchTargets;
-            searchTargets = Visit(searchTargets);
+            ReadOnlyCollection<Syntax> searchTargets = Visit(node.SearchTargets);
             foreach (PatternReferenceInContext x in fPatternReferences)
                 ResolvePatternReference(x);
-            if (fExtractedPatterns.Count > 0)
-                rootPatterns = new ReadOnlyCollection<Syntax>(rootPatterns.Union(fExtractedPatterns).ToArray());
             LinkedPackageSyntax result = Syntax.LinkedPackage(requiredPackages, searchTargets, rootPatterns);
-            fAllPatterns.Clear();
+            result.TextRange = node.TextRange;
             fPatternByName.Clear();
             fPatternReferences.Clear();
-            fExtractedPatterns.Clear();
             return result;
         }
 
@@ -90,61 +64,30 @@ namespace Nezaboodka.Nevod
             return result;
         }
 
-        protected internal override Syntax VisitSearchTarget(SearchTargetSyntax node)
-        {
-            SearchTargetSyntax result = node;
-            if (node.IsNamespaceWithWildcard())
-            {
-                string ns = node.SearchTarget.TrimEnd('*', '.');
-                var targetReferences = new List<Syntax>();
-                foreach (PatternSyntax p in fPatternByName.Values.Where(x => x.IsSearchTarget && x.Namespace == ns))
-                {
-                    PatternReferenceSyntax r = Syntax.PatternReference(p.FullName);
-                    var rc = new PatternReferenceInContext()
-                    {
-                        PatternReference = r,
-                        PatternContext = null
-                    };
-                    fPatternReferences.Add(rc);
-                    targetReferences.Add(r);
-                }
-                result = new NamespaceSearchTargetSyntax(ns, targetReferences);
-            }
-            else
-            {
-                if (fPatternByName.TryGetValue(node.SearchTarget, out PatternSyntax pattern))
-                {
-                    PatternReferenceSyntax targetReference = Syntax.PatternReference(pattern);
-                    result = new PatternSearchTargetSyntax(pattern.FullName, targetReference);
-                }
-                else
-                    throw SyntaxError(TextResource.SearchTargetIsUndefinedPattern, node.SearchTarget);
-            }
-            return result;
-        }
-
         protected internal override Syntax VisitPatternSearchTarget(PatternSearchTargetSyntax node)
         {
-            var rc = new PatternReferenceInContext()
-            {
-                PatternReference = (PatternReferenceSyntax)node.PatternReference,
-                PatternContext = null
-            };
-            fPatternReferences.Add(rc);
+            if (fPatternByName.TryGetValue(node.SearchTarget, out PatternSyntax pattern))
+                node.PatternReference.ReferencedPattern = pattern;
+            else
+                throw SyntaxError(TextResource.SearchTargetIsUndefinedPattern, node.SearchTarget);
             return node;
         }
 
         protected internal override Syntax VisitNamespaceSearchTarget(NamespaceSearchTargetSyntax node)
         {
-            foreach (PatternReferenceSyntax r in node.PatternReferences)
+            var targetReferences = new List<Syntax>();
+            foreach (PatternSyntax p in fPatternByName.Values.Where(x => x.IsSearchTarget && x.Namespace == node.Namespace))
             {
+                PatternReferenceSyntax r = Syntax.PatternReference(p.FullName);
                 var rc = new PatternReferenceInContext()
                 {
                     PatternReference = r,
                     PatternContext = null
                 };
                 fPatternReferences.Add(rc);
+                targetReferences.Add(r);
             }
+            node.PatternReferences = new ReadOnlyCollection<Syntax>(targetReferences);
             return node;
         }
 
@@ -155,7 +98,6 @@ namespace Nezaboodka.Nevod
             result = (PatternSyntax)base.VisitPattern(node);
             fCurrentPattern = null;
             fPatternByName[result.FullName] = result;
-            fAllPatterns.Add(result);
             return result;
         }
 
@@ -175,57 +117,6 @@ namespace Nezaboodka.Nevod
         {
             VisitPatternReference(node);
             return node;
-        }
-
-        protected internal override Syntax VisitInside(InsideSyntax node)
-        {
-            Syntax newInner = Visit(node.Inner);
-            Syntax newOuter = Visit(node.Outer);
-            if (!(newOuter is PatternReferenceSyntax))
-            {
-                var extractionFromFields = new List<Syntax>();
-                foreach (FieldSyntax field in fCurrentPattern.Fields)
-                    extractionFromFields.Add(Syntax.ExtractionFromField(field, field.Name));
-                var pattern = Syntax.Pattern(fCurrentPattern.Namespace, isSearchTarget: false,
-                    GetExtractedPatternName(), fCurrentPattern.Fields, newOuter);
-                newOuter = Syntax.PatternReference(pattern, extractionFromFields);
-                fExtractedPatterns.Add(pattern);
-            }
-            Syntax result = node.Update(newInner, newOuter);
-            return result;
-        }
-
-        protected internal override Syntax VisitOutside(OutsideSyntax node)
-        {
-            Syntax newBody = Visit(node.Body);
-            Syntax newException = Visit(node.Exception);
-            if (!(newException is PatternReferenceSyntax))
-            {
-                var pattern = Syntax.Pattern(fCurrentPattern.Namespace, isSearchTarget: false,
-                    GetExtractedPatternName(), fCurrentPattern.Fields, newException);
-                newException = Syntax.PatternReference(pattern, Syntax.EmptyExtractionList());
-                fExtractedPatterns.Add(pattern);
-            }
-            Syntax result = node.Update(newBody, newException);
-            return result;
-        }
-
-        protected internal override Syntax VisitHaving(HavingSyntax node)
-        {
-            Syntax newOuter = Visit(node.Outer);
-            Syntax newInner = Visit(node.Inner);
-            if (!(newInner is PatternReferenceSyntax))
-            {
-                var extractionFromFields = new List<Syntax>();
-                foreach (FieldSyntax field in fCurrentPattern.Fields)
-                    extractionFromFields.Add(Syntax.ExtractionFromField(field, field.Name));
-                var pattern = Syntax.Pattern(fCurrentPattern.Namespace, isSearchTarget: false,
-                    GetExtractedPatternName(), fCurrentPattern.Fields, newInner);
-                newInner = Syntax.PatternReference(pattern, extractionFromFields);
-                fExtractedPatterns.Add(pattern);
-            }
-            Syntax result = node.Update(newOuter, newInner);
-            return result;
         }
 
         private void RegisterPatternWithNestedPatterns(PatternSyntax pattern, RequiredPackageSyntax node)
@@ -306,13 +197,6 @@ namespace Nezaboodka.Nevod
                     }
                 }
             }
-        }
-
-        private string GetExtractedPatternName()
-        {
-            string result = string.Format("{0}/{1}", fCurrentPattern.Name, fNextExtractedPatternNumber);
-            fNextExtractedPatternNumber++;
-            return result;
         }
     }
 

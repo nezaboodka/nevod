@@ -89,7 +89,24 @@ namespace Nezaboodka.Nevod
             return node;
         }
 
-        protected internal override Syntax VisitSearchTarget(SearchTargetSyntax node)
+        protected internal override Syntax VisitPatternSearchTarget(PatternSearchTargetSyntax node)
+        {
+            if (fParents.TryPeek(out Syntax parent))
+            {
+                PackageSyntax package = (PackageSyntax)parent;
+                if (!package.Patterns.Any(x => ((PatternSyntax)x).FullName == node.SearchTarget))
+                    WriteSearchTarget(node);
+            }
+            return node;
+        }
+
+        protected internal override Syntax VisitNamespaceSearchTarget(NamespaceSearchTargetSyntax node)
+        {
+            WriteSearchTarget(node);
+            return node;
+        }
+
+        private void WriteSearchTarget(SearchTargetSyntax node)
         {
             fParents.Push(node);
             Write('#');
@@ -97,24 +114,6 @@ namespace Nezaboodka.Nevod
             Write(';');
             WriteLineBreak();
             fParents.Pop();
-            return node;
-        }
-
-        protected internal override Syntax VisitPatternSearchTarget(PatternSearchTargetSyntax node)
-        {
-            if (fParents.TryPeek(out Syntax parent))
-            {
-                PackageSyntax package = (PackageSyntax)parent;
-                if (!package.Patterns.Any(x => ((PatternSyntax)x).FullName == node.SearchTarget))
-                    VisitSearchTarget(node);
-            }
-            return node;
-        }
-
-        protected internal override Syntax VisitNamespaceSearchTarget(NamespaceSearchTargetSyntax node)
-        {
-            VisitSearchTarget(node);
-            return node;
         }
 
         protected internal override Syntax VisitPattern(PatternSyntax node)
