@@ -482,6 +482,18 @@ Identifier = {Alpha, AlphaNum, '_'} + [0+ {Word, '_'}];";
         }
 
         [TestMethod]
+        public void PatternSearchTarget()
+        {
+            string patterns =
+@"@search Pattern;
+
+Pattern = 'Pattern';
+";
+            
+            TestParseAndToString(patterns);
+        }
+
+        [TestMethod]
         public void ParseAsPatternBody()
         {
             string pattern = "Start + Word";

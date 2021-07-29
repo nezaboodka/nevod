@@ -300,7 +300,7 @@ namespace Nezaboodka.Nevod
             }
             else
             {
-                PatternReferenceSyntax patternReference = SetTextRange(Syntax.PatternReference(fullName), startPosition);
+                PatternReferenceSyntax patternReference = SetTextRange(Syntax.PatternReference(name), startPosition);
                 result = Syntax.PatternSearchTarget(fullName, patternReference);
             }
             return SetTextRange(result, startPosition);

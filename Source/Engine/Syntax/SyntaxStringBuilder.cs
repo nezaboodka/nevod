@@ -94,9 +94,11 @@ namespace Nezaboodka.Nevod
             if (fParents.TryPeek(out Syntax parent))
             {
                 PackageSyntax package = (PackageSyntax)parent;
-                if (!package.Patterns.Any(x => ((PatternSyntax)x).FullName == node.SearchTarget))
+                if (!package.Patterns.Any(x => ((PatternSyntax)x).IsSearchTarget && ((PatternSyntax)x).FullName == node.SearchTarget))
                     WriteSearchTarget(node);
             }
+            else
+                WriteSearchTarget(node);
             return node;
         }
 
@@ -108,12 +110,10 @@ namespace Nezaboodka.Nevod
 
         private void WriteSearchTarget(SearchTargetSyntax node)
         {
-            fParents.Push(node);
-            Write('#');
+            Write("@search ");
             Write(node.SearchTarget);
             Write(';');
             WriteLineBreak();
-            fParents.Pop();
         }
 
         protected internal override Syntax VisitPattern(PatternSyntax node)
