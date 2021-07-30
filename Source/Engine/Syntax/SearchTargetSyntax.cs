@@ -23,7 +23,7 @@ namespace Nezaboodka.Nevod
 
     public class PatternSearchTargetSyntax : SearchTargetSyntax
     {
-        public PatternReferenceSyntax PatternReference { get; }
+        public new PatternReferenceSyntax PatternReference { get; }
 
         internal PatternSearchTargetSyntax(string patternName, PatternReferenceSyntax patternReference)
             : base(patternName)
@@ -53,7 +53,7 @@ namespace Nezaboodka.Nevod
             return visitor.VisitNamespaceSearchTarget(this);
         }
     }
-    
+
     public partial class Syntax
     {
         public static PatternSearchTargetSyntax PatternSearchTarget(string fullName, PatternReferenceSyntax patternReference)
