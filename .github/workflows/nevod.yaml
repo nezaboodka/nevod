@@ -25,6 +25,10 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 3.1.x
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x # Used in Nezaboodka.Nevod.Example.csproj          
       - name: Build
         run: dotnet build Source/Nezaboodka.Nevod.sln -c Release -warnaserror
 
