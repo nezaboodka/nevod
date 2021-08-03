@@ -2254,6 +2254,24 @@ namespace Nezaboodka.Nevod.Engine.Tests
                 "*",    // first asterisk
                 "#");
         }
+ 
+        [TestMethod]
+        public void SequenceOfOptionalRepetitionAndOptionalElements()
+        {
+            string patterns = "#P = '{' + [0+ {LineBreak, Space}] + ?'Hello' + ?Space + '}';";
+            string text = "{   \nHello   }";
+            SearchPatternsAndCheckMatches(patterns, text,
+                "{   \nHello   }");
+        }
+ 
+        [TestMethod]
+        public void SequenceOfOptionalRepetitionAndDifferentOptionalElements()
+        {
+            string patterns = "#P = '{' + [0+ {LineBreak, Space}] + ?'Hello' + ?Punct + '}';";
+            string text = "{   \nHello.}";
+            SearchPatternsAndCheckMatches(patterns, text,
+                "{   \nHello.}");
+        }
 
         [TestMethod]
         public void CandidateLimitExceededSimple()

@@ -308,6 +308,7 @@ namespace Nezaboodka.Nevod
         {
             var tokenExpression = (TokenExpression)rootCandidate.CurrentEventObserver.Expression;
             HavingExpression conditionalHavingExpression = tokenExpression.ParentConditionalHaving;
+            tokenEvent.ClearResults();
             rootCandidate.OnNext(tokenEvent);
             if (!rootCandidate.IsCompletedOrWaiting)
             {
@@ -332,6 +333,7 @@ namespace Nezaboodka.Nevod
             Candidate firstTokenCandidate = firstExpression.CreateCandidate(SearchContext, targetParentCandidate: candidate);
             var tokenExpression = (TokenExpression)firstTokenCandidate.Expression;
             HavingExpression conditionalHavingExpression = tokenExpression.ParentConditionalHaving;
+            tokenEvent.ClearResults();
             firstTokenCandidate.OnNext(tokenEvent);
             while (conditionalHavingExpression != null)
             {
