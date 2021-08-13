@@ -100,7 +100,14 @@ namespace Nezaboodka.Nevod
             {
                 PackageSyntax package = ParseFile(filePath);
                 string baseDirectory = Path.GetDirectoryName(filePath);
-                result = LinkPackage(package, baseDirectory, filePath);
+                try
+                {
+                    result = LinkPackage(package, baseDirectory, filePath);
+                }
+                catch (Exception ex)
+                {
+                    throw RequireError(filePath, ex);
+                }
                 result = SubstituteReferences(result);
                 fPackageCache.PackageSyntaxByFilePath.TryAdd(filePath, result);
             }
@@ -111,7 +118,15 @@ namespace Nezaboodka.Nevod
         {
             lock (fPackageCache)
             {
-                LinkedPackageSyntax linkedTree = LinkPackage(parsedTree, fBaseDirectory, filePath);
+                LinkedPackageSyntax linkedTree;
+                try
+                {
+                    linkedTree = LinkPackage(parsedTree, fBaseDirectory, filePath);
+                }
+                catch (Exception ex)
+                {
+                    throw PackageBuildError(ex);
+                }
                 linkedTree = SubstituteReferences(linkedTree);
                 var generator = new PackageGenerator(fOptions.SyntaxInformationBinding, fPackageCache);
                 PatternPackage result = generator.Generate(linkedTree);
@@ -137,14 +152,7 @@ namespace Nezaboodka.Nevod
                 FilePath = filePath,
                 Linker = linker
             });
-            try
-            {
-                result = linker.Link(parsedTree);
-            }
-            catch (Exception ex)
-            {
-                throw SyntaxError(filePath, ex);
-            }
+            result = linker.Link(parsedTree);
             fDependencyStack.Pop();
             return result;
         }
@@ -184,11 +192,18 @@ namespace Nezaboodka.Nevod
             return result;
         }
 
-        private Exception SyntaxError(string filePath, Exception innerException)
+        private Exception RequireError(string filePath, Exception innerException)
         {
             var result = new SyntaxException(string.Format(System.Globalization.CultureInfo.CurrentCulture,
                 TextResource.RequiredPackageExceptionFormat, filePath, innerException.Message),
                 innerException);
+            return result;
+        }
+        
+        private Exception PackageBuildError(Exception innerException)
+        {
+            var result = new SyntaxException(string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                    TextResource.PackageBuildExceptionFormat, innerException.Message), innerException);
             return result;
         }
     }
@@ -196,6 +211,7 @@ namespace Nezaboodka.Nevod
     internal static partial class TextResource
     {
         public const string RequiredPackageExceptionFormat = "Error in required package '{0}': {1}";
+        public const string PackageBuildExceptionFormat = "Error building package: {0}";
         public const string RecursiveFileDependencyIsNotSupported = "Recursive file dependency is not supported: {0}";
     }
 }
