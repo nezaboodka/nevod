@@ -18,7 +18,7 @@ namespace Nezaboodka.Nevod
             return result;
         }
 
-        public ReadOnlyCollection<T> Visit<T>(ReadOnlyCollection<T> nodes) where T : Syntax
+        public virtual ReadOnlyCollection<T> Visit<T>(ReadOnlyCollection<T> nodes) where T : Syntax
         {
             T[] newNodes = null;
             for (int i = 0, n = nodes.Count; i < n; i++)
