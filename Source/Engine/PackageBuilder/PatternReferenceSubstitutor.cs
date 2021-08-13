@@ -3,11 +3,8 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 
 namespace Nezaboodka.Nevod
 {
@@ -27,10 +24,8 @@ namespace Nezaboodka.Nevod
             fExcludedPatterns = excludedPatterns;
             fVisitedPatterns = new HashSet<PatternSyntax>();
             fPatternSubstitutions = new Dictionary<PatternSyntax, PatternSyntax>();
-            LinkedPackageSyntax substitutedTree = (LinkedPackageSyntax)Visit(syntaxTree);
+            LinkedPackageSyntax result = (LinkedPackageSyntax)Visit(syntaxTree);
             fPatternSubstitutions.Clear();
-            var linker = new NormalizingPatternLinker(linkRequiredPackages: true);
-            LinkedPackageSyntax result = linker.Link(substitutedTree);
             return result;
         }
 

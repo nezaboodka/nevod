@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
@@ -12,7 +11,12 @@ namespace Nezaboodka.Nevod
         private PatternSyntax fCurrentPattern;
         private List<Syntax> fAllPatterns;
 
-        public NormalizingPatternLinker(bool linkRequiredPackages) : base(linkRequiredPackages)
+        public NormalizingPatternLinker()
+        {
+        }
+        
+        public NormalizingPatternLinker(string baseDirectory, IPackageLoader requiredPackageLoader) 
+            : base(baseDirectory, requiredPackageLoader)
         {
         }
 

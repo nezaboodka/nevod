@@ -3,14 +3,17 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 
 namespace Nezaboodka.Nevod
 {
+    public interface IPackageLoader
+    {
+        LinkedPackageSyntax LoadPackage(string filePath);
+    }
+    
     public class PatternLinker : SyntaxVisitor
     {
         internal struct PatternReferenceInContext
@@ -19,14 +22,21 @@ namespace Nezaboodka.Nevod
             public PatternSyntax PatternContext;
         }
 
-        private bool fLinkRequiredPackages;
         private Dictionary<string, PatternSyntax> fPatternByName;
         private List<PatternReferenceInContext> fPatternReferences;
         private PatternSyntax fCurrentPattern;
-        
-        public PatternLinker(bool linkRequiredPackages)
+        private readonly string fBaseDirectory;
+        private readonly IPackageLoader fRequiredPackageLoader;
+
+        public PatternLinker()
+            : this(null, null)
         {
-            fLinkRequiredPackages = linkRequiredPackages;
+        }
+        
+        public PatternLinker(string baseDirectory, IPackageLoader requiredPackageLoader)
+        {
+            fBaseDirectory = baseDirectory;
+            fRequiredPackageLoader = requiredPackageLoader;
         }
 
         public virtual LinkedPackageSyntax Link(PackageSyntax syntaxTree)
@@ -56,12 +66,17 @@ namespace Nezaboodka.Nevod
 
         protected internal override Syntax VisitRequiredPackage(RequiredPackageSyntax node)
         {
-            RequiredPackageSyntax result = node;
-            if (fLinkRequiredPackages)
-                result = (RequiredPackageSyntax)base.VisitRequiredPackage(node);
-            foreach (PatternSyntax p in result.Package.Patterns)
+            if (node.Package == null)
+            {
+                if (fRequiredPackageLoader == null)
+                    throw SyntaxError(TextResource.RequireOperatorIsNotAllowedInSinglePackageMode);
+                string filePath = Syntax.GetRequiredFilePath(fBaseDirectory, node.RelativePath);
+                LinkedPackageSyntax linkedPackage = fRequiredPackageLoader.LoadPackage(filePath);
+                node.SetRequiredPackage(linkedPackage, fBaseDirectory);
+            }
+            foreach (PatternSyntax p in node.Package.Patterns)
                 RegisterPatternWithNestedPatterns(p, node);
-            return result;
+            return node;
         }
 
         protected internal override Syntax VisitPatternSearchTarget(PatternSearchTargetSyntax node)
@@ -206,5 +221,6 @@ namespace Nezaboodka.Nevod
         public const string ReferenceToUndefinedPattern = "Reference to undefined pattern '{0}'";
         public const string UndefinedFieldInReferencedPattern = "Undefined field {0} in referenced pattern '{1}'";
         public const string SearchTargetIsUndefinedPattern = "Search target is undefined pattern '{0}'";
+        public const string RequireOperatorIsNotAllowedInSinglePackageMode = "@require operator is not allowed in single package mode";
     }
 }

@@ -5,10 +5,6 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 
 using static Nezaboodka.Nevod.Engine.Tests.TestHelper;
 
@@ -26,11 +22,11 @@ namespace Nezaboodka.Nevod.Engine.Tests
                 string dataDir = TestHelper.GetBasicPackageDirectory();
                 string patterns = $"@require '{dataDir}/Basic/Basic.np'; @search Basic.*;";
                 string text = "11";
-                var prc = new ResourceConsumption();
+                var lrc = new ResourceConsumption();
                 var grc = new ResourceConsumption();
                 var src = new ResourceConsumption();
-                SearchPatternsAndCheckMatchesAndMeasureResourceConsumption(patterns, text, prc, grc, src, "11");
-                Console.WriteLine($"Package parsing:\t{prc.ElapsedMilliseconds} ms,\tallocated {prc.TotalAllocatedBytes / 1_000_000 + 1} MB,\tused {prc.ConsumedBytes / 1_000_000 + 1} MB");
+                SearchPatternsAndCheckMatchesAndMeasureResourceConsumption(patterns, text, lrc, grc, src, "11");
+                Console.WriteLine($"Package linking:\t{lrc.ElapsedMilliseconds} ms,\tallocated {lrc.TotalAllocatedBytes / 1_000_000 + 1} MB,\tused {lrc.ConsumedBytes / 1_000_000 + 1} MB");
                 Console.WriteLine($"Package generation:\t{grc.ElapsedMilliseconds} ms,\tallocated {grc.TotalAllocatedBytes / 1_000_000 + 1} MB,\tused {grc.ConsumedBytes / 1_000_000 + 1} MB");
                 Console.WriteLine($"Text search:\t{src.ElapsedMilliseconds} ms,\tallocated {src.TotalAllocatedBytes / 1_000_000 + 1} MB,\tused {src.ConsumedBytes / 1_000_000 + 1} MB");
             }
