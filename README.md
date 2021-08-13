@@ -17,7 +17,7 @@ aimed to rapidly reveal entities and their relationships in texts written in the
 
 ![Nevod Playground](https://raw.githubusercontent.com/nezaboodka/nevod/main/nevod.jpg)
 
-The **Nevod Web site** is also an open-source project, hosted on GitLab: https://gitlab.com/nezaboodka/nevod.web.public
+The **Nevod Web site** is also an open-source project, hosted on GitLab: https://gitlab.com/nezaboodka/nevod.website
 
 ## The Target Platform
 
