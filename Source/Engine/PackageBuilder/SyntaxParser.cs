@@ -5,19 +5,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text;
 using Nezaboodka.Text;
 
 namespace Nezaboodka.Nevod
 {
-    public interface IPackageLoader
-    {
-        LinkedPackageSyntax LoadPackage(string filePath);
-    }
-
     // Operators from highest priority to lowest priority:
     // ?                - Optionality (repetition 0-1)
     // []               - Span
@@ -33,8 +26,6 @@ namespace Nezaboodka.Nevod
 
     public class SyntaxParser
     {
-        private string fBaseDirectory;
-        private IPackageLoader fRequiredPackageLoader;
         private Slice fText;
         private int fTextPosition;
         private int fLineNumber;
@@ -58,14 +49,7 @@ namespace Nezaboodka.Nevod
         public static readonly string EmptyNamespace = string.Empty;
 
         public SyntaxParser()
-            : this(null, null)
         {
-        }
-
-        public SyntaxParser(string baseDirectory, IPackageLoader requiredPackageLoader)
-        {
-            fBaseDirectory = baseDirectory;
-            fRequiredPackageLoader = requiredPackageLoader;
             fTokenByKeyword = new Dictionary<string, TokenId>();
             PrepareEnglishKeywordsDictionary();
             fStandardPatterns = new Dictionary<string, PatternSyntax>();
@@ -219,7 +203,7 @@ namespace Nezaboodka.Nevod
             while (fToken.Id == TokenId.RequireKeyword)
             {
                 RequiredPackageSyntax requiredPackage = ParseRequire();
-                if (!fRequiredPackages.Any(x => x.Package == requiredPackage.Package))
+                if (!fRequiredPackages.Any(x => x.RelativePath == requiredPackage.RelativePath))
                     fRequiredPackages.Add(requiredPackage);
                 else
                     throw SyntaxError(TextResource.DuplicatedRequiredPackage, requiredPackage.RelativePath);
@@ -235,15 +219,7 @@ namespace Nezaboodka.Nevod
             string relativePath = ParseStringLiteral(out bool isCaseSensitive, out bool textIsPrefix);
             if (isCaseSensitive || textIsPrefix)
                 throw SyntaxError(TextResource.InvalidSpecifierAfterStringLiteral);
-            RequiredPackageSyntax result;
-            if (fRequiredPackageLoader != null)
-            {
-                string filePath = Syntax.GetRequiredFilePath(fBaseDirectory, relativePath);
-                LinkedPackageSyntax linkedPackage = fRequiredPackageLoader.LoadPackage(filePath);
-                result = new RequiredPackageSyntax(fBaseDirectory, relativePath, linkedPackage);
-            }
-            else
-                throw SyntaxError(TextResource.RequireOperatorIsNotAllowedInSinglePackageMode);
+            var result = new RequiredPackageSyntax(relativePath);
             ValidateToken(TokenId.Semicolon, TextResource.RequireDefinitionShouldEndWithSemicolon);
             NextToken();
             return SetTextRange(result, startPosition);
@@ -1518,7 +1494,6 @@ namespace Nezaboodka.Nevod
     internal static partial class TextResource
     {
         public const string SyntaxExceptionFormat = "{0} (at position {1}, line {2}: \"{3}\")";
-        public const string RequireOperatorIsNotAllowedInSinglePackageMode = "@require operator is not allowed in single package mode";
         public const string RequireKeywordExpected = "@require keyword expected, but '{0}' found";
         public const string RequiredFilePathExpected = "Required file path expected, but '{0}' found";
         public const string RequireDefinitionShouldEndWithSemicolon = "@require definition should end with semicolon";

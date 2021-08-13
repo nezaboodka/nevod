@@ -13,7 +13,7 @@ namespace Nezaboodka.Nevod.Engine.Tests
 P1 = 'Nezaboodka';
 P2 = P1;
 ";
-            var linker = new PatternLinker(linkRequiredPackages: false);
+            var linker = new PatternLinker();
             LinkedPackageSyntax package = linker.Link(new SyntaxParser().ParsePackageText(patterns));
             var p1 = (PatternSyntax) package.Patterns[0];
             var p2 = (PatternSyntax) package.Patterns[1];

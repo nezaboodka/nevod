@@ -4,9 +4,7 @@
 //--------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text;
 
 namespace Nezaboodka.Nevod
 {
@@ -20,7 +18,7 @@ namespace Nezaboodka.Nevod
             return result;
         }
 
-        public ReadOnlyCollection<T> Visit<T>(ReadOnlyCollection<T> nodes) where T : Syntax
+        public virtual ReadOnlyCollection<T> Visit<T>(ReadOnlyCollection<T> nodes) where T : Syntax
         {
             T[] newNodes = null;
             for (int i = 0, n = nodes.Count; i < n; i++)
@@ -256,7 +254,7 @@ namespace Nezaboodka.Nevod
             return node;
         }
 
-        protected Exception SyntaxError(string format, params object[] args)
+        protected internal Exception SyntaxError(string format, params object[] args)
         {
             return new SyntaxException(string.Format(System.Globalization.CultureInfo.CurrentCulture, format, args), 0,
                 0, string.Empty);

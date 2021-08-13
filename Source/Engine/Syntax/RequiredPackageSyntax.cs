@@ -3,21 +3,16 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
-using System.Text;
 
 namespace Nezaboodka.Nevod
 {
     public class RequiredPackageSyntax : Syntax
     {
-        public string BaseDirectory { get; }
+        public string BaseDirectory { get; private set; }
         public string RelativePath { get; }
-        public string FullPath { get; }
-        public new LinkedPackageSyntax Package { get; }
+        public string FullPath { get; private set; }
+        public new LinkedPackageSyntax Package { get; private set; }
 
         internal RequiredPackageSyntax(string baseDirectory, string relativePath, LinkedPackageSyntax package)
         {
@@ -26,6 +21,11 @@ namespace Nezaboodka.Nevod
             FullPath = GetRequiredFilePath(baseDirectory, relativePath);
             Package = package;
         }
+        
+        internal RequiredPackageSyntax(string relativePath)
+        {
+            RelativePath = relativePath;
+        }
 
         internal RequiredPackageSyntax(RequiredPackageSyntax source, LinkedPackageSyntax package)
         {
@@ -33,6 +33,13 @@ namespace Nezaboodka.Nevod
             RelativePath = source.RelativePath;
             FullPath = source.FullPath;
             Package = package;
+        }
+
+        internal void SetRequiredPackage(LinkedPackageSyntax package, string baseDirectory)
+        {
+            Package = package;
+            BaseDirectory = baseDirectory;
+            FullPath = GetRequiredFilePath(baseDirectory, RelativePath);
         }
 
         internal RequiredPackageSyntax Update(LinkedPackageSyntax package)

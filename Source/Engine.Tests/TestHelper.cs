@@ -51,11 +51,11 @@ namespace Nezaboodka.Nevod.Engine.Tests
         }
 
         public static void SearchPatternsAndCheckMatchesAndMeasureResourceConsumption(string patterns, string text,
-            ResourceConsumption parsingConsumption, ResourceConsumption generationConsumption, ResourceConsumption searchConsumption,
+            ResourceConsumption linkingConsumption, ResourceConsumption generationConsumption, ResourceConsumption searchConsumption,
             params string[] expectedMatches)
         {
             SearchPatternsAndCheckMatchesAndMeasureResourceConsumption(patterns, text, options: null,
-                parsingConsumption, generationConsumption, searchConsumption, expectedMatches);
+                linkingConsumption, generationConsumption, searchConsumption, expectedMatches);
         }
 
         public static void SearchPatternsAndCheckMatches(string patterns, string text,
@@ -98,11 +98,11 @@ namespace Nezaboodka.Nevod.Engine.Tests
         }
 
         public static void SearchPatternsAndCheckMatchesAndMeasureResourceConsumption(string patterns, string text, SearchOptions options,
-            ResourceConsumption parsingConsumption, ResourceConsumption generationConsumption, ResourceConsumption searchConsumption,
+            ResourceConsumption linkingConsumption, ResourceConsumption generationConsumption, ResourceConsumption searchConsumption,
             params string[] expectedMatches)
         {
             var actualMatches = SearchPatternsWithOptionsAndMeasureResourceConsumption(patterns, text, options,
-                parsingConsumption, generationConsumption, searchConsumption)
+                linkingConsumption, generationConsumption, searchConsumption)
                 .GetTagsSortedByLocationInText().Select(x => x.GetText()).ToArray();
             actualMatches.Should().BeEquivalentTo(expectedMatches);
         }
@@ -184,21 +184,26 @@ namespace Nezaboodka.Nevod.Engine.Tests
         }
 
         public static SearchResult SearchPatternsWithOptionsAndMeasureResourceConsumption(string patterns, string text, SearchOptions options,
-            ResourceConsumption parsingConsumption, ResourceConsumption generationConsumption, ResourceConsumption searchConsumption)
+            ResourceConsumption linkingConsumption, ResourceConsumption generationConsumption, ResourceConsumption searchConsumption)
         {
             if (options == null)
                 options = DefaultSearchOptionsForTest;
 
             Console.WriteLine();
+            
+            var parser = new SyntaxParser();
+            PackageSyntax parsedTree = parser.ParsePackageText(patterns);
+            
             var startMemory = GC.GetTotalMemory(true);
             var startAllocatedBytes = GC.GetTotalAllocatedBytes();
             var watch = Stopwatch.StartNew();
 
             var builder = new PackageBuilder(DefaultPackageBuilderOptionsForTest, Environment.CurrentDirectory,
                 PackageCache.Global);
-            var parser = new SyntaxParser(Environment.CurrentDirectory, builder);
-
-            PackageSyntax parsedTree = parser.ParsePackageText(patterns);
+            var linker = new NormalizingPatternLinker(Environment.CurrentDirectory, builder);
+            LinkedPackageSyntax linkedTree = linker.Link(parsedTree);
+            
+            parsedTree = null;
 
             var elapsed = watch.ElapsedMilliseconds;
             var endMemory = GC.GetTotalMemory(true);
@@ -206,16 +211,15 @@ namespace Nezaboodka.Nevod.Engine.Tests
             var endAllocatedBytes = GC.GetTotalAllocatedBytes();
             var deltaAllocatedBytes = endAllocatedBytes - startAllocatedBytes;
 
-            parsingConsumption.ElapsedMilliseconds = elapsed;
-            parsingConsumption.TotalAllocatedBytes = deltaAllocatedBytes;
-            parsingConsumption.ConsumedBytes = consumedBytes;
+            linkingConsumption.ElapsedMilliseconds = elapsed;
+            linkingConsumption.TotalAllocatedBytes = deltaAllocatedBytes;
+            linkingConsumption.ConsumedBytes = consumedBytes;
 
             watch.Restart();
             startMemory = endMemory;
             startAllocatedBytes = endAllocatedBytes;
+            parsedTree = linkedTree;
             PatternPackage package = builder.BuildPackageFromSyntax(parsedTree);
-
-            parsedTree = null;
 
             elapsed = watch.ElapsedMilliseconds;
             endMemory = GC.GetTotalMemory(true);
