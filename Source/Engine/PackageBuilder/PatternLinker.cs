@@ -66,14 +66,11 @@ namespace Nezaboodka.Nevod
 
         protected internal override Syntax VisitRequiredPackage(RequiredPackageSyntax node)
         {
-            if (node.Package == null)
-            {
-                if (fRequiredPackageLoader == null)
-                    throw SyntaxError(TextResource.RequireOperatorIsNotAllowedInSinglePackageMode);
-                string filePath = Syntax.GetRequiredFilePath(fBaseDirectory, node.RelativePath);
-                LinkedPackageSyntax linkedPackage = fRequiredPackageLoader.LoadPackage(filePath);
-                node.SetRequiredPackage(linkedPackage, fBaseDirectory);
-            }
+            if (fRequiredPackageLoader == null)
+                throw SyntaxError(TextResource.RequireOperatorIsNotAllowedInSinglePackageMode);
+            string filePath = Syntax.GetRequiredFilePath(fBaseDirectory, node.RelativePath);
+            LinkedPackageSyntax linkedPackage = fRequiredPackageLoader.LoadPackage(filePath);
+            node.SetRequiredPackage(linkedPackage, fBaseDirectory);
             foreach (PatternSyntax p in node.Package.Patterns)
                 RegisterPatternWithNestedPatterns(p, node);
             return node;
