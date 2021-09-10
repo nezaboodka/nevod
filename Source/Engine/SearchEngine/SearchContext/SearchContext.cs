@@ -18,7 +18,7 @@ namespace Nezaboodka.Nevod
         private Dictionary<int, long> fCleaningTokenNumberPerPattern;
         private long fProcessedTokenCount;
         private bool fWasTotalCandidateLimitExceededOnCurrentToken;
-        private bool fIsProcessingRemainingCandidates;
+        private bool fIsProcessingOfRemainingCandidates;
 
         private RootIndexHandler fRootIndexHandler;
         private WaitingIndexHandler fWaitingIndexHandler;
@@ -540,7 +540,7 @@ namespace Nezaboodka.Nevod
                         {
                             if (!SearchOptions.SelfOverlappingTagsInResults)
                             {
-                                if (!fIsProcessingRemainingCandidates)
+                                if (!fIsProcessingOfRemainingCandidates)
                                 {
                                     if (matchedTagsOfPattern.CountOfWaitingForCleanup > SearchOptions.MaxCountOfMatchedTagsWaitingForCleanup)
                                     {
@@ -662,7 +662,7 @@ namespace Nezaboodka.Nevod
 
         private void ProcessRemainingCandidates()
         {
-            fIsProcessingRemainingCandidates = true;
+            fIsProcessingOfRemainingCandidates = true;
             ActiveCandidates.RejectAll();
             WaitingCandidates.RejectAll();
             while (fPatternEventQueue.Count > 0)
@@ -675,7 +675,7 @@ namespace Nezaboodka.Nevod
                     OnNextPattern(fPatternEventQueue.Dequeue());
                 FindCleaningTokenNumberForEachPattern(fCleaningTokenNumberPerPattern);
             }
-            fIsProcessingRemainingCandidates = false;
+            fIsProcessingOfRemainingCandidates = false;
         }
 
         private void FindCleaningTokenNumberForEachPattern(Dictionary<int, long> cleaningTokenNumberPerPattern)
