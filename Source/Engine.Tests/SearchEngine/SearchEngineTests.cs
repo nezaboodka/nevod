@@ -108,6 +108,16 @@ namespace Nezaboodka.Nevod.Engine.Tests
         }
 
         [TestMethod]
+        [Ignore]
+        public void SingleWordPrefixWithAttributesNumSuffix()
+        {
+            string patterns = "#SingleWord = 'N'!*(Num);";
+            string text = "N12";
+            SearchPatternsAndCheckMatches(patterns, text,
+                "N12");
+        }
+
+        [TestMethod]
         public void SpaceFromTwoToFour()
         {
             string patterns = "#Space4 = Space(2-4) + Word;";
