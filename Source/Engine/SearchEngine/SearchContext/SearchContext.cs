@@ -18,6 +18,7 @@ namespace Nezaboodka.Nevod
         private Dictionary<int, long> fCleaningTokenNumberPerPattern;
         private long fProcessedTokenCount;
         private bool fWasTotalCandidateLimitExceededOnCurrentToken;
+        private bool fIsProcessingRemainingCandidates;
 
         private RootIndexHandler fRootIndexHandler;
         private WaitingIndexHandler fWaitingIndexHandler;
@@ -539,10 +540,13 @@ namespace Nezaboodka.Nevod
                         {
                             if (!SearchOptions.SelfOverlappingTagsInResults)
                             {
-                                if (matchedTagsOfPattern.CountOfWaitingForCleanup > SearchOptions.MaxCountOfMatchedTagsWaitingForCleanup)
+                                if (!fIsProcessingRemainingCandidates)
                                 {
-                                    long cleaningTokenNumber = GetCleaningTokenNumberForPattern(patternExpression.Id);
-                                    TryRemoveOverlapsAndInvokeResultCallback(matchedTagsOfPattern, cleaningTokenNumber);
+                                    if (matchedTagsOfPattern.CountOfWaitingForCleanup > SearchOptions.MaxCountOfMatchedTagsWaitingForCleanup)
+                                    {
+                                        long cleaningTokenNumber = GetCleaningTokenNumberForPattern(patternExpression.Id);
+                                        TryRemoveOverlapsAndInvokeResultCallback(matchedTagsOfPattern, cleaningTokenNumber);
+                                    }
                                 }
                             }
                             else if (ResultCallback != null) // && (SearchOptions.SelfOverlappingTagsInResults == true)
@@ -658,6 +662,7 @@ namespace Nezaboodka.Nevod
 
         private void ProcessRemainingCandidates()
         {
+            fIsProcessingRemainingCandidates = true;
             ActiveCandidates.RejectAll();
             WaitingCandidates.RejectAll();
             while (fPatternEventQueue.Count > 0)
@@ -670,6 +675,7 @@ namespace Nezaboodka.Nevod
                     OnNextPattern(fPatternEventQueue.Dequeue());
                 FindCleaningTokenNumberForEachPattern(fCleaningTokenNumberPerPattern);
             }
+            fIsProcessingRemainingCandidates = false;
         }
 
         private void FindCleaningTokenNumberForEachPattern(Dictionary<int, long> cleaningTokenNumberPerPattern)
