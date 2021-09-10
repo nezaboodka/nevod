@@ -2254,7 +2254,7 @@ namespace Nezaboodka.Nevod.Engine.Tests
                 "*",    // first asterisk
                 "#");
         }
- 
+
         [TestMethod]
         public void SequenceOfOptionalRepetitionAndOptionalElements()
         {
@@ -2263,7 +2263,7 @@ namespace Nezaboodka.Nevod.Engine.Tests
             SearchPatternsAndCheckMatches(patterns, text,
                 "{   \nHello   }");
         }
- 
+
         [TestMethod]
         public void SequenceOfOptionalRepetitionAndDifferentOptionalElements()
         {
@@ -3306,6 +3306,26 @@ namespace Nezaboodka.Nevod.Engine.Tests
                 var actualMatches = result.GetTagsSortedByLocationInText().Select(x => x.GetText()).ToArray();
                 actualMatches.Should().BeEquivalentTo(expectedMatches);
             }
+        }
+
+        [TestMethod]
+        public void OverlappingIssueWithOutside()
+        {
+            string patterns = @"
+                #P = {'oh hello', 'hello' @outside 'hello world'};
+            ";
+            string text = "oh hello, oh hello, oh hello, oh hello";
+            string[] expectedMatches = new[] { "oh hello", "oh hello", "oh hello", "oh hello" };
+
+            PatternPackage patternPackage = PatternPackage.FromText(patterns);
+            TextSearchEngine engine = new TextSearchEngine(patternPackage, new SearchOptions
+            {
+                MaxCountOfMatchedTagsWaitingForCleanup = 1,
+            });
+
+            SearchResult result = engine.Search(text);
+            var actualMatches = result.GetTagsSortedByLocationInText().Select(x => x.GetText()).ToArray();
+            actualMatches.Should().BeEquivalentTo(expectedMatches);
         }
 
         [TestMethod]
