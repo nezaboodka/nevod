@@ -108,7 +108,6 @@ namespace Nezaboodka.Nevod.Engine.Tests
         }
 
         [TestMethod]
-        [Ignore]
         public void SingleWordPrefixWithAttributesNumSuffix()
         {
             string patterns = "#SingleWord = 'N'!*(Num);";

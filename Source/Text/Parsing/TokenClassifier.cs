@@ -7,20 +7,22 @@ using System.Collections.Generic;
 
 namespace Nezaboodka.Text.Parsing
 {
-    internal class TokenClassifier
+    public struct TokenClassifier
     {
         private const char CR = '\r';
         private const char LF = '\n';
 
         // Public
 
-        public TokenKind TokenKind { get; private set; }
+        public TokenKind TokenKind;
         public bool IsHexadecimal;
 
-        public TokenClassifier()
+        public static TokenClassifier Create()
         {
-            TokenKind = TokenKind.Undefined;
-            IsHexadecimal = true;
+            var result = new TokenClassifier();
+            result.TokenKind = TokenKind.Undefined;
+            result.IsHexadecimal = true;
+            return result;
         }
 
         public void Reset()

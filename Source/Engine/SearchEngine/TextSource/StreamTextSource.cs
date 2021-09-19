@@ -12,7 +12,7 @@ using Nezaboodka.Text.Parsing;
 
 namespace Nezaboodka.Nevod
 {
-    public class StreamTextSource : ITextSource
+    public class StreamTextSource : TextSource
     {
         private char[] fBuffer;
         private TextReader fReader;
@@ -40,7 +40,7 @@ namespace Nezaboodka.Nevod
             fBuffer = new char[bufferSizeInChars];
         }
 
-        public IEnumerator<Token> GetEnumerator()
+        public override IEnumerator<Token> GetEnumerator()
         {
             // Разобрать пустую строку для получения ParsedText, который содержит Start
             // (для обработки ситуации, когда текст захватывается, начиная с самого первого токена).
@@ -132,12 +132,7 @@ namespace Nezaboodka.Nevod
                 fReader.Close();
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public string GetText(TextLocation start, TextLocation end)
+        public override string GetText(TextLocation start, TextLocation end)
         {
             string result;
             long startTokenNumber = start.TokenNumber;
@@ -243,10 +238,5 @@ namespace Nezaboodka.Nevod
                 new TextLocation(tokenNumber, tokenReference.StringPosition, tokenReference.StringLength));
             return result;
         }
-
-        private static readonly TokenKind[] TokenKindByTokenReferenceKind =
-            ParsedTextSource.TokenKindByTokenReferenceKind;
-        private static readonly WordClass[] WordClassByTokenReferenceKind =
-            ParsedTextSource.WordClassByTokenReferenceKind;
     }
 }

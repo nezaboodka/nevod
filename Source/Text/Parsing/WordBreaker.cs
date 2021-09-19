@@ -5,11 +5,23 @@
 
 namespace Nezaboodka.Text.Parsing
 {
-    internal class WordBreaker
+    internal struct WordBreaker
     {
-        private readonly WordBreakBuffer fWordBreakBuffer = new WordBreakBuffer();
+        private WordBreakBuffer fWordBreakBuffer;
 
         // Public
+
+        public static WordBreaker Create()
+        {
+            var result = new WordBreaker();
+            result.fWordBreakBuffer = WordBreakBuffer.Create();
+            return result;
+        }
+
+        public void Reset()
+        {
+            fWordBreakBuffer = WordBreakBuffer.Create();
+        }
 
         public void AddWordBreak(WordBreak wordBreak)
         {
@@ -102,7 +114,7 @@ namespace Nezaboodka.Text.Parsing
         private bool IsLastCharacter()
         {
             return (fWordBreakBuffer.CurrentWordBreak != WordBreak.Empty) && (fWordBreakBuffer.NextWordBreak == WordBreak.Empty);
-        }        
+        }
 
         private bool IsFirstCharacter()
         {
@@ -114,7 +126,7 @@ namespace Nezaboodka.Text.Parsing
             return ((wordBreak == WordBreak.Extender) || (wordBreak == WordBreak.Format)) && !IsFirstCharacter();
         }
 
-        // Static internal       
+        // Static internal
 
         private static bool IsAlphabeticOrHebrewLetter(WordBreak wordBreak)
         {
@@ -124,6 +136,6 @@ namespace Nezaboodka.Text.Parsing
         private static bool IsLineBreak(WordBreak wordBreak)
         {
             return (wordBreak == WordBreak.Newline) || (wordBreak == WordBreak.LineFeed) || (wordBreak == WordBreak.CarriageReturn);
-        }        
+        }
     }
 }

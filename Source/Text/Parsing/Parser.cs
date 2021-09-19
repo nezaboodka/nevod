@@ -9,6 +9,21 @@ namespace Nezaboodka.Text.Parsing
 {
     public abstract class Parser : IDisposable
     {
+        protected int fTokenStartPosition;
+        protected readonly ParsedText fParsedText = new ParsedText();
+        internal TokenClassifier fTokenClassifier = TokenClassifier.Create();
+        internal WordBreaker fWordBreaker = WordBreaker.Create();
+
+        protected int CurrentTokenIndex => fParsedText.PlainTextTokens.Count - 1;
+
+        // Public
+
+        public abstract void Dispose();
+
+        public abstract ParsedText Parse();
+
+        // Internal
+
         protected static readonly TokenReference StartToken = new TokenReference
         {
             StringPosition = 0,
@@ -27,18 +42,5 @@ namespace Nezaboodka.Text.Parsing
                 XhtmlIndex = fParsedText.XhtmlElements.Count - 1
             };
         }
-
-        protected int fTokenStartPosition;
-        protected readonly ParsedText fParsedText = new ParsedText();
-        internal readonly TokenClassifier fTokenClassifier = new TokenClassifier();
-        internal readonly WordBreaker fWordBreaker = new WordBreaker();
-
-        protected int CurrentTokenIndex => fParsedText.PlainTextTokens.Count - 1;
-
-        // Public
-
-        public abstract void Dispose();
-
-        public abstract ParsedText Parse();
     }
 }
