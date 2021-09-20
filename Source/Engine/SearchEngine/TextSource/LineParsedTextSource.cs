@@ -13,7 +13,7 @@ using NTTokenKind = Nezaboodka.Text.Parsing.TokenKind;
 
 namespace Nezaboodka.Nevod
 {
-    public class LineParsedTextSource : ITextSource
+    public class LineParsedTextSource : TextSource
     {
         public ParsedText Text { get; }
 
@@ -24,7 +24,7 @@ namespace Nezaboodka.Nevod
             Text = text;
         }
 
-        public IEnumerator<Token> GetEnumerator()
+        public override IEnumerator<Token> GetEnumerator()
         {
             int lineStart = 0;
             int lineEnd = 0;
@@ -55,12 +55,7 @@ namespace Nezaboodka.Nevod
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public string GetText(TextLocation start, TextLocation end)
+        public override string GetText(TextLocation start, TextLocation end)
         {
             string result;
             long startTokenNumber = start.TokenNumber;
