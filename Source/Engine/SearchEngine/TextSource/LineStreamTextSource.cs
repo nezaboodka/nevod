@@ -315,10 +315,5 @@ namespace Nezaboodka.Nevod
                 new TextLocation(tokenNumber, tokenReference.StringPosition, tokenReference.StringLength));
             return result;
         }
-
-        private static readonly TokenKind[] TokenKindByTokenReferenceKind =
-            ParsedTextSource.TokenKindByTokenReferenceKind;
-        private static readonly WordClass[] WordClassByTokenReferenceKind =
-            ParsedTextSource.WordClassByTokenReferenceKind;
     }
 }
