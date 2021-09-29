@@ -3,11 +3,8 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 
 namespace Nezaboodka.Nevod
 {
@@ -16,6 +13,7 @@ namespace Nezaboodka.Nevod
         public ReadOnlyCollection<RequiredPackageSyntax> RequiredPackages { get; }
         public ReadOnlyCollection<Syntax> SearchTargets { get; }
         public ReadOnlyCollection<Syntax> Patterns { get; }
+        public List<Error> Errors { get; set; }
 
         internal PackageSyntax(IList<RequiredPackageSyntax> requiredPackages,
             IList<Syntax> searchTargets, IList<Syntax> patterns)
