@@ -25,9 +25,9 @@ namespace Nezaboodka.Nevod
 
         internal override bool CanReduce => true;
 
-        internal TextSyntax(string text, bool isCaseSensitive, bool textIsPrefix, WordAttributes suffixAttributes)
+        internal TextSyntax(string text, bool isCaseSensitive, bool textIsPrefix, WordAttributes suffixAttributes, bool isTextPresent = true)
         {
-            if (string.IsNullOrEmpty(text))
+            if (isTextPresent && string.IsNullOrEmpty(text))
                 throw new ArgumentException(nameof(text));
             Text = text;
             IsCaseSensitive = isCaseSensitive;
@@ -126,6 +126,20 @@ namespace Nezaboodka.Nevod
         {
             var result = new TextSyntax(prefix, isCaseSensitive, textIsPrefix: true,
                 new WordAttributes(suffixWordClass, suffixLengthRange, suffixCharCase));
+            return result;
+        }
+
+        internal static TextSyntax EmptyText(bool isCaseSensitive, WordAttributes suffixAttributes)
+        { 
+            var result = new TextSyntax(text: null, isCaseSensitive, textIsPrefix: true, 
+                suffixAttributes, isTextPresent: false);
+            return result;
+        }
+
+        internal static TextSyntax EmptyText(bool isCaseSensitive, bool textIsPrefix)
+        {
+            var result = new TextSyntax(text: null, isCaseSensitive, textIsPrefix, 
+                null, isTextPresent: false);
             return result;
         }
     }
