@@ -43,6 +43,7 @@ namespace Nezaboodka.Nevod
             PackageSyntax result = this;
             if (requiredPackages != RequiredPackages || searchTargets != SearchTargets || patterns != Patterns)
                 result = LinkedPackage(requiredPackages, searchTargets, patterns);
+            result.Errors = Errors;
             return result;
         }
 
