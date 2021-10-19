@@ -6,8 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
-using Nezaboodka.Text;
 
 namespace Nezaboodka.Nevod
 {
@@ -26,7 +26,7 @@ namespace Nezaboodka.Nevod
 
         private static readonly HashSet<string> StandardPatternNames;
         private Dictionary<string, PatternSyntax> fPatternByName;
-        private HashSet<string> fRequiredFiles;
+        private Dictionary<string, RequiredPackageSyntax> fRequiredPackageByFilePath;
         private Dictionary<string, RequiredPackageSyntax> fRequiredPackageByPatternName;
         private Dictionary<RequiredPackageSyntax, Dictionary<string, List<string>>> fDuplicatePatternsByRequiredPackage;
         private List<PatternReferenceInContext> fPatternReferences;
@@ -37,8 +37,7 @@ namespace Nezaboodka.Nevod
 
         static PatternLinker()
         {
-            StandardPatternNames = new HashSet<string>();
-            StandardPatternNames.AddRange(Syntax.StandardPattern.StandardPatterns.Select(x => x.FullName));
+            StandardPatternNames = new HashSet<string>(Syntax.StandardPattern.StandardPatterns.Select(x => x.FullName));
         }
 
         public PatternLinker()
@@ -55,7 +54,7 @@ namespace Nezaboodka.Nevod
         public virtual LinkedPackageSyntax Link(PackageSyntax syntaxTree)
         {
             fPatternByName = new Dictionary<string, PatternSyntax>();
-            fRequiredFiles = new HashSet<string>();
+            fRequiredPackageByFilePath = new Dictionary<string, RequiredPackageSyntax>();
             fRequiredPackageByPatternName = new Dictionary<string, RequiredPackageSyntax>();
             fDuplicatePatternsByRequiredPackage =
                 new Dictionary<RequiredPackageSyntax, Dictionary<string, List<string>>>();
@@ -68,8 +67,11 @@ namespace Nezaboodka.Nevod
         protected internal override Syntax VisitPackage(PackageSyntax node)
         {
             ReadOnlyCollection<RequiredPackageSyntax> requiredPackages = Visit(node.RequiredPackages);
+            RegisterPatternsFromRequiredPackages(node.RequiredPackages);
             AddDuplicatePatternsInRequiredPackagesErrors();
-            CheckDuplicatedPatternNames(node);
+            foreach (PatternSyntax p in Syntax.StandardPattern.StandardPatterns)
+                fPatternByName.Add(p.FullName, p);
+            // CheckDuplicatedPatternNames(node);
             ReadOnlyCollection<Syntax> rootPatterns = Visit(node.Patterns);
             ReadOnlyCollection<Syntax> searchTargets = Visit(node.SearchTargets);
             foreach (PatternReferenceInContext x in fPatternReferences)
@@ -78,7 +80,7 @@ namespace Nezaboodka.Nevod
             result.TextRange = node.TextRange;
             result.Errors = node.Errors.Concat(fErrors).ToList();
             fPatternByName.Clear();
-            fRequiredFiles.Clear();
+            fRequiredPackageByFilePath.Clear();
             fRequiredPackageByPatternName.Clear();
             fDuplicatePatternsByRequiredPackage.Clear();
             fPatternReferences.Clear();
@@ -86,29 +88,14 @@ namespace Nezaboodka.Nevod
             return result;
         }
 
-        private void AddDuplicatePatternsInRequiredPackagesErrors()
+        private void RegisterPatternsFromRequiredPackages(ReadOnlyCollection<RequiredPackageSyntax> requiredPackages)
         {
-            foreach ((RequiredPackageSyntax requiredPackage, Dictionary<string, List<string>> duplicatePatternsByOriginalFile) in
-                fDuplicatePatternsByRequiredPackage)
-                foreach ((string originalFile, List<string> duplicatePatterns) in duplicatePatternsByOriginalFile)
-                {
-                    if (duplicatePatterns.Count == 1)
-                        AddError(requiredPackage, TextResource.DuplicatedPatternInRequiredPackage,
-                            requiredPackage.RelativePath, duplicatePatterns[0], originalFile);
-                    else if (duplicatePatterns.Count <= 3)
-                    {
-                        var joinedDuplicatePatterns = string.Join(", ", duplicatePatterns);
-                        AddError(requiredPackage, TextResource.DuplicatedPatternsInRequiredPackage,
-                            requiredPackage.RelativePath, duplicatePatterns.Count, joinedDuplicatePatterns, originalFile);
-                    }
-                    else
-                    {
-                        var joinedDuplicatePatterns = string.Join(", ", duplicatePatterns.Take(3));
-                        AddError(requiredPackage, TextResource.DuplicatedPatternsAndMoreInRequiredPackage,
-                            requiredPackage.RelativePath, duplicatePatterns.Count, joinedDuplicatePatterns, 
-                            duplicatePatterns.Count - 3,  originalFile);
-                    }
-                }
+            foreach (RequiredPackageSyntax requiredPackage in requiredPackages)
+            {
+                if (requiredPackage.Package != null)
+                    foreach (PatternSyntax p in requiredPackage.Package.Patterns)
+                        RegisterPatternWithNestedPatterns(p, requiredPackage);
+            }
         }
 
         protected internal override Syntax VisitRequiredPackage(RequiredPackageSyntax node)
@@ -116,12 +103,12 @@ namespace Nezaboodka.Nevod
             if (fRequiredPackageLoader == null)
                 throw SyntaxError(TextResource.RequireOperatorIsNotAllowedInSinglePackageMode);
             string filePath = Syntax.GetRequiredFilePath(fBaseDirectory, node.RelativePath);
-            if (fRequiredFiles.Add(filePath))
+            if (fRequiredPackageByFilePath.TryAdd(filePath, node))
             {
                 LinkedPackageSyntax linkedPackage = null;
                 try
                 {
-                    linkedPackage = fRequiredPackageLoader.LoadPackage(filePath);
+                    linkedPackage = TryLoadRequiredPackage(filePath, node);
                 }
                 catch (Exception)
                 {
@@ -135,8 +122,35 @@ namespace Nezaboodka.Nevod
                 }
             }
             else
-                AddError(node, TextResource.DuplicatedRequiredPackage, node.RelativePath);
+                AddError(node, TextResource.DuplicatedRequiredPackage, node.RelativePath, 
+                    fRequiredPackageByFilePath[filePath].RelativePath);
             return node;
+        }
+
+        private LinkedPackageSyntax TryLoadRequiredPackage(string filePath, RequiredPackageSyntax node)
+        {
+            LinkedPackageSyntax package = null;
+            try
+            {
+                package = fRequiredPackageLoader.LoadPackage(filePath);
+            }
+            catch (FileNotFoundException)
+            {
+                AddError(node, "File '{0}' not found", filePath);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                AddError(node, "File '{0}' not found", filePath);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                AddError(node, "Access to file '{0}' is denied. If given path is a directory and you want to import all the files from it, import them separately", filePath);
+            }
+            catch (Exception)
+            {
+                AddError(node, "Cannot import file '{0}'", filePath);
+            }
+            return package;
         }
 
         protected internal override Syntax VisitPatternSearchTarget(PatternSearchTargetSyntax node)
@@ -172,7 +186,19 @@ namespace Nezaboodka.Nevod
             fCurrentPattern = node;
             result = (PatternSyntax)base.VisitPattern(node);
             fCurrentPattern = null;
-            fPatternByName[result.FullName] = result;
+            if (result.Name != null)
+                if (StandardPatternNames.Contains(result.FullName))
+                    AddError(result, "Duplicate pattern name. '{0}' is a standard pattern", result.FullName);
+                else if (!fPatternByName.TryAdd(result.FullName, result))
+                {
+                    // If duplicate pattern has no associated RequiredPackageSyntax, original one is declared in current package.
+                    if (fRequiredPackageByPatternName.TryGetValue(result.FullName,
+                        out RequiredPackageSyntax requiredPackage))
+                        AddError(result, "Duplicate pattern '{0}'. Pattern is already declared in '{1}'",
+                            result.FullName, requiredPackage.RelativePath);
+                    else
+                        AddError(result, TextResource.DuplicatedPatternName, result.FullName);
+                }
             return result;
         }
 
@@ -196,7 +222,9 @@ namespace Nezaboodka.Nevod
 
         private void RegisterPatternWithNestedPatterns(PatternSyntax pattern, RequiredPackageSyntax node)
         {
-            if (!StandardPatternNames.Contains(pattern.FullName))
+            // Duplicate patterns named as one of standard patterns are handled in VisitPattern. No need to add error here.
+            // Erroneous patterns with no name should be ignored by linker.
+            if (!StandardPatternNames.Contains(pattern.FullName) && pattern.Name != null)
             {
                 if (fPatternByName.TryAdd(pattern.FullName, pattern))
                     fRequiredPackageByPatternName[pattern.FullName] = node;
@@ -204,7 +232,7 @@ namespace Nezaboodka.Nevod
                 {
                     RequiredPackageSyntax originalPatternPackage = fRequiredPackageByPatternName[pattern.FullName];
                     // No need to add error message if duplicate pattern is in the same package as original,
-                    // as it has already been handled by linker
+                    // as it has already been handled by linker in CheckDuplicatedPatternNames.
                     if (node != originalPatternPackage)
                         AddDuplicatePatternInfo(node, pattern.FullName, originalPatternPackage.RelativePath);
                 }
@@ -219,28 +247,32 @@ namespace Nezaboodka.Nevod
             Dictionary<string, List<string>> duplicatePatternsByOriginalFile =
                 fDuplicatePatternsByRequiredPackage.GetOrCreate(requiredPackage);
             List<string> duplicatePatternsFromFile = duplicatePatternsByOriginalFile.GetOrCreate(originalFile);
-            // Ignore duplicate patterns, declared in same required file
+            // Ignore duplicate patterns, declared in same required package
             if (!duplicatePatternsFromFile.Contains(patternName))
                 duplicatePatternsFromFile.Add(patternName);
         }
 
-        private void CheckDuplicatedPatternNames(PackageSyntax node)
+        private void AddDuplicatePatternsInRequiredPackagesErrors()
         {
-            foreach (PatternSyntax p in node.Patterns.Where(x => x is PatternSyntax))
+            foreach ((RequiredPackageSyntax requiredPackage, Dictionary<string, List<string>> duplicatePatternsByOriginalFile) in
+                fDuplicatePatternsByRequiredPackage)
+            foreach ((string originalFile, List<string> duplicatePatterns) in duplicatePatternsByOriginalFile)
             {
-                if (StandardPatternNames.Contains(p.FullName))
-                    AddError(p, "Duplicate pattern name. '{0}' is a standard pattern", p.FullName);
-                // Добавляем в словарь имён значение null, потому что объект PatternSyntax может быть заменён на новый.
-                // Значение null заменяется на существующую ссылку на объект PatternSyntax в методе VisitPattern.
-                else if (!fPatternByName.TryAdd(p.FullName, null))
+                if (duplicatePatterns.Count == 1)
+                    AddError(requiredPackage, TextResource.DuplicatedPatternInRequiredPackage,
+                        requiredPackage.RelativePath, duplicatePatterns[0], originalFile);
+                else if (duplicatePatterns.Count <= 3)
                 {
-                    // If pattern has no associated RequiredPackageSyntax, it is declared in the same package as duplicate one.
-                    // No need to add error message, as it has already been handled by linker
-                    if (fRequiredPackageByPatternName.TryGetValue(p.FullName, out RequiredPackageSyntax requiredPackage))
-                        AddError(p, "Duplicate pattern '{0}. Pattern is already declared in '{1}'", 
-                            p.FullName, requiredPackage.RelativePath);
-                    else
-                        AddError(p, TextResource.DuplicatedPatternName, p.FullName);
+                    var joinedDuplicatePatterns = string.Join(", ", duplicatePatterns.Select(name => $"'{name}'"));
+                    AddError(requiredPackage, TextResource.DuplicatedPatternsInRequiredPackage,
+                        requiredPackage.RelativePath, duplicatePatterns.Count, joinedDuplicatePatterns, originalFile);
+                }
+                else
+                {
+                    var joinedDuplicatePatterns = string.Join(", ", duplicatePatterns.Take(3).Select(name => $"'{name}'"));
+                    AddError(requiredPackage, TextResource.DuplicatedPatternsAndMoreInRequiredPackage,
+                        requiredPackage.RelativePath, duplicatePatterns.Count, joinedDuplicatePatterns, 
+                        duplicatePatterns.Count - 3,  originalFile);
                 }
             }
         }
@@ -298,11 +330,12 @@ namespace Nezaboodka.Nevod
             if (reference.PatternReference.ExtractionFromFields.Count > 0)
             {
                 PatternSyntax referencedPattern = reference.PatternReference.ReferencedPattern;
-                // Validate extractions only if pattern reference is resolved
+                // Validate extractions only if pattern reference is resolved.
                 if (referencedPattern != null)
                     foreach (ExtractionFromFieldSyntax extraction in reference.PatternReference.ExtractionFromFields)
                     {
-                        if (referencedPattern.FindFieldByName(extraction.FromFieldName) == null)
+                        // Skip erroneous ExtractionFromFieldSyntax with no FromFieldName.
+                        if (extraction.FromFieldName != null && referencedPattern.FindFieldByName(extraction.FromFieldName) == null)
                         {
                             AddError(extraction, TextResource.UndefinedFieldInReferencedPattern, extraction.FromFieldName,
                                 referencedPattern.FullName);
@@ -314,22 +347,20 @@ namespace Nezaboodka.Nevod
         private void AddError(Syntax syntax, string format, params object[] args)
         {
             Error error = GetError(syntax, format, args);
-            //if (fErrors.Count == 0 || fErrors[^1].ErrorRange.Start != error.ErrorRange.Start)
             fErrors.Add(error);
         }
 
-        private Error GetError(Syntax syntax, string format, params object[] args)
-        {
-            return new Error(string.Format(System.Globalization.CultureInfo.CurrentCulture, format, args), syntax.TextRange);
-        }
+        private Error GetError(Syntax syntax, string format, params object[] args) => 
+            new Error(string.Format(System.Globalization.CultureInfo.CurrentCulture, format, args), syntax.TextRange);
     }
 
     internal static partial class TextResource
     {
         public const string DuplicatedPatternInRequiredPackage = "Required package '{0}' contains duplicate pattern '{1}'. Pattern is already declared in '{2}'";
-        public const string DuplicatedPatternsInRequiredPackage = "Required package '{0}' contains {1} duplicate patterns: '{2}'. Patterns are already declared in '{3}'";
-        public const string DuplicatedPatternsAndMoreInRequiredPackage = "Required package '{0}' contains {1} duplicate patterns: '{2}' and {3} more. Patterns are already declared in '{4}'";
+        public const string DuplicatedPatternsInRequiredPackage = "Required package '{0}' contains {1} duplicate patterns: {2}. Patterns are already declared in '{3}'";
+        public const string DuplicatedPatternsAndMoreInRequiredPackage = "Required package '{0}' contains {1} duplicate patterns: {2} and {3} more. Patterns are already declared in '{4}'";
         public const string ReferenceToUndefinedPattern = "Reference to undefined pattern '{0}'";
+        public const string DuplicatedRequiredPackage = "Duplicated required package '{0}' already imported as '{1}'";
         public const string UndefinedFieldInReferencedPattern = "Undefined field {0} in referenced pattern '{1}'";
         public const string SearchTargetIsUndefinedPattern = "Search target is undefined pattern '{0}'";
         public const string RequireOperatorIsNotAllowedInSinglePackageMode = "@require operator is not allowed in single package mode";
