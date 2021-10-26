@@ -5,12 +5,22 @@
 
 namespace Nezaboodka.Text.Parsing
 {
-    internal class WordBreakBuffer
+    internal struct WordBreakBuffer
     {
-        public WordBreak NextOfNextWordBreak { get; private set; } = WordBreak.Empty;
-        public WordBreak NextWordBreak { get; private set; } = WordBreak.Empty;
-        public WordBreak CurrentWordBreak { get; private set; } = WordBreak.Empty;
-        public WordBreak PreviousWordBreak { get; private set; } = WordBreak.Empty;
+        public WordBreak NextOfNextWordBreak;
+        public WordBreak NextWordBreak;
+        public WordBreak CurrentWordBreak;
+        public WordBreak PreviousWordBreak;
+
+        public static WordBreakBuffer Create()
+        {
+            var result = new WordBreakBuffer();
+            result.NextOfNextWordBreak = WordBreak.Empty;
+            result.NextWordBreak = WordBreak.Empty;
+            result.CurrentWordBreak = WordBreak.Empty;
+            result.PreviousWordBreak = WordBreak.Empty;
+            return result;
+        }
 
         public void AddWordBreak(WordBreak wordBreak)
         {

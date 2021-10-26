@@ -56,7 +56,7 @@ package cache, package builder with options, stream-based text source, search op
 as well as search result handling callback.
 
 ```csharp
-static void ComplexExample(string packagesDirectory, string packageName, string textFile)
+static void ComplexExample(string packageName, string textFile)
 {
     // Create package cache. It should be a global static object in real life
     var packageCache = new PackageCache();
@@ -64,7 +64,6 @@ static void ComplexExample(string packagesDirectory, string packageName, string 
     // Create pattern package
     var packageBuilder = new PackageBuilder(
         new PackageBuilderOptions() { SyntaxInformationBinding = true },
-        packagesDirectory,
         packageCache);
     var patternPackage = packageBuilder.BuildPackageFromFile(packageName);
 

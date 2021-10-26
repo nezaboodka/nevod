@@ -20,55 +20,49 @@ namespace Nezaboodka.Nevod
         }
 
         private PackageBuilderOptions fOptions;
-        private string fBaseDirectory;
         private Func<string, string> fFileContentProvider;
         private PackageCache fPackageCache;
         private Stack<FileLinker> fDependencyStack;
 
         public PackageBuilder()
-            : this(PackageBuilderOptions.Default, Environment.CurrentDirectory, new PackageCache(), LoadFileContent)
+            : this(PackageBuilderOptions.Default, new PackageCache(), LoadFileContent)
         {
         }
 
         public PackageBuilder(PackageBuilderOptions options)
-            : this(options, Environment.CurrentDirectory, new PackageCache(), LoadFileContent)
+            : this(options, new PackageCache(), LoadFileContent)
         {
         }
 
-        public PackageBuilder(PackageBuilderOptions options, string baseDirectory)
-            : this(options, baseDirectory, new PackageCache(), LoadFileContent)
+        public PackageBuilder(PackageBuilderOptions options, PackageCache packageCache)
+            : this(options, packageCache, LoadFileContent)
         {
         }
 
-        public PackageBuilder(PackageBuilderOptions options, string baseDirectory, PackageCache packageCache)
-            : this(options, baseDirectory, packageCache, LoadFileContent)
-        {
-        }
-
-        public PackageBuilder(PackageBuilderOptions options, string baseDirectory, PackageCache packageCache,
+        public PackageBuilder(PackageBuilderOptions options, PackageCache packageCache,
             Func<string, string> fileContentProvider)
         {
             if (options == null)
                 throw new ArgumentNullException(nameof(options));
-            if (baseDirectory == null)
-                throw new ArgumentNullException(nameof(baseDirectory));
             if (packageCache == null)
                 throw new ArgumentNullException(nameof(packageCache));
             if (fileContentProvider == null)
                 throw new ArgumentNullException(nameof(fileContentProvider));
 
             fOptions = options;
-            fBaseDirectory = baseDirectory;
             fFileContentProvider = fileContentProvider;
             fPackageCache = packageCache;
             fDependencyStack = new Stack<FileLinker>();
         }
 
-        public PatternPackage BuildPackageFromText(string definition)
+        public PatternPackage BuildPackageFromText(string definition) =>
+            BuildPackageFromText(definition, Environment.CurrentDirectory);
+
+        public PatternPackage BuildPackageFromText(string definition, string baseDirectory)
         {
             var parser = new SyntaxParser();
             PackageSyntax parsedTree = parser.ParsePackageText(definition);
-            PatternPackage result = BuildPackageFromSyntax(parsedTree);
+            PatternPackage result = BuildPackageFromSyntax(parsedTree, baseDirectory);
             return result;
         }
 
@@ -76,19 +70,26 @@ namespace Nezaboodka.Nevod
         {
             string normalizedFilePath = Path.GetFullPath(filePath);
             PackageSyntax parsedTree = ParseFile(normalizedFilePath);
-            PatternPackage result = BuildPackageFromSyntax(parsedTree, normalizedFilePath);
+            PatternPackage result = BuildPackageFromSyntax(parsedTree, Path.GetDirectoryName(filePath), normalizedFilePath);
             return result;
         }
 
-        public PatternPackage BuildPackageFromExpressionText(string expression)
+        public PatternPackage BuildPackageFromExpressionText(string expression) =>
+            BuildPackageFromExpressionText(expression, Environment.CurrentDirectory);
+
+        public PatternPackage BuildPackageFromExpressionText(string expression, string baseDirectory)
         {
             var parser = new SyntaxParser();
             PackageSyntax parsedTree = parser.ParseExpressionText(expression);
-            PatternPackage result = BuildPackageFromSyntax(parsedTree);
+            PatternPackage result = BuildPackageFromSyntax(parsedTree, baseDirectory);
             return result;
         }
 
-        public PatternPackage BuildPackageFromSyntax(PackageSyntax parsedTree) => BuildPackageFromSyntax(parsedTree, null);
+        public PatternPackage BuildPackageFromSyntax(PackageSyntax parsedTree) => 
+            BuildPackageFromSyntax(parsedTree, Environment.CurrentDirectory);
+
+        public PatternPackage BuildPackageFromSyntax(PackageSyntax parsedTree, string baseDirectory) =>
+            BuildPackageFromSyntax(parsedTree, baseDirectory, filePath: null);
 
         // Internal
 
@@ -114,14 +115,14 @@ namespace Nezaboodka.Nevod
             return result;
         }
         
-        private PatternPackage BuildPackageFromSyntax(PackageSyntax parsedTree, string filePath)
+        private PatternPackage BuildPackageFromSyntax(PackageSyntax parsedTree, string baseDirectory, string filePath)
         {
             lock (fPackageCache)
             {
                 LinkedPackageSyntax linkedTree;
                 try
                 {
-                    linkedTree = LinkPackage(parsedTree, fBaseDirectory, filePath);
+                    linkedTree = LinkPackage(parsedTree, baseDirectory, filePath);
                 }
                 catch (Exception ex)
                 {

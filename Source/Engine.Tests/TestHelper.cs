@@ -198,7 +198,7 @@ namespace Nezaboodka.Nevod.Engine.Tests
             var startAllocatedBytes = GC.GetTotalAllocatedBytes();
             var watch = Stopwatch.StartNew();
 
-            var builder = new PackageBuilder(DefaultPackageBuilderOptionsForTest, Environment.CurrentDirectory,
+            var builder = new PackageBuilder(DefaultPackageBuilderOptionsForTest,
                 PackageCache.Global);
             var linker = new NormalizingPatternLinker(Environment.CurrentDirectory, builder);
             LinkedPackageSyntax linkedTree = linker.Link(parsedTree);
@@ -290,9 +290,9 @@ namespace Nezaboodka.Nevod.Engine.Tests
         {
             if (options == null)
                 options = DefaultSearchOptionsForTest;
-            var packageBuilder = new PackageBuilder(DefaultPackageBuilderOptionsForTest, baseDirectory: "/",
+            var packageBuilder = new PackageBuilder(DefaultPackageBuilderOptionsForTest,
                 new PackageCache(), fileContentProvider);
-            var package = packageBuilder.BuildPackageFromText(patterns);
+            var package = packageBuilder.BuildPackageFromText(patterns, baseDirectory: "/");
             var engine = new TextSearchEngine(package, options);
             SearchResult searchResult = engine.Search(text);
             if (!options.SuppressCandidateLimitExceeded && searchResult.WasCandidateLimitExceeded)
