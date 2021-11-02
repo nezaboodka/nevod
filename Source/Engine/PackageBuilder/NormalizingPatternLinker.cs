@@ -11,21 +11,17 @@ namespace Nezaboodka.Nevod
         private PatternSyntax fCurrentPattern;
         private List<Syntax> fAllPatterns;
 
-        public NormalizingPatternLinker()
-        {
-        }
-        
-        public NormalizingPatternLinker(string baseDirectory, IPackageLoader requiredPackageLoader) 
-            : base(baseDirectory, requiredPackageLoader)
+        public NormalizingPatternLinker(ILinkerCache linkerCache) 
+            : base(linkerCache)
         {
         }
 
-        public override LinkedPackageSyntax Link(PackageSyntax syntaxTree)
+        public override LinkedPackageSyntax Link(PackageSyntax syntaxTree, string baseDirectory, string filePath)
         {
             fExtractedPatterns = new List<Syntax>();
             fNextExtractedPatternNumber = 0;
             fAllPatterns = new List<Syntax>();
-            return base.Link(syntaxTree);
+            return base.Link(syntaxTree, baseDirectory, filePath);
         }
 
         public override Syntax Visit(Syntax node)
