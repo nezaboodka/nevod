@@ -21,6 +21,9 @@ namespace Nezaboodka.Nevod
         public LinkedPackageSyntax SubstitutePatternReferences(LinkedPackageSyntax syntaxTree,
             HashSet<PatternSyntax> excludedPatterns)
         {
+            if (syntaxTree.HasOwnOrChildErrors)
+                throw ErrorsCollector.AggregateErrorsException(syntaxTree, filePath: null,
+                    TextResource.ReferencesCannotBeSubstituted);
             fExcludedPatterns = excludedPatterns;
             fVisitedPatterns = new HashSet<PatternSyntax>();
             fPatternSubstitutions = new Dictionary<PatternSyntax, PatternSyntax>();

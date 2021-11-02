@@ -10,16 +10,14 @@ using System.Threading;
 
 namespace Nezaboodka.Nevod
 {
-    public class PackageCache
+    public class PackageCache : ILinkerCache
     {
         public static readonly PackageCache Global = new PackageCache();
-
         private int fLastRootExpressionId;
-        internal Dictionary<string, PatternExpression> PatternByName { get; private set; }
 
-        public Dictionary<string, LinkedPackageSyntax> PackageSyntaxByFilePath { get; private set; }
-
-        public HashSet<string> GeneratedPackages { get; private set; }
+        public HashSet<string> GeneratedPackages { get; }
+        internal Dictionary<string, PatternExpression> PatternByName { get; }
+        private Dictionary<string, LinkedPackageSyntax> PackageSyntaxByFilePath { get; }
 
         public PackageCache()
         {
@@ -45,6 +43,16 @@ namespace Nezaboodka.Nevod
         public int GetLastRootExpressionId()
         {
             return fLastRootExpressionId;
+        }
+
+        public bool TryGetLinkedPackage(string filePath, out LinkedPackageSyntax linkedPackageSyntax)
+        {
+            return PackageSyntaxByFilePath.TryGetValue(filePath, out linkedPackageSyntax);
+        }
+
+        public void AddLinkedPackage(string filePath, LinkedPackageSyntax linkedPackageSyntax)
+        {
+            PackageSyntaxByFilePath[filePath] = linkedPackageSyntax;
         }
     }
 }

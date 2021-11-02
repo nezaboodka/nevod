@@ -253,11 +253,5 @@ namespace Nezaboodka.Nevod
         {
             return node;
         }
-
-        protected internal Exception SyntaxError(string format, params object[] args)
-        {
-            return new SyntaxException(string.Format(System.Globalization.CultureInfo.CurrentCulture, format, args), 0,
-                0, string.Empty);
-        }
     }
 }
