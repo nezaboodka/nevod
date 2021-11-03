@@ -14,5 +14,10 @@
         public int Length => End - Start;
         
         public bool IsEmpty => Start == End;
+
+        public override string ToString()
+        {
+            return $"Start: {Start}, End: {End}";
+        }
     }
 }

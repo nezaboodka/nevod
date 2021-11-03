@@ -493,11 +493,17 @@ namespace Nezaboodka.Nevod
         private FieldSyntax[] ParseFields()
         {
             ThrowIfNotValidated(ValidateTokenAndAdvance(TokenId.OpenParenthesis, TextResource.ListOfFieldNamesExpected));
-            EndSign saveEndSign = fEndSign;
-            fEndSign |= EndSign.EndOfFields;
-            List<FieldSyntax> result = ParseCommaSeparatedList(ParseField, TokenId.CloseParenthesis, IsFieldStart);
+            List<FieldSyntax> result;
+            if (fToken.Id == TokenId.CloseParenthesis)
+                result = new List<FieldSyntax>();
+            else
+            { 
+                EndSign saveEndSign = fEndSign;
+                fEndSign |= EndSign.EndOfFields;
+                result = ParseCommaSeparatedList(ParseField, TokenId.CloseParenthesis, IsFieldStart);
+                fEndSign = saveEndSign;
+            }
             ValidateTokenAndAdvance(TokenId.CloseParenthesis, TextResource.CloseParenthesisExpected);
-            fEndSign = saveEndSign;
             return result.ToArray();
         }
 
@@ -527,8 +533,8 @@ namespace Nezaboodka.Nevod
                 NextToken();
                 SetTextRange(result, startPosition);
             }
-            else if (isInternal)
-                AddError(GetError(fPreviousTokenRange, TextResource.FieldNameExpected, fToken));
+            else
+                AddError(GetError(TextResource.FieldNameExpected));
             return result;
         }
 
@@ -795,6 +801,17 @@ namespace Nezaboodka.Nevod
                         break;
                     case TokenId.StringLiteral:
                         result = ParseText();
+                        break;
+                    // Error recovery case
+                    case TokenId.HashSign:
+                        AddError(GetError(TextResource.ExpressionExpected));
+                        if (IsStartOfPattern())
+                            fIsAbortingDueToPatternDefinition = true;
+                        else
+                        {
+                            isParsed = false;
+                            NextToken();
+                        }
                         break;
                     default:
                         AddError(GetError(TextResource.ExpressionExpected));
@@ -1091,12 +1108,18 @@ namespace Nezaboodka.Nevod
                 if (fToken.Id == TokenId.OpenParenthesis)
                 {
                     NextToken();
-                    EndSign saveEndSign = fEndSign;
-                    fEndSign |= EndSign.EndOfExtractionFromFields;
-                    extractionFromFields = ParseCommaSeparatedList(ParseExtractionFromField, TokenId.CloseParenthesis,
-                        isStartOfElement: () => fToken.Id == TokenId.Identifier);
+                    if (fToken.Id == TokenId.CloseParenthesis)
+                        extractionFromFields = new List<Syntax>();
+                    else
+                    {
+                        EndSign saveEndSign = fEndSign;
+                        fEndSign |= EndSign.EndOfExtractionFromFields;
+                        extractionFromFields = ParseCommaSeparatedList(ParseExtractionFromField,
+                            TokenId.CloseParenthesis,
+                            isStartOfElement: () => fToken.Id == TokenId.Identifier);
+                        fEndSign = saveEndSign;
+                    }
                     ValidateTokenAndAdvance(TokenId.CloseParenthesis, TextResource.CloseParenthesisExpected);
-                    fEndSign = saveEndSign;
                 }
                 else
                     extractionFromFields = new List<Syntax>();
@@ -1108,7 +1131,10 @@ namespace Nezaboodka.Nevod
         private Syntax ParseExtractionFromField()
         {
             if (fToken.Id != TokenId.Identifier)
+            {
+                AddError(GetError(TextResource.FieldNameExpected));
                 return null;
+            }
             int startPosition = fToken.TextSlice.Position;
             string fieldName = fToken.TextSlice.ToString();
             if (fFieldByName.TryGetValue(fieldName, out FieldSyntax field))
@@ -1150,9 +1176,16 @@ namespace Nezaboodka.Nevod
             string text = ParseStringLiteral(out bool isCaseSensitive, out bool textIsPrefix);
             if (fToken.Id == TokenId.OpenParenthesis)
             {
-                if (!textIsPrefix)
-                    AddError(GetError(TextResource.TextAttributesAreAllowedOnlyForTextPrefixLiterals));
+                int attributesStart = fToken.TextSlice.Position;
                 WordAttributes attributes = ParseTextAttributes(allowWordClass: true);
+                if (!textIsPrefix)
+                {
+                    int attributesEnd = attributesStart + 1;
+                    if (fPreviousTokenRange.Start > attributesStart)
+                        attributesEnd = fPreviousTokenRange.End;
+                    var errorRange = new TextRange(attributesStart, attributesEnd);
+                    AddErrorWithoutCheck(GetError(errorRange, TextResource.TextAttributesAreAllowedOnlyForTextPrefixLiterals));
+                }
                 if (!string.IsNullOrEmpty(text))
                     result = Syntax.Text(text, isCaseSensitive, attributes);
                 else
@@ -1653,7 +1686,9 @@ namespace Nezaboodka.Nevod
 
         private void AddError(in Error error, bool chekForMultipleErrors = true)
         {
-            if (!fIsErrorRecovery && (!chekForMultipleErrors || fErrors.Count == 0 || error.ErrorRange.Start > fErrors[^1].ErrorRange.Start))
+            if (!fIsErrorRecovery 
+                && (!chekForMultipleErrors || fErrors.Count == 0 || error.ErrorRange.Start > fErrors[^1].ErrorRange.Start) 
+                && error.ErrorRange.Start < fText.Length)
                 fErrors.Add(error);
         }
 
@@ -1671,7 +1706,11 @@ namespace Nezaboodka.Nevod
 
         private Error GetErrorAfter(in TextRange range, string format)
         {
-            var errorRange = new TextRange(range.End, range.End + 1);
+            TextRange errorRange;
+            if (range.End < fText.Length)
+                errorRange = new TextRange(range.End, range.End + 1);
+            else
+                errorRange = new TextRange(fText.Length - 1, fText.Length);
             return GetError(errorRange, format);
         }
 
@@ -1694,7 +1733,7 @@ namespace Nezaboodka.Nevod
                 throw InternalError(string.Format(TextResource.InternalParserErrorFormat, fErrors[^1]));
         }
         
-        private Exception InternalError(string message) => new InternalErrorException(message);
+        private Exception InternalError(string message) => new InternalNevodErrorException(message);
 
         private struct Token
         {

@@ -107,7 +107,7 @@ namespace Nezaboodka.Nevod
 
         private LinkedPackageSyntax LinkPackage(PackageSyntax parsedTree, string baseDirectory, string filePath)
         {
-            var linker = new NormalizingPatternLinker(fPackageCache);
+            var linker = new NormalizingPatternLinker(ParseFile, fPackageCache);
             LinkedPackageSyntax result = linker.Link(parsedTree, baseDirectory, filePath);
             return result;
         }
@@ -137,38 +137,10 @@ namespace Nezaboodka.Nevod
             return result;
         }
 
-        private AggregateErrorsException PackageBuildError(LinkedPackageSyntax linkedTree, string filePath)
+        private InvalidPackageException PackageBuildError(LinkedPackageSyntax linkedTree, string filePath)
         {
             return ErrorsCollector.AggregateErrorsException(linkedTree, filePath,
                 TextResource.LinkedPackageContainsErrors);
-        }
-    }
-
-    public class NevodException : Exception
-    {
-        public NevodException(string message) : base(message)
-        {
-        }
-
-        public NevodException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-    }
-    
-    public class InternalErrorException : NevodException
-    {
-        public InternalErrorException(string message) : base(message)
-        {
-        }
-    }
-    
-    public class AggregateErrorsException : NevodException
-    {
-        public List<PackageErrors> PackageErrorsList { get; }
-
-        public AggregateErrorsException(string message, List<PackageErrors> packageErrorsList) : base(message)
-        {
-            PackageErrorsList = packageErrorsList;
         }
     }
 

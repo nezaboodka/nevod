@@ -586,7 +586,7 @@ namespace Nezaboodka.Nevod
             string currentPatternName = string.Empty;
             if (fPatternStack.TryPeek(out PatternSyntax currentPattern))
                 currentPatternName = currentPattern.FullName;
-            return new NevodException(string.Format(TextResource.CompilationError,
+            return new PackageGeneratorException(string.Format(TextResource.CompilationError,
                 string.Format(System.Globalization.CultureInfo.CurrentCulture, format, args), currentPatternName));
         }
         
@@ -595,7 +595,7 @@ namespace Nezaboodka.Nevod
             string currentPatternName = string.Empty;
             if (fPatternStack.TryPeek(out PatternSyntax currentPattern))
                 currentPatternName = currentPattern.FullName;
-            return new InternalErrorException(string.Format(TextResource.CompilationError,
+            return new InternalNevodErrorException(string.Format(TextResource.CompilationError,
                 TextResource.InternalCompilerError, currentPatternName));
         }
 
