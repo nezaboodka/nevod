@@ -19,12 +19,12 @@ namespace Nezaboodka.Nevod
         private List<PackageErrors> fErrors;
         private string fCurrentFilePath;
         
-        internal static AggregateErrorsException AggregateErrorsException(LinkedPackageSyntax linkedTree, string filePath,
+        internal static InvalidPackageException AggregateErrorsException(LinkedPackageSyntax linkedTree, string filePath,
             string errorMessage)
         {
             var errorsCollector = new ErrorsCollector();
             List<PackageErrors> packageErrorsList = errorsCollector.CollectErrors(linkedTree, filePath);
-            var result = new AggregateErrorsException(errorMessage, packageErrorsList);
+            var result = new InvalidPackageException(errorMessage, packageErrorsList);
             return result;
         }
 

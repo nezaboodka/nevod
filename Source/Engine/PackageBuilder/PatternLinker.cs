@@ -26,7 +26,7 @@ namespace Nezaboodka.Nevod
         }
 
         private static readonly HashSet<string> StandardPatternNames;
-        private readonly SyntaxParser fSyntaxParser;
+        private readonly Func<string, PackageSyntax> fPackageProvider;
         private readonly ILinkerCache fLinkerCache;
         private readonly Stack<string> fDependencyStack;
         private string fBaseDirectory;
@@ -43,15 +43,15 @@ namespace Nezaboodka.Nevod
             StandardPatternNames = new HashSet<string>(Syntax.StandardPattern.StandardPatterns.Select(x => x.FullName));
         }
 
-        public PatternLinker()
-            : this(linkerCache: null)
+        public PatternLinker(Func<string, PackageSyntax> packageProvider)
+            : this(packageProvider, linkerCache: null)
         {
         }
         
-        public PatternLinker(ILinkerCache linkerCache)
+        public PatternLinker(Func<string, PackageSyntax> packageProvider, ILinkerCache linkerCache)
         {
+            fPackageProvider = packageProvider ?? throw new ArgumentNullException(nameof(packageProvider));
             fLinkerCache = linkerCache;
-            fSyntaxParser = new SyntaxParser();
             fDependencyStack = new Stack<string>();
         }
 
@@ -193,17 +193,11 @@ namespace Nezaboodka.Nevod
             if (fLinkerCache == null ||
                 !fLinkerCache.TryGetLinkedPackage(filePath, out LinkedPackageSyntax linkedPackage))
             {
-                PackageSyntax package = ParseFile(filePath);
+                PackageSyntax package = fPackageProvider(filePath);
                 linkedPackage = Link(package, Path.GetDirectoryName(filePath), filePath);
                 fLinkerCache?.AddLinkedPackage(filePath, linkedPackage);
             }
             return linkedPackage;
-        }
-
-        protected virtual PackageSyntax ParseFile(string filePath)
-        {
-            string text = File.ReadAllText(filePath);
-            return fSyntaxParser.ParsePackageText(text);
         }
 
         private bool ValidateRequiredPathAndAddErrors(string filePath, RequiredPackageSyntax requiredPackage)
@@ -240,7 +234,12 @@ namespace Nezaboodka.Nevod
             }
             catch (UnauthorizedAccessException)
             {
-                AddError(node,TextResource.AccessToFileDenied, filePath);
+                AddError(node, TextResource.AccessToFileDenied, filePath);
+            }
+            // Rethrow exception if resolving of required packages is not supported by linker.
+            catch (NotSupportedException)
+            {
+                throw;
             }
             catch (Exception)
             {
