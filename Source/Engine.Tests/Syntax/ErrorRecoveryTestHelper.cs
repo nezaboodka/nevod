@@ -7,10 +7,10 @@ namespace Nezaboodka.Nevod.Engine.Tests
     internal static class ErrorRecoveryTestHelper
     {
         public static ExpectedErrorByToken CreateExpectedError(string invalidToken, string messageTemplate) =>
-            new(string.Format(messageTemplate, invalidToken), invalidToken);
+            new ExpectedErrorByToken(string.Format(messageTemplate, invalidToken), invalidToken);
         
         public static ExpectedErrorByRange CreateExpectedError(int errorStart, int errorLength, string messageTemplate) =>
-            new(messageTemplate, new TextRange(errorStart, errorStart + errorLength));
+            new ExpectedErrorByRange(messageTemplate, new TextRange(errorStart, errorStart + errorLength));
 
         public static void ParseAndCompareErrors(string patterns, ExpectedError expectedError,
             Action<PackageSyntax> additionalChecks = null)
