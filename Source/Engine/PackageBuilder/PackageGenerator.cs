@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 
 namespace Nezaboodka.Nevod
 {
@@ -40,7 +39,7 @@ namespace Nezaboodka.Nevod
 
         public PatternPackage Generate(LinkedPackageSyntax packageSyntax)
         {
-            if (packageSyntax.HasOwnOrChildErrors)
+            if (packageSyntax.HasOwnOrRequiredPackageErrors)
                 throw ErrorsCollector.AggregateErrorsException(packageSyntax, filePath: null,
                     TextResource.LinkedPackageContainsErrors);
             fRequiredPackages = new HashSet<string>();

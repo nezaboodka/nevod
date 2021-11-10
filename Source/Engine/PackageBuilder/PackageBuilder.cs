@@ -87,7 +87,7 @@ namespace Nezaboodka.Nevod
             lock (fPackageCache)
             {
                 LinkedPackageSyntax linkedTree = LinkPackage(parsedTree, baseDirectory, filePath);
-                if (linkedTree.HasOwnOrChildErrors)
+                if (linkedTree.HasOwnOrRequiredPackageErrors)
                     throw PackageBuildError(linkedTree, filePath);
                 linkedTree = SubstituteReferences(linkedTree);
                 var generator = new PackageGenerator(fOptions.SyntaxInformationBinding, fPackageCache);
@@ -107,7 +107,7 @@ namespace Nezaboodka.Nevod
 
         private LinkedPackageSyntax LinkPackage(PackageSyntax parsedTree, string baseDirectory, string filePath)
         {
-            var linker = new NormalizingPatternLinker(ParseFile, fPackageCache);
+            var linker = new NormalizingPatternLinker(fFileContentProvider, fPackageCache);
             LinkedPackageSyntax result = linker.Link(parsedTree, baseDirectory, filePath);
             return result;
         }

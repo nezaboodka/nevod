@@ -48,10 +48,13 @@ namespace Nezaboodka.Nevod
 
         protected internal override Syntax VisitRequiredPackage(RequiredPackageSyntax node)
         {
-            string saveCurrentFilePath = fCurrentFilePath;
-            fCurrentFilePath = node.FullPath;
-            Visit(node.Package);
-            fCurrentFilePath = saveCurrentFilePath;
+            if (node.Package.HasOwnOrRequiredPackageErrors)
+            {
+                string saveCurrentFilePath = fCurrentFilePath;
+                fCurrentFilePath = node.FullPath;
+                Visit(node.Package);
+                fCurrentFilePath = saveCurrentFilePath;
+            }
             return node;
         }
     }

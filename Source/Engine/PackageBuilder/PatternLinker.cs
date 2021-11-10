@@ -11,12 +11,6 @@ using System.Linq;
 
 namespace Nezaboodka.Nevod
 {
-    public interface ILinkerCache
-    {
-        public bool TryGetLinkedPackage(string filePath, out LinkedPackageSyntax linkedPackageSyntax);
-        public void AddLinkedPackage(string filePath, LinkedPackageSyntax linkedPackageSyntax);
-    }
-
     public class PatternLinker : SyntaxVisitor
     {
         internal struct PatternReferenceInContext
@@ -26,8 +20,8 @@ namespace Nezaboodka.Nevod
         }
 
         private static readonly HashSet<string> StandardPatternNames;
-        private readonly Func<string, PackageSyntax> fPackageProvider;
-        private readonly ILinkerCache fLinkerCache;
+        private readonly Func<string, string> fFileContentProvider;
+        private readonly PackageCache fPackageCache;
         private readonly Stack<string> fDependencyStack;
         private string fBaseDirectory;
         private Dictionary<string, PatternSyntax> fPatternByName;
@@ -43,15 +37,20 @@ namespace Nezaboodka.Nevod
             StandardPatternNames = new HashSet<string>(Syntax.StandardPattern.StandardPatterns.Select(x => x.FullName));
         }
 
-        public PatternLinker(Func<string, PackageSyntax> packageProvider)
-            : this(packageProvider, linkerCache: null)
+        public PatternLinker()
+            : this(fileContentProvider: null, packageCache: null)
+        {
+        }
+
+        public PatternLinker(Func<string, string> fileContentProvider)
+            : this(fileContentProvider, packageCache: null)
         {
         }
         
-        public PatternLinker(Func<string, PackageSyntax> packageProvider, ILinkerCache linkerCache)
+        public PatternLinker(Func<string, string> fileContentProvider, PackageCache packageCache)
         {
-            fPackageProvider = packageProvider ?? throw new ArgumentNullException(nameof(packageProvider));
-            fLinkerCache = linkerCache;
+            fFileContentProvider = fileContentProvider;
+            fPackageCache = packageCache;
             fDependencyStack = new Stack<string>();
         }
 
@@ -95,8 +94,8 @@ namespace Nezaboodka.Nevod
             LinkedPackageSyntax result = Syntax.LinkedPackage(requiredPackages, searchTargets, rootPatterns);
             result.TextRange = node.TextRange;
             result.Errors = node.Errors.Concat(fErrors).ToList();
-            result.HasOwnOrChildErrors = result.Errors.Count != 0 ||
-                                         result.RequiredPackages.Any(requiredPackage => requiredPackage.Package.HasOwnOrChildErrors);
+            result.HasOwnOrRequiredPackageErrors = result.Errors.Count != 0 ||
+                                         result.RequiredPackages.Any(requiredPackage => requiredPackage.Package.HasOwnOrRequiredPackageErrors);
             fPatternByName.Clear();
             fRequiredPackageByFilePath.Clear();
             fRequiredPackageByPatternName.Clear();
@@ -190,14 +189,24 @@ namespace Nezaboodka.Nevod
         
         protected virtual LinkedPackageSyntax LoadRequiredPackage(string filePath)
         {
-            if (fLinkerCache == null ||
-                !fLinkerCache.TryGetLinkedPackage(filePath, out LinkedPackageSyntax linkedPackage))
+            if (fPackageCache == null ||
+                !fPackageCache.PackageSyntaxByFilePath.TryGetValue(filePath, out LinkedPackageSyntax linkedPackage))
             {
-                PackageSyntax package = fPackageProvider(filePath);
+                if (fFileContentProvider == null)
+                    throw PackageLoadError(TextResource.CannotLoadRequiredFile, filePath);
+                string text = fFileContentProvider(filePath);
+                var parser = new SyntaxParser();
+                PackageSyntax package = parser.ParsePackageText(text);
                 linkedPackage = Link(package, Path.GetDirectoryName(filePath), filePath);
-                fLinkerCache?.AddLinkedPackage(filePath, linkedPackage);
+                fPackageCache?.PackageSyntaxByFilePath.Add(filePath, linkedPackage);
             }
             return linkedPackage;
+        }
+        
+        protected Exception PackageLoadError(string format, params object[] args)
+        {
+            return new NevodPackageLoadException(string.Format(System.Globalization.CultureInfo.CurrentCulture, 
+                format, args));
         }
 
         private bool ValidateRequiredPathAndAddErrors(string filePath, RequiredPackageSyntax requiredPackage)
@@ -236,8 +245,7 @@ namespace Nezaboodka.Nevod
             {
                 AddError(node, TextResource.AccessToFileDenied, filePath);
             }
-            // Rethrow exception if resolving of required packages is not supported by linker.
-            catch (NotSupportedException)
+            catch (NevodPackageLoadException)
             {
                 throw;
             }
@@ -394,10 +402,10 @@ namespace Nezaboodka.Nevod
         public const string DuplicatedRequiredPackage = "Duplicated required package '{0}' already imported as '{1}'";
         public const string UndefinedFieldInReferencedPattern = "Undefined field {0} in referenced pattern '{1}'";
         public const string SearchTargetIsUndefinedPattern = "Search target is undefined pattern '{0}'";
-        public const string RequireOperatorIsNotAllowedInSinglePackageMode = "@require operator is not allowed in single package mode";
         public const string FileNotFound = "File '{0}' not found";
         public const string AccessToFileDenied = "Access to file '{0}' denied. If given path is a directory and you want to import all the files from it, import them separately";
         public const string CannotImportFile = "Cannot import file '{0}'";
         public const string RecursiveFileDependencyIsNotSupported = "Recursive file dependency is not supported: {0}";
+        public const string CannotLoadRequiredFile = "Cannot load required file '{0}' because fileContentProvider is null. Pass it to the linker's constructor";
     }
 }

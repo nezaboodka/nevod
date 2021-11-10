@@ -12,8 +12,8 @@ namespace Nezaboodka.Nevod
         private PatternSyntax fCurrentPattern;
         private List<Syntax> fAllPatterns;
 
-        public NormalizingPatternLinker(Func<string, PackageSyntax> packageProvider, ILinkerCache linkerCache) 
-            : base(packageProvider, linkerCache)
+        public NormalizingPatternLinker(Func<string, string> fileContentProvider, PackageCache packageCache) 
+            : base(fileContentProvider, packageCache)
         {
         }
 

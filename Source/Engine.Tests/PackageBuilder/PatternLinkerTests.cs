@@ -14,7 +14,7 @@ namespace Nezaboodka.Nevod.Engine.Tests
 P1 = 'Nezaboodka';
 P2 = P1;
 ";
-            var linker = new PatternLinker(packageProvider: _ => throw new NotSupportedException());
+            var linker = new PatternLinker();
             LinkedPackageSyntax package = linker.Link(new SyntaxParser().ParsePackageText(patterns),
                 Environment.CurrentDirectory, filePath: null);
             var p1 = (PatternSyntax) package.Patterns[0];
