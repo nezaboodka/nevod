@@ -199,7 +199,7 @@ namespace Nezaboodka.Nevod.Engine.Tests
             var watch = Stopwatch.StartNew();
 
             var linker = new NormalizingPatternLinker(
-                filePath => parser.ParsePackageText(File.ReadAllText(filePath)),
+                fileContentProvider: File.ReadAllText,
                 PackageCache.Global
             );
             LinkedPackageSyntax linkedTree = linker.Link(parsedTree, Environment.CurrentDirectory, null);

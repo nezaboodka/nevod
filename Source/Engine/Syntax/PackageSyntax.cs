@@ -31,7 +31,7 @@ namespace Nezaboodka.Nevod
 
     public class LinkedPackageSyntax : PackageSyntax
     {
-        public bool HasOwnOrChildErrors { get; internal set; }
+        public bool HasOwnOrRequiredPackageErrors { get; internal set; }
         
         internal LinkedPackageSyntax(IList<RequiredPackageSyntax> requiredPackages,
             IList<Syntax> searchTargets, IList<Syntax> patterns)
@@ -46,7 +46,7 @@ namespace Nezaboodka.Nevod
             if (requiredPackages != RequiredPackages || searchTargets != SearchTargets || patterns != Patterns)
                 result = LinkedPackage(requiredPackages, searchTargets, patterns);
             result.Errors = Errors;
-            result.HasOwnOrChildErrors = HasOwnOrChildErrors;
+            result.HasOwnOrRequiredPackageErrors = HasOwnOrRequiredPackageErrors;
             return result;
         }
 

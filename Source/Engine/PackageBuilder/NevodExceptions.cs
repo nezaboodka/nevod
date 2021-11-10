@@ -28,6 +28,13 @@ namespace Nezaboodka.Nevod
         }
     }
     
+    public class NevodPackageLoadException : NevodException
+    {
+        public NevodPackageLoadException(string message) : base(message)
+        {
+        }
+    }
+    
     public class InvalidPackageException : NevodException
     {
         public List<PackageErrors> PackageErrorsList { get; }
