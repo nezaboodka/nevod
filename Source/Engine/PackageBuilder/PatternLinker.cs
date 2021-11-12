@@ -63,15 +63,22 @@ namespace Nezaboodka.Nevod
             Dictionary<string, RequiredPackageSyntax> saveRequiredPackageByFilePath = fRequiredPackageByFilePath; 
             Dictionary<string, RequiredPackageSyntax> saveRequiredPackageByPatternName = fRequiredPackageByPatternName; 
             List<Error> saveErrors = fErrors; 
-            Dictionary<RequiredPackageSyntax, Dictionary<string, List<string>>> saveDuplicatePatternsByRequiredPackage = fDuplicatePatternsByRequiredPackage; 
-            LinkedPackageSyntax result = (LinkedPackageSyntax)Visit(syntaxTree);
-            fBaseDirectory = saveBaseDirectory;
-            fPatternByName = savePatternByName;
-            fRequiredPackageByFilePath = saveRequiredPackageByFilePath;
-            fRequiredPackageByPatternName = saveRequiredPackageByPatternName;
-            fErrors = saveErrors;
-            fDuplicatePatternsByRequiredPackage = saveDuplicatePatternsByRequiredPackage;
-            fDependencyStack.Pop();
+            Dictionary<RequiredPackageSyntax, Dictionary<string, List<string>>> saveDuplicatePatternsByRequiredPackage = fDuplicatePatternsByRequiredPackage;
+            LinkedPackageSyntax result;
+            try
+            {
+                result = (LinkedPackageSyntax)Visit(syntaxTree);
+            }
+            finally
+            {
+                fBaseDirectory = saveBaseDirectory;
+                fPatternByName = savePatternByName;
+                fRequiredPackageByFilePath = saveRequiredPackageByFilePath;
+                fRequiredPackageByPatternName = saveRequiredPackageByPatternName;
+                fErrors = saveErrors;
+                fDuplicatePatternsByRequiredPackage = saveDuplicatePatternsByRequiredPackage;
+                fDependencyStack.Pop();
+            }
             return result;
         }
 
@@ -245,14 +252,6 @@ namespace Nezaboodka.Nevod
             {
                 AddError(node, TextResource.AccessToFileDenied, filePath);
             }
-            catch (NevodPackageLoadException)
-            {
-                throw;
-            }
-            catch (Exception)
-            {
-                AddError(node, TextResource.CannotImportFile, filePath);
-            }
             return package;
         }
 
@@ -404,7 +403,6 @@ namespace Nezaboodka.Nevod
         public const string SearchTargetIsUndefinedPattern = "Search target is undefined pattern '{0}'";
         public const string FileNotFound = "File '{0}' not found";
         public const string AccessToFileDenied = "Access to file '{0}' denied. If given path is a directory and you want to import all the files from it, import them separately";
-        public const string CannotImportFile = "Cannot import file '{0}'";
         public const string RecursiveFileDependencyIsNotSupported = "Recursive file dependency is not supported: {0}";
         public const string CannotLoadRequiredFile = "Cannot load required file '{0}' because fileContentProvider is null. Pass it to the linker's constructor";
     }
