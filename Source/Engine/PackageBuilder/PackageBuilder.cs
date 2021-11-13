@@ -61,7 +61,7 @@ namespace Nezaboodka.Nevod
         {
             string normalizedFilePath = Path.GetFullPath(filePath);
             PackageSyntax parsedTree = ParseFile(normalizedFilePath);
-            PatternPackage result = BuildPackageFromSyntax(parsedTree, Path.GetDirectoryName(filePath), normalizedFilePath);
+            PatternPackage result = BuildPackageFromSyntax(parsedTree, Path.GetDirectoryName(normalizedFilePath), normalizedFilePath);
             return result;
         }
 

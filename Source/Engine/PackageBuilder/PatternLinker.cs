@@ -18,11 +18,23 @@ namespace Nezaboodka.Nevod
             public PatternReferenceSyntax PatternReference;
             public PatternSyntax PatternContext;
         }
+        
+        private readonly struct FileInfo
+        {
+            public string Path { get; }
+            public string NormalizedPath { get; }
+
+            public FileInfo(string path, string normalizedPath)
+            {
+                Path = path;
+                NormalizedPath = normalizedPath;
+            }
+        }
 
         private static readonly HashSet<string> StandardPatternNames;
         private readonly Func<string, string> fFileContentProvider;
         private readonly PackageCache fPackageCache;
-        private readonly Stack<string> fDependencyStack;
+        private readonly Stack<FileInfo> fDependencyStack;
         private string fBaseDirectory;
         private Dictionary<string, PatternSyntax> fPatternByName;
         private Dictionary<string, RequiredPackageSyntax> fRequiredPackageByFilePath;
@@ -51,14 +63,14 @@ namespace Nezaboodka.Nevod
         {
             fFileContentProvider = fileContentProvider;
             fPackageCache = packageCache;
-            fDependencyStack = new Stack<string>();
+            fDependencyStack = new Stack<FileInfo>();
         }
 
         public virtual LinkedPackageSyntax Link(PackageSyntax syntaxTree, string baseDirectory, string filePath)
         {
             string saveBaseDirectory = fBaseDirectory;
             fBaseDirectory = baseDirectory;
-            fDependencyStack.Push(filePath);
+            fDependencyStack.Push(new FileInfo(filePath, PathUtils.NormalizePathCase(filePath)));
             Dictionary<string, PatternSyntax> savePatternByName = fPatternByName; 
             Dictionary<string, RequiredPackageSyntax> saveRequiredPackageByFilePath = fRequiredPackageByFilePath; 
             Dictionary<string, RequiredPackageSyntax> saveRequiredPackageByPatternName = fRequiredPackageByPatternName; 
@@ -115,7 +127,8 @@ namespace Nezaboodka.Nevod
         protected internal override Syntax VisitRequiredPackage(RequiredPackageSyntax node)
         {
             string filePath = Syntax.GetRequiredFilePath(fBaseDirectory, node.RelativePath);
-            if (ValidateRequiredPathAndAddErrors(filePath, node))
+            string normalizedFilePath = PathUtils.NormalizePathCase(filePath);
+            if (ValidateRequiredPathAndAddErrors(filePath, normalizedFilePath, node))
             {
                 LinkedPackageSyntax linkedPackage = TryLoadRequiredPackage(filePath, node);
                 if (linkedPackage != null)
@@ -216,17 +229,19 @@ namespace Nezaboodka.Nevod
                 format, args));
         }
 
-        private bool ValidateRequiredPathAndAddErrors(string filePath, RequiredPackageSyntax requiredPackage)
+        private bool ValidateRequiredPathAndAddErrors(string filePath, string normalizedFilePath, RequiredPackageSyntax requiredPackage)
         {
-            if (!fRequiredPackageByFilePath.TryAdd(filePath, requiredPackage))
+            if (!fRequiredPackageByFilePath.TryAdd(normalizedFilePath, requiredPackage))
             {
                 AddError(requiredPackage, TextResource.DuplicatedRequiredPackage, 
-                    requiredPackage.RelativePath, fRequiredPackageByFilePath[filePath].RelativePath);
+                    requiredPackage.RelativePath, fRequiredPackageByFilePath[normalizedFilePath].RelativePath);
                 return false;
             }
-            if (fDependencyStack.Any(x => x != null && x == filePath))
+            if (fDependencyStack.Any(x => x.NormalizedPath != null && x.NormalizedPath == normalizedFilePath))
             {
-                string errorMessage = string.Join(" -> ", fDependencyStack.Reverse()) + " -> " + filePath;
+                string errorMessage = string.Join(" -> ",
+                    fDependencyStack.Reverse().SkipWhile(x => x.NormalizedPath != normalizedFilePath)
+                        .Select(x => x.Path)) + " -> " + filePath;
                 AddError(requiredPackage, TextResource.RecursiveFileDependencyIsNotSupported, errorMessage);
                 return false;
             }
