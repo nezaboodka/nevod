@@ -70,6 +70,8 @@ namespace Nezaboodka.Nevod
         {
             string saveBaseDirectory = fBaseDirectory;
             fBaseDirectory = baseDirectory;
+            if (filePath != null)
+                filePath = Path.GetFullPath(filePath);
             fDependencyStack.Push(new FileInfo(filePath, PathUtils.NormalizePathCase(filePath)));
             Dictionary<string, PatternSyntax> savePatternByName = fPatternByName; 
             Dictionary<string, RequiredPackageSyntax> saveRequiredPackageByFilePath = fRequiredPackageByFilePath; 
