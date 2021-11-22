@@ -205,6 +205,8 @@ P1 = Word;
                     CreateExpectedErrorWithArgs(invalidToken: "@require './REQUIRED.np';\n\n",
                         TextResource.DuplicatedRequiredPackage, "./REQUIRED.np", "Required.np"));
             }
+            else
+                Assert.Inconclusive("File system is case sensitive.");
         }
         
         [TestMethod]

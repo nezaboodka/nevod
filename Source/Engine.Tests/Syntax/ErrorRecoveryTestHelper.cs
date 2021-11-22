@@ -33,6 +33,19 @@ namespace Nezaboodka.Nevod.Engine.Tests
                 CompareErrors(expectedErrors[i], actualErrors[i], patterns);
             additionalChecks?.Invoke(package);
         }
+
+        public static void ParseExpressionAndCompareErrors(string expression, ExpectedError expectedError) =>
+            ParseExpressionAndCompareErrors(expression, new List<ExpectedError> { expectedError });
+
+        public static void ParseExpressionAndCompareErrors(string expression, IList<ExpectedError> expectedErrors)
+        {
+            expression = expression.Replace("\r\n", "\n");
+            PackageSyntax package = new SyntaxParser().ParseExpressionText(expression);
+            List<Error> actualErrors = package.Errors;
+            Assert.AreEqual(expectedErrors.Count, actualErrors.Count, message: "Actual number of errors is not equal to the expected one.");
+            for (var i = 0; i < expectedErrors.Count; i++)
+                CompareErrors(expectedErrors[i], actualErrors[i], expression);
+        }
         
         public static void LinkAndCompareErrors(string filePath, Func<string, string> fileContentProvider,
             ExpectedError expectedError, PatternsAndPackageSelector patternsAndPackageSelector = null)

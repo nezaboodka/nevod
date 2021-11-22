@@ -187,15 +187,24 @@ namespace Nezaboodka.Nevod.Engine.Tests
         }
 
         [TestMethod]
-        public void RequireInTheMiddleOfTheFile()
+        public void RequireErrors()
         {
-            string patterns = 
-@"Pattern = Word;
+            ParseAndCompareErrors(patterns: @"
+Pattern = Word;
 @require 'Basic.np';
 @search Basic.Date;
-";
-            ParseAndCompareErrors(patterns,
+",
                 CreateExpectedError(invalidToken: "@require 'Basic.np';", TextResource.RequireKeywordsAreOnlyAllowedInTheBeginning));
+            ParseAndCompareErrors(patterns: @"
+@require 'Basic.np'*;
+@search Basic.Date;
+",
+                CreateExpectedError(invalidToken: "'Basic.np'*", TextResource.InvalidSpecifierAfterStringLiteral));
+            ParseAndCompareErrors(patterns: @"
+@require ;
+@search Basic.Date;
+",
+                CreateExpectedError(invalidToken: ";", TextResource.FilePathAsStringLiteralExpected));
         }
 
         [TestMethod]
@@ -222,11 +231,54 @@ namespace Nezaboodka.Nevod.Engine.Tests
         }
 
         [TestMethod]
+        public void ExtractionFromFieldErrors()
+        {
+            ParseAndCompareErrors(
+                patterns: @"
+Pattern(X, Y) = X: Word + Y: Num;
+Reference(A) = Pattern(A: X, A: Y); 
+",
+                CreateExpectedError(invalidToken: "A", TextResource.FieldAlreadyUsedForTextExtraction));
+            ParseAndCompareErrors(
+                patterns: @"
+Pattern(X) = X: Word;
+Reference() = Pattern(UndeclaredField: X); 
+",
+                CreateExpectedError(invalidToken: "UndeclaredField", TextResource.UndeclaredField));
+            ParseAndCompareErrors(
+                patterns: @"
+Pattern(X) = X: Word;
+Reference(A) = Pattern(A X); 
+",
+                CreateExpectedError(invalidToken: "X", TextResource.ColonExpected));
+            ParseAndCompareErrors(
+                patterns: @"
+Pattern(X) = X: Word;
+Reference(A) = Pattern(A: ); 
+",
+                CreateExpectedError(invalidToken: ")", TextResource.FromFieldNameExpected));
+        }
+
+        [TestMethod]
+        public void SpanExtractionErrors()
+        {
+            ParseAndCompareErrors(
+                patterns: "Html() = '<html>' .. UndeclaredField .. '</html>';",
+                CreateExpectedError("UndeclaredField", TextResource.UndeclaredField));
+            ParseAndCompareErrors(
+                patterns: "Html(X) = X: Word + ('<html>' .. X .. '</html>');",
+                CreateExpectedError("X", TextResource.FieldAlreadyUsedForTextExtraction));
+        }
+
+        [TestMethod]
         public void NumericRangeErrors()
         {
             ParseAndCompareErrors(
                 patterns: "Pattern = [10-5 AlphaNum];",
                 CreateExpectedError(invalidToken: "10", TextResource.NumericRangeLowBoundCannotBeGreaterThanHighBound));
+            ParseAndCompareErrors(
+                patterns: "Pattern = [10- AlphaNum];",
+                CreateExpectedError(invalidToken: "AlphaNum", TextResource.HighBoundOfNumericRangeExpected));
             ParseAndCompareErrors(
                 patterns: "Pattern = [-5 AlphaNum];",
                 new List<ExpectedError>
@@ -234,6 +286,9 @@ namespace Nezaboodka.Nevod.Engine.Tests
                     CreateExpectedError(invalidToken: "-", TextResource.NumericRangeExpected),
                     CreateExpectedError(invalidToken: "5", TextResource.ExpressionExpected),
                 });
+            ParseAndCompareErrors(
+                patterns: $"Pattern = [0-{(long) int.MaxValue + 1} AlphaNum];",
+                CreateExpectedError(invalidToken: ((long) int.MaxValue + 1).ToString(), TextResource.StringLiteralCannotBeConvertedToIntegerValue));
             ParseAndCompareErrors(
                 patterns: $"Pattern = [0-{int.MaxValue} AlphaNum];",
                 CreateExpectedError(invalidToken: int.MaxValue.ToString(), TextResource.InvalidValueOfNumericRangeBound));
@@ -265,10 +320,21 @@ namespace Nezaboodka.Nevod.Engine.Tests
         }
 
         [TestMethod]
+        public void IdentifierErrors()
+        {
+            ParseAndCompareErrors(
+                patterns: "@search Basic.;",
+                CreateExpectedError(";", TextResource.IdentifierOrAsteriskExpected));
+            ParseAndCompareErrors(
+                patterns: "Pattern = Namespace.;",
+                CreateExpectedError(";", TextResource.IdentifierExpected));
+        }
+
+        [TestMethod]
         public void UnterminatedComment()
         {
             string patterns = 
-                @"Pattern = Word;
+@"Pattern = Word;
 /* This is an
 unterminated comment";
             ParseAndCompareErrors(
@@ -284,6 +350,125 @@ unterminated comment";
                 "Pattern = 'This is an unterminated string literal",
                 // Last symbol of "literal" word
                 CreateExpectedError(errorStart: 48, errorLength: 1, TextResource.UnterminatedStringLiteral));
+        }
+
+        [TestMethod]
+        public void UnknownTokenErrors()
+        {
+            ParseAndCompareErrors(
+                patterns: "@p Pattern = Word;",
+                CreateExpectedError(invalidToken: "@p", TextResource.UnknownKeyword));
+            ParseAndCompareErrors(
+                patterns: "% = 'Percent';",
+                new List<ExpectedError>
+                {
+                    CreateExpectedError("%", TextResource.InvalidCharacter),
+                    CreateExpectedError("=", TextResource.PatternNameExpected)
+                });
+        }
+
+        [TestMethod]
+        public void TextAttributesErrors()
+        {
+            ParseAndCompareErrors(
+                patterns: "P1 = 'Text'*(WordNum);",
+                CreateExpectedError("WordNum", TextResource.UnknownAttribute));
+            ParseAndCompareErrors(
+                patterns: "P2 = Word(Num, Uppercase);",
+                CreateExpectedError("Num", TextResource.WordClassAttributeIsAllowedOnlyForTextPrefixLiterals));
+            ParseAndCompareErrors(
+                patterns: "P3 = 'Text'*(Alpha, 3-6, CamelCase);",
+                CreateExpectedError("CamelCase", TextResource.UnknownAttribute));
+            ParseAndCompareErrors(
+                patterns: "P4 = 'Text'*(Uppercase, 3-6);",
+                new List<ExpectedError>
+                {
+                    CreateExpectedError(",", TextResource.CloseParenthesisExpected),
+                    CreateExpectedError("3-6", TextResource.NumericRangeIsInWrongPlace)
+                });
+            ParseAndCompareErrors(
+                patterns: "P5 = 'Text'*(Uppercase, Num);",
+                new List<ExpectedError>
+                {
+                    CreateExpectedError(",", TextResource.CloseParenthesisExpected),
+                    CreateExpectedError("Num", TextResource.AttributeIsInWrongPlace)
+                });
+        }
+
+        [TestMethod]
+        public void StandardPatternWithNotAllowedAttributes()
+        {
+            ParseAndCompareErrors(
+                patterns: "Pattern = Any(1-2);",
+                CreateExpectedErrorWithArgs("(1-2)", 
+                    TextResource.AttributesAreNotAllowedForStandardPattern, "Any"));
+        }
+
+        [TestMethod]
+        public void UnexpectedTokensInVariation()
+        {
+            ParseAndCompareErrors(
+                patterns: "Pattern = {Word 3-5, Num};",
+                new List<ExpectedError>
+                {
+                    CreateExpectedError("3", TextResource.CloseCurlyBraceOrCommaExpected),
+                    CreateExpectedError("-", TextResource.UnexpectedToken),
+                    CreateExpectedError("5", TextResource.UnexpectedToken)
+                });
+        }
+
+        [TestMethod]
+        public void SearchTargetWithoutIdentifier()
+        {
+            ParseAndCompareErrors(
+                patterns: "@search ;",
+                CreateExpectedError(";", TextResource.IdentifierExpected));
+        }
+
+        [TestMethod]
+        public void NamespaceInNestedPatterns()
+        {
+            ParseAndCompareErrors(
+                patterns: @"
+Pattern = Word @where {
+    @namespace Namespace {
+        Inner = Num;
+    }
+};
+",
+                CreateExpectedError("@namespace", TextResource.NamespacesAreNotAllowedInNestedPatterns));
+        }
+
+        [TestMethod]
+        public void ParseExpressionTextErrors()
+        {
+            ParseExpressionAndCompareErrors(
+                expression: "Pattern = Word;",
+                new List<ExpectedError>
+                {
+                    CreateExpectedError("Pattern", TextResource.ExpressionExpected),
+                    CreateExpectedError("Pattern", TextResource.PatternDefinitionsAreNotAllowedInExpressionMode)
+                });
+            ParseExpressionAndCompareErrors(
+                expression: "@namespace Namespace { Pattern = Word; }",
+                new List<ExpectedError>
+                {
+                    CreateExpectedError("@namespace", TextResource.ExpressionExpected),
+                    CreateExpectedError("@namespace", TextResource.NamespacesAreNotAllowedInExpressionMode)
+                });
+            ParseExpressionAndCompareErrors(
+                expression: @"
+@require 'Basic.np';
+@search Basic.Url;
+",
+                new List<ExpectedError>
+                {
+                    CreateExpectedError("@require", TextResource.ExpressionExpected),
+                    CreateExpectedError("@require", TextResource.RequireKeywordsAreNotAllowedInExpressionMode)
+                });
+            ParseExpressionAndCompareErrors(
+                expression: @"Word + Num 3-5",
+                CreateExpectedError("3", TextResource.EndOfExpressionExpectedInExpressionMode));
         }
     }
 }
