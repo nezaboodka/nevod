@@ -217,7 +217,7 @@ namespace Nezaboodka.Nevod
             {
                 string relativePath = ParseStringLiteral(out bool isCaseSensitive, out bool textIsPrefix);
                 if (isCaseSensitive || textIsPrefix)
-                    AddError(CreateError(TextResource.InvalidSpecifierAfterStringLiteral));
+                    AddError(CreateError(fPreviousTokenRange, TextResource.InvalidSpecifierAfterStringLiteral));
                 ValidateTokenAndAdvance(TokenId.Semicolon, TextResource.RequireDefinitionShouldEndWithSemicolon);
                 result = new RequiredPackageSyntax(relativePath);
                 SetTextRange(result, startPosition);
@@ -296,7 +296,7 @@ namespace Nezaboodka.Nevod
                 return null;
             }
             int startPosition = fToken.TextSlice.Position;
-            string name = ParseMultipartIdentifier(shouldStartFromIdentifier: true, canEndWithWildcard: true);
+            string name = ParseMultipartIdentifier(canEndWithWildcard: true);
             string fullName = Syntax.GetFullName(fCurrentScope.Namespace, name);
             ValidateTokenAndAdvance(TokenId.Semicolon, TextResource.SearchTargetDefinitionShouldEndWithSemicolon);
             SearchTargetSyntax result;
@@ -317,7 +317,7 @@ namespace Nezaboodka.Nevod
         {
             EndSign saveEndSign = fEndSign;
             fEndSign |= EndSign.EndOfNamespaceBody;
-            string name = ParseMultipartIdentifier(shouldStartFromIdentifier: true, canEndWithWildcard: false);
+            string name = ParseMultipartIdentifier(canEndWithWildcard: false);
             ValidateTokenAndAdvance(TokenId.OpenCurlyBrace, TextResource.OpenCurlyBraceExpected);
             fScopeStack.Push(fCurrentScope);
             string nameSpace = Syntax.GetFullName(fCurrentScope.Namespace, name);
@@ -335,7 +335,7 @@ namespace Nezaboodka.Nevod
             fEndSign = saveEndSign;
         }
 
-        private string ParseMultipartIdentifier(bool shouldStartFromIdentifier, bool canEndWithWildcard)
+        private string ParseMultipartIdentifier(bool canEndWithWildcard)
         {
             var result = new StringBuilder();
             if (fToken.Id == TokenId.Identifier)
@@ -343,7 +343,7 @@ namespace Nezaboodka.Nevod
                 result.Append(fToken.TextSlice.ToString());
                 NextToken();
             }
-            else if (shouldStartFromIdentifier)
+            else
             {
                 AddError(CreateError(TextResource.IdentifierExpected));
                 return "";
@@ -391,7 +391,7 @@ namespace Nezaboodka.Nevod
             }
             string name = null;
             if (fToken.Id == TokenId.Identifier)
-                name = ParseMultipartIdentifier(shouldStartFromIdentifier: true, canEndWithWildcard: false);
+                name = ParseMultipartIdentifier(canEndWithWildcard: false);
             else
                 AddError(CreateError(TextResource.PatternNameExpected));
             fFieldByName.Clear();
@@ -748,10 +748,10 @@ namespace Nezaboodka.Nevod
                 NextToken();
             if (fToken.Id == TokenId.Identifier)
             {
-                ParseMultipartIdentifier(true, false);
+                ParseMultipartIdentifier(false);
                 isIdentifierPresent = true;
             }
-            if (fToken.Id == TokenId.OpenParenthesis)
+            if (isIdentifierPresent && fToken.Id == TokenId.OpenParenthesis)
             {
                 ParseFields();
             }
@@ -1019,7 +1019,7 @@ namespace Nezaboodka.Nevod
             int startPosition = fToken.TextSlice.Position;
             Syntax result;
             int nameStart = fToken.TextSlice.Position;
-            string name = ParseMultipartIdentifier(shouldStartFromIdentifier: false, canEndWithWildcard: false);
+            string name = ParseMultipartIdentifier(canEndWithWildcard: false);
             int nameEnd = fPreviousTokenRange.End;
             var nameRange = new TextRange(nameStart, nameEnd);
             if (fToken.Id == TokenId.Colon)
@@ -1083,13 +1083,11 @@ namespace Nezaboodka.Nevod
                     }
                     if (result == null)
                     {
+                        fIsErrorRecovery = true;
                         int errorStart = fToken.TextSlice.Position;
-                        NextToken();
-                        while (fToken.Id != TokenId.CloseParenthesis && !IsEndSign())
-                            NextToken();
-                        if (fToken.Id == TokenId.CloseParenthesis)
-                            NextToken();
+                        ParseTextAttributes(allowWordClass: false);
                         int errorEnd = fPreviousTokenRange.End;
+                        fIsErrorRecovery = false;
                         var errorRange = new TextRange(errorStart, errorEnd);
                         AddError(CreateError(errorRange, TextResource.AttributesAreNotAllowedForStandardPattern, patternName));
                     }
@@ -1177,14 +1175,15 @@ namespace Nezaboodka.Nevod
             if (fToken.Id == TokenId.OpenParenthesis)
             {
                 int attributesStart = fToken.TextSlice.Position;
+                // If text is not prefix, set fIsErrorRecovery to true to avoid adding possible errors
+                fIsErrorRecovery = !textIsPrefix;
                 WordAttributes attributes = ParseTextAttributes(allowWordClass: true);
+                fIsErrorRecovery = false;
                 if (!textIsPrefix)
                 {
-                    int attributesEnd = attributesStart + 1;
-                    if (fPreviousTokenRange.Start > attributesStart)
-                        attributesEnd = fPreviousTokenRange.End;
+                    int attributesEnd = fPreviousTokenRange.End;
                     var errorRange = new TextRange(attributesStart, attributesEnd);
-                    AddErrorWithoutCheck(CreateError(errorRange, TextResource.TextAttributesAreAllowedOnlyForTextPrefixLiterals));
+                    AddError(CreateError(errorRange, TextResource.TextAttributesAreAllowedOnlyForTextPrefixLiterals));
                 }
                 if (!string.IsNullOrEmpty(text))
                     result = Syntax.Text(text, isCaseSensitive, attributes);
@@ -1256,6 +1255,12 @@ namespace Nezaboodka.Nevod
                             AddError(CreateError(TextResource.WordClassAttributeIsAllowedOnlyForTextPrefixLiterals));
                         NextToken();
                     }
+                    else if (!(IsCharCase(fToken.TextSlice.ToString(), out _) ||
+                               IsStartOfPattern()))
+                    {
+                        AddError(CreateError(TextResource.UnknownAttribute));
+                        NextToken();
+                    }
                     if (fToken.Id == TokenId.Comma)
                         NextToken();
                 }
@@ -1271,8 +1276,39 @@ namespace Nezaboodka.Nevod
                     if (IsCharCase(value, out charCase))
                         NextToken();
                     else
-                        AddError(CreateError(TextResource.UnknownWordAttribute, value));
-                } 
+                        AddError(CreateError(TextResource.UnknownAttribute, value));
+                }
+                if (fToken.Id != TokenId.CloseParenthesis)
+                {
+                    while (fToken.Id != TokenId.CloseParenthesis && !IsEndSign() && !IsStartOfPattern())
+                    {
+                        if (fToken.Id == TokenId.Identifier)
+                        {
+                            string value = fToken.TextSlice.ToString();
+                            if (IsWordClass(value, out _) || IsCharCase(value, out _))
+                                AddError(CreateError(TextResource.AttributeIsInWrongPlace, value));
+                            else
+                                AddError(CreateError(TextResource.UnknownAttribute, value));    
+                            NextToken();
+                        }
+                        else if (fToken.Id == TokenId.IntegerLiteral)
+                        {
+                            bool saveIsErrorRecovery = fIsErrorRecovery;
+                            fIsErrorRecovery = true;
+                            int errorStart = fToken.TextSlice.Position;
+                            ParseNumericRange();
+                            int errorEnd = fPreviousTokenRange.End;
+                            fIsErrorRecovery = saveIsErrorRecovery;
+                            var errorRange = new TextRange(errorStart, errorEnd);
+                            AddError(CreateError(errorRange, TextResource.NumericRangeIsInWrongPlace));
+                        }
+                        else
+                        {
+                            AddError(CreateError(TextResource.CloseParenthesisExpected));
+                            NextToken();
+                        }
+                    }   
+                }
                 ValidateTokenAndAdvance(TokenId.CloseParenthesis, TextResource.CloseParenthesisExpected);
                 if (wordClass != WordClass.Any || !lengthRange.IsZeroPlus() || charCase != CharCase.Undefined)
                     result = new WordAttributes(wordClass, lengthRange, charCase);
@@ -1906,13 +1942,15 @@ namespace Nezaboodka.Nevod
         public const string NumericRangeLowBoundCannotBeGreaterThanHighBound = "Numeric range low bound cannot be greater than high bound";
         public const string ColonExpected = "Colon expected, but '{0}' found";
         public const string AttributesAreNotAllowedForStandardPattern = "Attributes are not allowed for standard pattern '{0}'";
-        public const string UnknownWordAttribute = "Unknown Word attribute: '{0}'";
+        public const string UnknownAttribute = "Unknown attribute: '{0}'";
         public const string RequireKeywordsAreOnlyAllowedInTheBeginning = "Require keywords are only allowed in the beginning of the file";
         public const string PatternBodyExpected = "Pattern body expected";
         public const string NumericRangeExpected = "Numeric range expected, but '{0}' found";
         public const string TildeExpected = "Tilde expected, but '{0}' found";
         public const string TextAttributesAreAllowedOnlyForTextPrefixLiterals = "Text attributes are allowed only for text prefix literals";
         public const string WordClassAttributeIsAllowedOnlyForTextPrefixLiterals = "Word class attribute is allowed only for text prefix literals";
+        public const string AttributeIsInWrongPlace = "Attribute '{0}' is in wrong place. The correct order is: word class, numeric range, char case";
+        public const string NumericRangeIsInWrongPlace = "Numeric range is in wrong place. The correct order is: word class, numeric range, char case";
         public const string HighBoundOfNumericRangeExpected = "High bound of numeric range expected, but '{0}' found";
         public const string UnexpectedToken = "Unexpected token: '{0}'";
         public const string InvalidCharacter = "Invalid character: '{0}'";
