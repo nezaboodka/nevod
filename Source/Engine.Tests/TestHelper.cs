@@ -198,10 +198,11 @@ namespace Nezaboodka.Nevod.Engine.Tests
             var startAllocatedBytes = GC.GetTotalAllocatedBytes();
             var watch = Stopwatch.StartNew();
 
-            var builder = new PackageBuilder(DefaultPackageBuilderOptionsForTest,
-                PackageCache.Global);
-            var linker = new NormalizingPatternLinker(Environment.CurrentDirectory, builder);
-            LinkedPackageSyntax linkedTree = linker.Link(parsedTree);
+            var linker = new NormalizingPatternLinker(
+                fileContentProvider: File.ReadAllText,
+                PackageCache.Global
+            );
+            LinkedPackageSyntax linkedTree = linker.Link(parsedTree, Environment.CurrentDirectory, null);
             
             parsedTree = null;
 
@@ -219,6 +220,8 @@ namespace Nezaboodka.Nevod.Engine.Tests
             startMemory = endMemory;
             startAllocatedBytes = endAllocatedBytes;
             parsedTree = linkedTree;
+            var builder = new PackageBuilder(DefaultPackageBuilderOptionsForTest,
+                PackageCache.Global);
             PatternPackage package = builder.BuildPackageFromSyntax(parsedTree);
 
             elapsed = watch.ElapsedMilliseconds;

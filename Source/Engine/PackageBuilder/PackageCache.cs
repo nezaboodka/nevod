@@ -5,7 +5,6 @@
 
 using System.Collections.Generic;
 using System;
-using System.IO;
 using System.Threading;
 
 namespace Nezaboodka.Nevod
@@ -13,13 +12,11 @@ namespace Nezaboodka.Nevod
     public class PackageCache
     {
         public static readonly PackageCache Global = new PackageCache();
-
         private int fLastRootExpressionId;
-        internal Dictionary<string, PatternExpression> PatternByName { get; private set; }
 
-        public Dictionary<string, LinkedPackageSyntax> PackageSyntaxByFilePath { get; private set; }
-
-        public HashSet<string> GeneratedPackages { get; private set; }
+        public HashSet<string> GeneratedPackages { get; }
+        public Dictionary<string, LinkedPackageSyntax> PackageSyntaxByFilePath { get; }
+        internal Dictionary<string, PatternExpression> PatternByName { get; }
 
         public PackageCache()
         {

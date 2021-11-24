@@ -3,11 +3,8 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 
 namespace Nezaboodka.Nevod
 {
@@ -16,6 +13,7 @@ namespace Nezaboodka.Nevod
         public ReadOnlyCollection<RequiredPackageSyntax> RequiredPackages { get; }
         public ReadOnlyCollection<Syntax> SearchTargets { get; }
         public ReadOnlyCollection<Syntax> Patterns { get; }
+        public List<Error> Errors { get; internal set; }
 
         internal PackageSyntax(IList<RequiredPackageSyntax> requiredPackages,
             IList<Syntax> searchTargets, IList<Syntax> patterns)
@@ -33,6 +31,8 @@ namespace Nezaboodka.Nevod
 
     public class LinkedPackageSyntax : PackageSyntax
     {
+        public bool HasOwnOrRequiredPackageErrors { get; internal set; }
+        
         internal LinkedPackageSyntax(IList<RequiredPackageSyntax> requiredPackages,
             IList<Syntax> searchTargets, IList<Syntax> patterns)
             : base(requiredPackages, searchTargets, patterns)
@@ -42,9 +42,11 @@ namespace Nezaboodka.Nevod
         internal PackageSyntax Update(ReadOnlyCollection<RequiredPackageSyntax> requiredPackages,
             ReadOnlyCollection<Syntax> searchTargets, ReadOnlyCollection<Syntax> patterns)
         {
-            PackageSyntax result = this;
+            LinkedPackageSyntax result = this;
             if (requiredPackages != RequiredPackages || searchTargets != SearchTargets || patterns != Patterns)
                 result = LinkedPackage(requiredPackages, searchTargets, patterns);
+            result.Errors = Errors;
+            result.HasOwnOrRequiredPackageErrors = HasOwnOrRequiredPackageErrors;
             return result;
         }
 

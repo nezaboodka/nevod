@@ -7,22 +7,14 @@ using System.Collections.Generic;
 using System;
 using System.IO;
 using System.Text;
-using System.Linq;
 
 namespace Nezaboodka.Nevod
 {
-    public class PackageBuilder : IPackageLoader
+    public class PackageBuilder
     {
-        internal class FileLinker
-        {
-            public string FilePath;
-            public PatternLinker Linker;
-        }
-
         private PackageBuilderOptions fOptions;
         private Func<string, string> fFileContentProvider;
         private PackageCache fPackageCache;
-        private Stack<FileLinker> fDependencyStack;
 
         public PackageBuilder()
             : this(PackageBuilderOptions.Default, new PackageCache(), LoadFileContent)
@@ -52,7 +44,6 @@ namespace Nezaboodka.Nevod
             fOptions = options;
             fFileContentProvider = fileContentProvider;
             fPackageCache = packageCache;
-            fDependencyStack = new Stack<FileLinker>();
         }
 
         public PatternPackage BuildPackageFromText(string definition) =>
@@ -70,7 +61,7 @@ namespace Nezaboodka.Nevod
         {
             string normalizedFilePath = Path.GetFullPath(filePath);
             PackageSyntax parsedTree = ParseFile(normalizedFilePath);
-            PatternPackage result = BuildPackageFromSyntax(parsedTree, Path.GetDirectoryName(filePath), normalizedFilePath);
+            PatternPackage result = BuildPackageFromSyntax(parsedTree, Path.GetDirectoryName(normalizedFilePath), normalizedFilePath);
             return result;
         }
 
@@ -91,43 +82,13 @@ namespace Nezaboodka.Nevod
         public PatternPackage BuildPackageFromSyntax(PackageSyntax parsedTree, string baseDirectory) =>
             BuildPackageFromSyntax(parsedTree, baseDirectory, filePath: null);
 
-        // Internal
-
-        LinkedPackageSyntax IPackageLoader.LoadPackage(string filePath)
-        {
-            CheckRecursiveDependency(filePath);
-            LinkedPackageSyntax result;
-            if (!fPackageCache.PackageSyntaxByFilePath.TryGetValue(filePath, out result))
-            {
-                PackageSyntax package = ParseFile(filePath);
-                string baseDirectory = Path.GetDirectoryName(filePath);
-                try
-                {
-                    result = LinkPackage(package, baseDirectory, filePath);
-                }
-                catch (Exception ex)
-                {
-                    throw RequireError(filePath, ex);
-                }
-                result = SubstituteReferences(result);
-                fPackageCache.PackageSyntaxByFilePath.TryAdd(filePath, result);
-            }
-            return result;
-        }
-        
         private PatternPackage BuildPackageFromSyntax(PackageSyntax parsedTree, string baseDirectory, string filePath)
         {
             lock (fPackageCache)
             {
-                LinkedPackageSyntax linkedTree;
-                try
-                {
-                    linkedTree = LinkPackage(parsedTree, baseDirectory, filePath);
-                }
-                catch (Exception ex)
-                {
-                    throw PackageBuildError(ex);
-                }
+                LinkedPackageSyntax linkedTree = LinkPackage(parsedTree, baseDirectory, filePath);
+                if (linkedTree.HasOwnOrRequiredPackageErrors)
+                    throw PackageBuildError(linkedTree, filePath);
                 linkedTree = SubstituteReferences(linkedTree);
                 var generator = new PackageGenerator(fOptions.SyntaxInformationBinding, fPackageCache);
                 PatternPackage result = generator.Generate(linkedTree);
@@ -146,15 +107,8 @@ namespace Nezaboodka.Nevod
 
         private LinkedPackageSyntax LinkPackage(PackageSyntax parsedTree, string baseDirectory, string filePath)
         {
-            LinkedPackageSyntax result;
-            var linker = new NormalizingPatternLinker(baseDirectory, requiredPackageLoader: this);
-            fDependencyStack.Push(new FileLinker()
-            {
-                FilePath = filePath,
-                Linker = linker
-            });
-            result = linker.Link(parsedTree);
-            fDependencyStack.Pop();
+            var linker = new NormalizingPatternLinker(fFileContentProvider, fPackageCache);
+            LinkedPackageSyntax result = linker.Link(parsedTree, baseDirectory, filePath);
             return result;
         }
 
@@ -177,42 +131,22 @@ namespace Nezaboodka.Nevod
             return linkedTree;
         }
 
-        private void CheckRecursiveDependency(string filePath)
-        {
-            if (fDependencyStack.Any(x => x.FilePath == filePath))
-            {
-                fDependencyStack.TryPeek(out FileLinker lastLinker);
-                throw lastLinker.Linker.SyntaxError(TextResource.RecursiveFileDependencyIsNotSupported,
-                    string.Join(" -> ", fDependencyStack.Reverse().Select(x => x.FilePath)) + " -> " + filePath);
-            }
-        }
-
         private static string LoadFileContent(string filePath)
         {
             string result = File.ReadAllText(filePath, Encoding.UTF8);
             return result;
         }
 
-        private Exception RequireError(string filePath, Exception innerException)
+        private InvalidPackageException PackageBuildError(LinkedPackageSyntax linkedTree, string filePath)
         {
-            var result = new SyntaxException(string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                TextResource.RequiredPackageExceptionFormat, filePath, innerException.Message),
-                innerException);
-            return result;
-        }
-        
-        private Exception PackageBuildError(Exception innerException)
-        {
-            var result = new SyntaxException(string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                    TextResource.PackageBuildExceptionFormat, innerException.Message), innerException);
-            return result;
+            return ErrorsCollector.AggregateErrorsException(linkedTree, filePath,
+                TextResource.LinkedPackageContainsErrors);
         }
     }
 
     internal static partial class TextResource
     {
-        public const string RequiredPackageExceptionFormat = "Error in required package '{0}': {1}";
-        public const string PackageBuildExceptionFormat = "Error building package: {0}";
-        public const string RecursiveFileDependencyIsNotSupported = "Recursive file dependency is not supported: {0}";
+        public const string LinkedPackageContainsErrors = "Linked package contains errors. Pattern package cannot be built";
+        public const string ReferencesCannotBeSubstituted = "Linked package contains errors. References cannot be substituted";
     }
 }

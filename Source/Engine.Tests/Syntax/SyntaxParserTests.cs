@@ -507,7 +507,8 @@ Pattern = 'Pattern';
         public void PackageSourceTextInformation()
         {
             string patterns =
-@"@namespace Basic {
+@"@require 'Patterns.np';
+@namespace Basic {
     Pattern1 = A + B @where {
         A = Word + {'Foo', ~'Bar'};
         B = [1+ Num(2-4) & 'Nezaboodka'];
@@ -519,7 +520,7 @@ Pattern = 'Pattern';
     };
 
     Pattern3 = 'Nezaboodka' + ? 'Company';
-    @search @pattern Pattern4 = 'Fo'!* .. [0-2] .. 'Ba'!*(Alpha, 1, Lowercase);
+    @search @pattern Pattern4(X) = 'Fo'!* .. X: [0-2] ~'Excluded' .. 'Ba'!*(Alpha, 1, Lowercase);
     #Pattern5 = 'Hello' @inside ('Hello' + 'world');
     Pattern6(X, Y) = X: 'Nezaboodka' ... Y: 'Company';
     Pattern7(Q, S) = Pattern6(Q: X, S: Y);
@@ -531,6 +532,13 @@ Pattern = 'Pattern';
             var parser = new SyntaxParser();
             PackageSyntax package = parser.ParsePackageText(patterns);
             TestSourceTextInformation(patterns, package, patterns);
+            void Require()
+            {
+                RequiredPackageSyntax require = package.RequiredPackages[0];
+                TestSourceTextInformation(patterns, require, 
+@"@require 'Patterns.np';
+");
+            }
             void Pattern1()
             {
                 var pattern = (PatternSyntax) package.Patterns[0];
@@ -633,12 +641,14 @@ Pattern = 'Pattern';
             {
                 var pattern4 = (PatternSyntax) package.Patterns[3];
                 TestSourceTextInformation(patterns, pattern4, 
-@"@search @pattern Pattern4 = 'Fo'!* .. [0-2] .. 'Ba'!*(Alpha, 1, Lowercase);
+@"@search @pattern Pattern4(X) = 'Fo'!* .. X: [0-2] ~'Excluded' .. 'Ba'!*(Alpha, 1, Lowercase);
     ");
                 var wordSpan = (WordSpanSyntax) pattern4.Body;
-                TestSourceTextInformation(patterns, wordSpan, @"'Fo'!* .. [0-2] .. 'Ba'!*(Alpha, 1, Lowercase)");
+                TestSourceTextInformation(patterns, wordSpan, @"'Fo'!* .. X: [0-2] ~'Excluded' .. 'Ba'!*(Alpha, 1, Lowercase)");
                 TestSourceTextInformation(patterns, wordSpan.Left, @"'Fo'!* ");
                 TestSourceTextInformation(patterns, wordSpan.Right, @"'Ba'!*(Alpha, 1, Lowercase)");
+                TestSourceTextInformation(patterns, wordSpan.ExtractionOfSpan, @"X");
+                TestSourceTextInformation(patterns, wordSpan.Exclusion, @"'Excluded' ");
             }
             void Pattern5()
             {
@@ -744,6 +754,7 @@ Pattern = 'Pattern';
                 TestSourceTextInformation(patterns, patternSearchTarget, @"@search Pattern10;
 ");
             }
+            Require();
             Pattern1();
             Pattern2();
             Pattern3();

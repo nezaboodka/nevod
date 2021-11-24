@@ -14,13 +14,12 @@ namespace Nezaboodka.Nevod
         private HashSet<PatternSyntax> fVisitedPatterns;
         private Dictionary<PatternSyntax, PatternSyntax> fPatternSubstitutions;
 
-        public PatternReferenceSubstitutor()
-        {
-        }
-
         public LinkedPackageSyntax SubstitutePatternReferences(LinkedPackageSyntax syntaxTree,
             HashSet<PatternSyntax> excludedPatterns)
         {
+            if (syntaxTree.HasOwnOrRequiredPackageErrors)
+                throw ErrorsCollector.AggregateErrorsException(syntaxTree, filePath: null,
+                    TextResource.ReferencesCannotBeSubstituted);
             fExcludedPatterns = excludedPatterns;
             fVisitedPatterns = new HashSet<PatternSyntax>();
             fPatternSubstitutions = new Dictionary<PatternSyntax, PatternSyntax>();

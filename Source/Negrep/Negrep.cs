@@ -44,7 +44,7 @@ namespace Nezaboodka.Nevod.Negrep
             {
                 _console.WriteLineToStderr(e.Message);
             }
-            catch (Exception e) when (e is SyntaxException)
+            catch (Exception e) when (e is NevodException)
             {
                 _console.WriteLineToStderr(e.Message);
             }

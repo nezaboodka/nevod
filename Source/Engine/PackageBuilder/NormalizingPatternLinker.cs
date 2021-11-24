@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
@@ -11,21 +12,17 @@ namespace Nezaboodka.Nevod
         private PatternSyntax fCurrentPattern;
         private List<Syntax> fAllPatterns;
 
-        public NormalizingPatternLinker()
-        {
-        }
-        
-        public NormalizingPatternLinker(string baseDirectory, IPackageLoader requiredPackageLoader) 
-            : base(baseDirectory, requiredPackageLoader)
+        public NormalizingPatternLinker(Func<string, string> fileContentProvider, PackageCache packageCache) 
+            : base(fileContentProvider, packageCache)
         {
         }
 
-        public override LinkedPackageSyntax Link(PackageSyntax syntaxTree)
+        public override LinkedPackageSyntax Link(PackageSyntax syntaxTree, string baseDirectory, string filePath)
         {
             fExtractedPatterns = new List<Syntax>();
             fNextExtractedPatternNumber = 0;
             fAllPatterns = new List<Syntax>();
-            return base.Link(syntaxTree);
+            return base.Link(syntaxTree, baseDirectory, filePath);
         }
 
         public override Syntax Visit(Syntax node)

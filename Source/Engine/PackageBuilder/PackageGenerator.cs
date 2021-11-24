@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 
 namespace Nezaboodka.Nevod
 {
@@ -40,6 +39,9 @@ namespace Nezaboodka.Nevod
 
         public PatternPackage Generate(LinkedPackageSyntax packageSyntax)
         {
+            if (packageSyntax.HasOwnOrRequiredPackageErrors)
+                throw ErrorsCollector.AggregateErrorsException(packageSyntax, filePath: null,
+                    TextResource.LinkedPackageContainsErrors);
             fRequiredPackages = new HashSet<string>();
             fRequiredPackageStack = new Stack<RequiredPackageSyntax>();
             fExpressionStack = new Stack<Expression>();
@@ -53,7 +55,7 @@ namespace Nezaboodka.Nevod
             fNextVariationWithExceptionExpressionId = VariationWithoutExceptionsId + 1;
             Visit(packageSyntax);
             if (fExpressionStack.Count > 0 || fPatternStack.Count > 0 || fRequiredPackageStack.Count > 0)
-                throw Error(TextResource.InternalCompilerError);
+                throw InternalError();
             SearchExpression searchQuery;
             if (packageSyntax.SearchTargets != null)
             {
@@ -122,7 +124,7 @@ namespace Nezaboodka.Nevod
                         PatternExpression pattern;
                         if (!fPackageCache.PatternByName.TryGetValue(patternName, out pattern))
                             if (!fRootPackagePatternByName.TryGetValue(patternName, out pattern))
-                                throw Error(TextResource.InternalCompilerError);
+                                throw InternalError();
                         if (pattern.IsOptional)
                         {
                             List<PatternReferenceExpression> references = x.Value;
@@ -147,7 +149,7 @@ namespace Nezaboodka.Nevod
                 if (expression is PatternReferenceExpression patternReference)
                     searchTargets.Add(patternReference.ReferencedPattern);
                 else
-                    throw Error(TextResource.InternalCompilerError);
+                    throw InternalError();
             }
             return searchTargets;
         }
@@ -224,7 +226,7 @@ namespace Nezaboodka.Nevod
                     throw Error(TextResource.DuplicatedPatternName, node.FullName);
             }
             else
-                throw Error(TextResource.InternalCompilerError);
+                throw InternalError();
             fPatternStack.Pop();
             Visit(node.NestedPatterns);
             return node;
@@ -285,7 +287,7 @@ namespace Nezaboodka.Nevod
                 fExpressionStack.Push(extraction);
             }
             else
-                throw Error(TextResource.InternalCompilerError);
+                throw InternalError();
             return node;
         }
 
@@ -299,13 +301,13 @@ namespace Nezaboodka.Nevod
                 {
                     Visit(node.Body);
                     if (!fExpressionStack.TryPop(out bodyExpression))
-                        throw Error(TextResource.InternalCompilerError);
+                        throw InternalError();
                 }
                 var extraction = new ExtractionExpression(GetSyntaxOrNull(node), fieldNumber, bodyExpression);
                 fExpressionStack.Push(extraction);
             }
             else
-                throw Error(TextResource.InternalCompilerError);
+                throw InternalError();
             return node;
         }
 
@@ -318,7 +320,7 @@ namespace Nezaboodka.Nevod
                 if (fExpressionStack.TryPop(out Expression expression))
                     elements[i] = expression;
                 else
-                    throw Error(TextResource.InternalCompilerError);
+                    throw InternalError();
             }
             var sequence = new SequenceExpression(GetSyntaxOrNull(node), elements);
             fExpressionStack.Push(sequence);
@@ -334,7 +336,7 @@ namespace Nezaboodka.Nevod
                 if (fExpressionStack.TryPop(out Expression expression))
                     elements[i] = expression;
                 else
-                    throw Error(TextResource.InternalCompilerError);
+                    throw InternalError();
             }
             var conjunction = new ConjunctionExpression(GetSyntaxOrNull(node), elements);
             fExpressionStack.Push(conjunction);
@@ -350,7 +352,7 @@ namespace Nezaboodka.Nevod
                 if (fExpressionStack.TryPop(out Expression expression))
                     elements[i] = expression;
                 else
-                    throw Error(TextResource.InternalCompilerError);
+                    throw InternalError();
             }
             var variation = new VariationExpression(GetSyntaxOrNull(node), elements);
             if (variation.HasExceptions)
@@ -372,7 +374,7 @@ namespace Nezaboodka.Nevod
                     fExpressionStack.Push(repetition);
                 }
                 else
-                    throw Error(TextResource.InternalCompilerError);
+                    throw InternalError();
             }
             else
                 throw Error(TextResource.SpanWithMultipleRepetitionsIsNotSupported);
@@ -388,7 +390,7 @@ namespace Nezaboodka.Nevod
                 fExpressionStack.Push(exception);
             }
             else
-                throw Error(TextResource.InternalCompilerError);
+                throw InternalError();
             return node;
         }
 
@@ -401,7 +403,7 @@ namespace Nezaboodka.Nevod
                 fExpressionStack.Push(repetition);
             }
             else
-                throw Error(TextResource.InternalCompilerError);
+                throw InternalError();
             return node;
         }
 
@@ -414,7 +416,7 @@ namespace Nezaboodka.Nevod
                 fExpressionStack.Push(repetition);
             }
             else
-                throw Error(TextResource.InternalCompilerError);
+                throw InternalError();
             return node;
         }
 
@@ -431,14 +433,14 @@ namespace Nezaboodka.Nevod
                     {
                         Visit(node.ExtractionOfSpan);
                         if (!fExpressionStack.TryPop(out extractionOfSpanExpression))
-                            throw Error(TextResource.InternalCompilerError);
+                            throw InternalError();
                     }
                     Expression exclusionExpression = null;
                     if (node.Exclusion != null)
                     {
                         Visit(node.Exclusion);
                         if (!fExpressionStack.TryPop(out exclusionExpression))
-                            throw Error(TextResource.InternalCompilerError);
+                            throw InternalError();
                     }
                     Expression wordSpanExpression;
                     if (node.SpanRange.IsZeroPlusOrOnePlus() && node.Exclusion == null)
@@ -454,10 +456,10 @@ namespace Nezaboodka.Nevod
                     fExpressionStack.Push(wordSpanExpression);
                 }
                 else
-                    throw Error(TextResource.InternalCompilerError);
+                    throw InternalError();
             }
             else
-                throw Error(TextResource.InternalCompilerError);
+                throw InternalError();
             return node;
         }
 
@@ -474,17 +476,17 @@ namespace Nezaboodka.Nevod
                     {
                         Visit(node.ExtractionOfSpan);
                         if (!fExpressionStack.TryPop(out extractionOfSpanExpression))
-                            throw Error(TextResource.InternalCompilerError);
+                            throw InternalError();
                     }
                     var anySpanExpression = new AnySpanExpression(GetSyntaxOrNull(node), leftExpression, rightExpression,
                         spanRangeInWords: Range.ZeroPlus(), extractionOfSpanExpression);
                     fExpressionStack.Push(anySpanExpression);
                 }
                 else
-                    throw Error(TextResource.InternalCompilerError);
+                    throw InternalError();
             }
             else
-                throw Error(TextResource.InternalCompilerError);
+                throw InternalError();
             return node;
         }
 
@@ -500,15 +502,15 @@ namespace Nezaboodka.Nevod
                     if (outerExpression is PatternReferenceExpression reference)
                         outerPatternReference = reference;
                     else
-                        throw Error(TextResource.InternalCompilerError);
+                        throw InternalError();
                     var insideExpression = new InsideExpression(GetSyntaxOrNull(node), innerExpression, outerPatternReference);
                     fExpressionStack.Push(insideExpression);
                 }
                 else
-                    throw Error(TextResource.InternalCompilerError);
+                    throw InternalError();
             }
             else
-                throw Error(TextResource.InternalCompilerError);
+                throw InternalError();
             return node;
         }
 
@@ -524,15 +526,15 @@ namespace Nezaboodka.Nevod
                     if (exceptionExpression is PatternReferenceExpression reference)
                         exceptionPatternReference = reference;
                     else
-                        throw Error(TextResource.InternalCompilerError);
+                        throw InternalError();
                     var outsideExpression = new OutsideExpression(GetSyntaxOrNull(node), bodyExpression, exceptionPatternReference);
                     fExpressionStack.Push(outsideExpression);
                 }
                 else
-                    throw Error(TextResource.InternalCompilerError);
+                    throw InternalError();
             }
             else
-                throw Error(TextResource.InternalCompilerError);
+                throw InternalError();
             return node;
         }
 
@@ -548,21 +550,21 @@ namespace Nezaboodka.Nevod
                     if (innerExpression is PatternReferenceExpression reference)
                         innerPatternReference = reference;
                     else
-                        throw Error(TextResource.InternalCompilerError);
+                        throw InternalError();
                     var havingExpression = new HavingExpression(GetSyntaxOrNull(node), outerExpression, innerPatternReference);
                     fExpressionStack.Push(havingExpression);
                 }
                 else
-                    throw Error(TextResource.InternalCompilerError);
+                    throw InternalError();
             }
             else
-                throw Error(TextResource.InternalCompilerError);
+                throw InternalError();
             return node;
         }
 
         protected internal override Syntax VisitText(TextSyntax node)
         {
-            throw Error(TextResource.InternalCompilerError);
+            throw InternalError();
         }
 
         protected internal override Syntax VisitToken(TokenSyntax node)
@@ -575,7 +577,7 @@ namespace Nezaboodka.Nevod
 
         protected internal override Syntax VisitDefault(DefaultSyntax node)
         {
-            throw Error(TextResource.InternalCompilerError);
+            throw InternalError();
         }
 
         protected Exception Error(string format, params object[] args)
@@ -583,9 +585,17 @@ namespace Nezaboodka.Nevod
             string currentPatternName = string.Empty;
             if (fPatternStack.TryPeek(out PatternSyntax currentPattern))
                 currentPatternName = currentPattern.FullName;
-            return new SyntaxException(string.Format(TextResource.CompilationError,
-                string.Format(System.Globalization.CultureInfo.CurrentCulture, format, args),
-                currentPatternName), 0, 0, string.Empty);
+            return new PackageGeneratorException(string.Format(TextResource.CompilationError,
+                string.Format(System.Globalization.CultureInfo.CurrentCulture, format, args), currentPatternName));
+        }
+        
+        protected Exception InternalError()
+        {
+            string currentPatternName = string.Empty;
+            if (fPatternStack.TryPeek(out PatternSyntax currentPattern))
+                currentPatternName = currentPattern.FullName;
+            return new InternalNevodErrorException(string.Format(TextResource.CompilationError,
+                TextResource.InternalCompilerError, currentPatternName));
         }
 
         private T[] PopArrayOf<T>(int count) where T : Expression
@@ -596,7 +606,7 @@ namespace Nezaboodka.Nevod
                 if (fExpressionStack.TryPop(out Expression element))
                     elements[i] = (T)element;
                 else
-                    throw Error(TextResource.InternalCompilerError);
+                    throw InternalError();
             }
             return elements;
         }
