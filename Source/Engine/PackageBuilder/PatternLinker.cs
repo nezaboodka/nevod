@@ -18,7 +18,7 @@ namespace Nezaboodka.Nevod
             public PatternReferenceSyntax PatternReference;
             public PatternSyntax PatternContext;
         }
-        
+
         private readonly struct FileInfo
         {
             public string Path { get; }
@@ -58,7 +58,7 @@ namespace Nezaboodka.Nevod
             : this(fileContentProvider, packageCache: null)
         {
         }
-        
+
         public PatternLinker(Func<string, string> fileContentProvider, PackageCache packageCache)
         {
             fFileContentProvider = fileContentProvider;
@@ -73,10 +73,10 @@ namespace Nezaboodka.Nevod
             if (filePath != null)
                 filePath = Path.GetFullPath(filePath);
             fDependencyStack.Push(new FileInfo(filePath, PathUtils.NormalizePathCase(filePath)));
-            Dictionary<string, PatternSyntax> savePatternByName = fPatternByName; 
-            Dictionary<string, RequiredPackageSyntax> saveRequiredPackageByFilePath = fRequiredPackageByFilePath; 
-            Dictionary<string, RequiredPackageSyntax> saveRequiredPackageByPatternName = fRequiredPackageByPatternName; 
-            List<Error> saveErrors = fErrors; 
+            Dictionary<string, PatternSyntax> savePatternByName = fPatternByName;
+            Dictionary<string, RequiredPackageSyntax> saveRequiredPackageByFilePath = fRequiredPackageByFilePath;
+            Dictionary<string, RequiredPackageSyntax> saveRequiredPackageByPatternName = fRequiredPackageByPatternName;
+            List<Error> saveErrors = fErrors;
             Dictionary<RequiredPackageSyntax, Dictionary<string, List<string>>> saveDuplicatePatternsByRequiredPackage = fDuplicatePatternsByRequiredPackage;
             LinkedPackageSyntax result;
             try
@@ -208,7 +208,7 @@ namespace Nezaboodka.Nevod
             VisitPatternReference(node);
             return node;
         }
-        
+
         protected virtual LinkedPackageSyntax LoadRequiredPackage(string filePath)
         {
             if (fPackageCache == null ||
@@ -224,10 +224,10 @@ namespace Nezaboodka.Nevod
             }
             return linkedPackage;
         }
-        
+
         protected Exception PackageLoadError(string format, params object[] args)
         {
-            return new NevodPackageLoadException(string.Format(System.Globalization.CultureInfo.CurrentCulture, 
+            return new NevodPackageLoadException(string.Format(System.Globalization.CultureInfo.CurrentCulture,
                 format, args));
         }
 
@@ -235,7 +235,7 @@ namespace Nezaboodka.Nevod
         {
             if (!fRequiredPackageByFilePath.TryAdd(normalizedFilePath, requiredPackage))
             {
-                AddError(requiredPackage, TextResource.DuplicatedRequiredPackage, 
+                AddError(requiredPackage, TextResource.DuplicatedRequiredPackage,
                     requiredPackage.RelativePath, fRequiredPackageByFilePath[normalizedFilePath].RelativePath);
                 return false;
             }
@@ -249,7 +249,7 @@ namespace Nezaboodka.Nevod
             }
             return true;
         }
-        
+
         private LinkedPackageSyntax TryLoadRequiredPackage(string filePath, RequiredPackageSyntax node)
         {
             LinkedPackageSyntax package = null;
@@ -323,7 +323,7 @@ namespace Nezaboodka.Nevod
                 {
                     var joinedDuplicatePatterns = string.Join(", ", duplicatePatterns.Take(3).Select(name => $"'{name}'"));
                     AddError(requiredPackage, TextResource.DuplicatedPatternsAndMoreInRequiredPackage,
-                        requiredPackage.RelativePath, duplicatePatterns.Count, joinedDuplicatePatterns, 
+                        requiredPackage.RelativePath, duplicatePatterns.Count, joinedDuplicatePatterns,
                         duplicatePatterns.Count - 3,  originalFile);
                 }
             }
@@ -354,19 +354,21 @@ namespace Nezaboodka.Nevod
                     else
                     {
                         string contextNamespace = reference.PatternContext.Namespace;
-                        fullName = reference.PatternContext.MasterPatternName + '.' + name;
+                        string contextMasterPatternName = reference.PatternContext.MasterPatternName;
+                        if (!string.IsNullOrEmpty(contextMasterPatternName))
+                            fullName = contextMasterPatternName + '.' + name;
                         if (!string.IsNullOrEmpty(contextNamespace))
                             fullName = contextNamespace + '.' + fullName;
-                        if (fPatternByName.TryGetValue(fullName, out referencedPattern)) // имя шаблона внутри того же блока @where?
+                        if (fPatternByName.TryGetValue(fullName, out referencedPattern)) // имя шаблона внутри того же блока @where и пространтсва имён?
                             reference.PatternReference.ReferencedPattern = referencedPattern;
                         else
                         {
-                            if (fPatternByName.TryGetValue(name, out referencedPattern)) // полное имя шаблона?
+                            fullName = contextNamespace + '.' + name;
+                            if (fPatternByName.TryGetValue(fullName, out referencedPattern)) // короткое имя шаблона внутри того же пространтсва имён?
                                 reference.PatternReference.ReferencedPattern = referencedPattern;
                             else
                             {
-                                fullName = contextNamespace + '.' + name;
-                                if (fPatternByName.TryGetValue(fullName, out referencedPattern)) // короткое имя шаблона (без пространства имён)?
+                                if (fPatternByName.TryGetValue(name, out referencedPattern)) // полное имя шаблона?
                                     reference.PatternReference.ReferencedPattern = referencedPattern;
                                 else
                                     AddError(reference.PatternReference, TextResource.ReferenceToUndefinedPattern, name);
@@ -402,7 +404,7 @@ namespace Nezaboodka.Nevod
             fErrors.Add(error);
         }
 
-        private Error GetError(Syntax syntax, string format, params object[] args) => 
+        private Error GetError(Syntax syntax, string format, params object[] args) =>
             new Error(string.Format(System.Globalization.CultureInfo.CurrentCulture, format, args), syntax.TextRange);
     }
 

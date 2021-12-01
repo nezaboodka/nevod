@@ -489,7 +489,7 @@ Identifier = {Alpha, AlphaNum, '_'} + [0+ {Word, '_'}];";
 
 Pattern = 'Pattern';
 ";
-            
+
             TestParseAndToString(patterns);
         }
 
@@ -513,7 +513,7 @@ Pattern = 'Pattern';
         A = Word + {'Foo', ~'Bar'};
         B = [1+ Num(2-4) & 'Nezaboodka'];
     };
-    
+
     Pattern2 = A _ B @where {
         A = 'Company' @outside Pattern1.A;
         B = Pattern1.B @having Alpha(2-10, TitleCase);
@@ -535,19 +535,19 @@ Pattern = 'Pattern';
             void Require()
             {
                 RequiredPackageSyntax require = package.RequiredPackages[0];
-                TestSourceTextInformation(patterns, require, 
+                TestSourceTextInformation(patterns, require,
 @"@require 'Patterns.np';
 ");
             }
             void Pattern1()
             {
                 var pattern = (PatternSyntax) package.Patterns[0];
-                TestSourceTextInformation(patterns, pattern, 
+                TestSourceTextInformation(patterns, pattern,
 @"Pattern1 = A + B @where {
         A = Word + {'Foo', ~'Bar'};
         B = [1+ Num(2-4) & 'Nezaboodka'];
     };
-    
+
     ");
                 var sequence = (SequenceSyntax) pattern.Body;
                 TestSourceTextInformation(patterns, sequence, @"A + B ");
@@ -556,7 +556,7 @@ Pattern = 'Pattern';
                 void PatternA()
                 {
                     PatternSyntax patternA = pattern.NestedPatterns[0];
-                    TestSourceTextInformation(patterns, patternA, 
+                    TestSourceTextInformation(patterns, patternA,
 @"A = Word + {'Foo', ~'Bar'};
         ");
                     var sequence = (SequenceSyntax) patternA.Body;
@@ -572,7 +572,7 @@ Pattern = 'Pattern';
                 void PatternB()
                 {
                     PatternSyntax patternB = pattern.NestedPatterns[1];
-                    TestSourceTextInformation(patterns, patternB, 
+                    TestSourceTextInformation(patterns, patternB,
 @"B = [1+ Num(2-4) & 'Nezaboodka'];
     ");
                     var span = (SpanSyntax) patternB.Body;
@@ -589,7 +589,7 @@ Pattern = 'Pattern';
             void Pattern2()
             {
                 var pattern2 = (PatternSyntax) package.Patterns[1];
-                TestSourceTextInformation(patterns, pattern2, 
+                TestSourceTextInformation(patterns, pattern2,
 @"Pattern2 = A _ B @where {
         A = 'Company' @outside Pattern1.A;
         B = Pattern1.B @having Alpha(2-10, TitleCase);
@@ -602,7 +602,7 @@ Pattern = 'Pattern';
                 void PatternA()
                 {
                     PatternSyntax patternA = pattern2.NestedPatterns[0];
-                    TestSourceTextInformation(patterns, patternA, 
+                    TestSourceTextInformation(patterns, patternA,
 @"A = 'Company' @outside Pattern1.A;
         ");
                     var outside = (OutsideSyntax) patternA.Body;
@@ -613,7 +613,7 @@ Pattern = 'Pattern';
                 void PatternB()
                 {
                     PatternSyntax patternB = pattern2.NestedPatterns[1];
-                    TestSourceTextInformation(patterns, patternB, 
+                    TestSourceTextInformation(patterns, patternB,
 @"B = Pattern1.B @having Alpha(2-10, TitleCase);
     ");
                     var having = (HavingSyntax)patternB.Body;
@@ -640,7 +640,7 @@ Pattern = 'Pattern';
             void Pattern4()
             {
                 var pattern4 = (PatternSyntax) package.Patterns[3];
-                TestSourceTextInformation(patterns, pattern4, 
+                TestSourceTextInformation(patterns, pattern4,
 @"@search @pattern Pattern4(X) = 'Fo'!* .. X: [0-2] ~'Excluded' .. 'Ba'!*(Alpha, 1, Lowercase);
     ");
                 var wordSpan = (WordSpanSyntax) pattern4.Body;
@@ -653,7 +653,7 @@ Pattern = 'Pattern';
             void Pattern5()
             {
                 var pattern5 = (PatternSyntax) package.Patterns[4];
-                TestSourceTextInformation(patterns, pattern5, 
+                TestSourceTextInformation(patterns, pattern5,
 @"#Pattern5 = 'Hello' @inside ('Hello' + 'world');
     ");
                 var inside = (InsideSyntax) pattern5.Body;
@@ -661,12 +661,12 @@ Pattern = 'Pattern';
                 TestSourceTextInformation(patterns, inside.Outer, @"'Hello' + 'world'");
                 var sequence = (SequenceSyntax) inside.Outer;
                 TestSourceTextInformation(patterns, sequence.Elements[0], @"'Hello' ");
-                TestSourceTextInformation(patterns, sequence.Elements[1], @"'world'");   
+                TestSourceTextInformation(patterns, sequence.Elements[1], @"'world'");
             }
             void Pattern6()
             {
                 var pattern6 = (PatternSyntax) package.Patterns[5];
-                TestSourceTextInformation(patterns, pattern6, 
+                TestSourceTextInformation(patterns, pattern6,
 @"Pattern6(X, Y) = X: 'Nezaboodka' ... Y: 'Company';
     ");
                 TestSourceTextInformation(patterns, pattern6.Fields[0], @"X");
@@ -683,7 +683,7 @@ Pattern = 'Pattern';
             void Pattern7()
             {
                 var pattern7 = (PatternSyntax) package.Patterns[6];
-                TestSourceTextInformation(patterns, pattern7, 
+                TestSourceTextInformation(patterns, pattern7,
 @"Pattern7(Q, S) = Pattern6(Q: X, S: Y);
     ");
                 TestSourceTextInformation(patterns, pattern7.Fields[0], @"Q");
@@ -696,7 +696,7 @@ Pattern = 'Pattern';
             void Pattern8()
             {
                 var pattern8 = (PatternSyntax) package.Patterns[7];
-                TestSourceTextInformation(patterns, pattern8, 
+                TestSourceTextInformation(patterns, pattern8,
 @"Pattern8(X) = [1+ X: Symbol + X];
     ");
                 TestSourceTextInformation(patterns, pattern8.Fields[0], @"X");
@@ -714,7 +714,7 @@ Pattern = 'Pattern';
             void Pattern9()
             {
                 var pattern9 = (PatternSyntax) package.Patterns[8];
-                TestSourceTextInformation(patterns, pattern9, 
+                TestSourceTextInformation(patterns, pattern9,
 @"Pattern9(X, ~Y) = {X: Punct + X, Y: Symbol + Y};
     ");
                 TestSourceTextInformation(patterns, pattern9.Fields[0], @"X");
@@ -737,7 +737,7 @@ Pattern = 'Pattern';
             void Pattern10()
             {
                 var pattern10 = (PatternSyntax) package.Patterns[9];
-                TestSourceTextInformation(patterns, pattern10, 
+                TestSourceTextInformation(patterns, pattern10,
 @"Pattern10 = 'Hello' + WordBreak + 'World' + WordBreak + '!';
     ");
                 var sequence = (SequenceSyntax) pattern10.Body;
