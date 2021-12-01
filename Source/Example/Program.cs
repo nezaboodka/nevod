@@ -10,7 +10,7 @@ namespace Nezaboodka.Nevod.Example
         static void Main(string[] args)
         {
             SimpleExample();
-            ComplexExample("Patterns/Basic/Basic.np", "LICENSE.txt");
+            AdvancedExample("Patterns/Basic/Basic.np", "LICENSE.txt");
         }
 
         static void SimpleExample()
@@ -22,7 +22,7 @@ namespace Nezaboodka.Nevod.Example
                 Console.WriteLine(tag.GetText());
         }
 
-        static void ComplexExample(string packageName, string textFile)
+        static void AdvancedExample(string packageName, string textFile)
         {
             // Create package cache. It should be a global static object in real life
             var packageCache = new PackageCache();

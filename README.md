@@ -51,12 +51,12 @@ search engine is created and used to search for the pattern in a given text stri
 
 You may find this example in the [Source/Example/Program.cs](Source/Example/Program.cs) file.
 
-There is also more complex example, which demonstrates advanced techniques like usage of
+There is also advanced example, which demonstrates advanced techniques like usage of
 package cache, package builder with options, stream-based text source, search options,
 as well as search result handling callback.
 
 ```csharp
-static void ComplexExample(string packageName, string textFile)
+static void AdvancedExample(string packageName, string textFile)
 {
     // Create package cache. It should be a global static object in real life
     var packageCache = new PackageCache();
