@@ -3,17 +3,23 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 
 namespace Nezaboodka.Nevod
 {
     public class FieldReferenceSyntax : Syntax
     {
         public string FieldName { get; }
+
+        public override void CreateChildren(string text)
+        {
+            if (Children != null)
+                return;
+            var children = new List<Syntax>();
+            var scanner = new Scanner(text);
+            SyntaxUtils.CreateChildrenForRange(TextRange, children, scanner);
+            Children = children.AsReadOnly();
+        }
 
         internal FieldReferenceSyntax(string fieldName)
         {

@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Nezaboodka.Text.Parsing;
 
 namespace Nezaboodka.Nevod
@@ -16,6 +15,16 @@ namespace Nezaboodka.Nevod
         public bool IsCaseSensitive { get; }
         public bool TextIsPrefix { get; }
         public WordAttributes SuffixAttributes { get; }
+
+        public override void CreateChildren(string text)
+        {
+            if (Children != null)
+                return;
+            var children = new List<Syntax>();
+            var scanner = new Scanner(text);
+            SyntaxUtils.CreateChildrenForRange(TextRange, children, scanner);
+            Children = children.AsReadOnly();
+        }
 
         internal static readonly PlainTextParserOptions TextParserOptions = new PlainTextParserOptions()
         {

@@ -3,9 +3,7 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Nezaboodka.Nevod
 {
@@ -13,6 +11,29 @@ namespace Nezaboodka.Nevod
     {
         public Syntax Outer { get; }
         public Syntax Inner { get; }
+
+        public override void CreateChildren(string text)
+        {
+            if (Children != null)
+                return;
+            var children = new List<Syntax>();
+            var scanner = new Scanner(text);
+            int rangeStart = TextRange.Start;
+            if (Outer != null)
+            {
+                children.Add(Outer);
+                rangeStart = Outer.TextRange.End;
+            }
+            if (Inner != null)
+            {
+                int rangeEnd = Inner.TextRange.Start;
+                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
+                children.Add(Inner);
+                rangeStart = Inner.TextRange.End;
+            }
+            SyntaxUtils.CreateChildrenForRange(rangeStart, TextRange.End, children, scanner);
+            Children = children.AsReadOnly();
+        }
 
         internal HavingSyntax(Syntax outer, Syntax inner)
         {

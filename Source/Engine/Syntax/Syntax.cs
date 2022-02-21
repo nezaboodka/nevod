@@ -4,20 +4,25 @@
 //--------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Collections.ObjectModel;
 
 namespace Nezaboodka.Nevod
 {
     public abstract partial class Syntax
     {
-        public TextRange TextRange { get; set; } 
-        
+        public TextRange TextRange { get; set; }
+        public ReadOnlyCollection<Syntax> Children { get; set; }
+
         public override string ToString()
         {
             string result = SyntaxStringBuilder.SyntaxToString(this);
             return result;
+        }
+
+        public virtual void CreateChildren(string text)
+        {
+            if (Children == null)
+                Children = Array.AsReadOnly(Array.Empty<Syntax>());
         }
 
         internal virtual bool CanReduce => false;

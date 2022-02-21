@@ -3,11 +3,7 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 
 namespace Nezaboodka.Nevod
 {
@@ -18,6 +14,43 @@ namespace Nezaboodka.Nevod
         public Syntax Right { get; }
         public Syntax Exclusion { get; }
         public Syntax ExtractionOfSpan { get; }
+
+        public override void CreateChildren(string text)
+        {
+            if (Children != null)
+                return;
+            var children = new List<Syntax>();
+            var scanner = new Scanner(text);
+            int rangeStart = TextRange.Start;
+            if (Left != null)
+            {
+                children.Add(Left);
+                rangeStart = Left.TextRange.End;
+            }
+            if (ExtractionOfSpan != null)
+            {
+                int rangeEnd = ExtractionOfSpan.TextRange.Start;
+                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
+                children.Add(ExtractionOfSpan);
+                rangeStart = ExtractionOfSpan.TextRange.End;
+            }
+            if (Exclusion != null)
+            {
+                int rangeEnd = Exclusion.TextRange.Start;
+                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
+                children.Add(Exclusion);
+                rangeStart = Exclusion.TextRange.End;
+            }
+            if (Right != null)
+            {
+                int rangeEnd = Right.TextRange.Start;
+                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
+                children.Add(Right);
+                rangeStart = Right.TextRange.End;
+            }
+            SyntaxUtils.CreateChildrenForRange(rangeStart, TextRange.End, children, scanner);
+            Children = children.AsReadOnly();
+        }
 
         internal WordSpanSyntax(Syntax left, Range spanRange, Syntax right, Syntax exclusion, Syntax extractionOfSpan)
         {

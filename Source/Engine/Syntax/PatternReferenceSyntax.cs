@@ -6,8 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 
 namespace Nezaboodka.Nevod
 {
@@ -16,6 +14,24 @@ namespace Nezaboodka.Nevod
         public PatternSyntax ReferencedPattern { get; internal set; }
         public string PatternName { get; }
         public ReadOnlyCollection<Syntax> ExtractionFromFields { get; }
+
+        public override void CreateChildren(string text)
+        {
+            if (Children != null)
+                return;
+            var children = new List<Syntax>();
+            var scanner = new Scanner(text);
+            int rangeStart = TextRange.Start;
+            if (ExtractionFromFields.Count != 0)
+            {
+                int rangeEnd = ExtractionFromFields[0].TextRange.Start;
+                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
+                SyntaxUtils.CreateChildrenForElements(ExtractionFromFields, children, scanner);
+                rangeStart = ExtractionFromFields[^1].TextRange.End;
+            }
+            SyntaxUtils.CreateChildrenForRange(rangeStart, TextRange.End, children, scanner);
+            Children = children.AsReadOnly();
+        }
 
         internal PatternReferenceSyntax(PatternSyntax pattern, IList<Syntax> extractionFromFields)
         {

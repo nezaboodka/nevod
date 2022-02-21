@@ -3,6 +3,7 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
+using System.Collections.Generic;
 using System.IO;
 
 namespace Nezaboodka.Nevod
@@ -13,6 +14,16 @@ namespace Nezaboodka.Nevod
         public string RelativePath { get; }
         public string FullPath { get; private set; }
         public new LinkedPackageSyntax Package { get; private set; }
+
+        public override void CreateChildren(string text)
+        {
+            if (Children != null)
+                return;
+            var children = new List<Syntax>();
+            var scanner = new Scanner(text);
+            SyntaxUtils.CreateChildrenForRange(TextRange, children, scanner);
+            Children = children.AsReadOnly();
+        }
 
         internal RequiredPackageSyntax(string baseDirectory, string relativePath, LinkedPackageSyntax package)
         {

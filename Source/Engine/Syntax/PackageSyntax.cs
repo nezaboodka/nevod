@@ -15,6 +15,32 @@ namespace Nezaboodka.Nevod
         public ReadOnlyCollection<Syntax> Patterns { get; }
         public List<Error> Errors { get; internal set; }
 
+        public override void CreateChildren(string text)
+        {
+            if (Children != null)
+                return;
+            var children = new List<Syntax>();
+            var scanner = new Scanner(text);
+            int rangeStart = TextRange.Start;
+            if (RequiredPackages.Count != 0)
+            {
+                int rangeEnd = RequiredPackages[0].TextRange.Start;
+                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
+                SyntaxUtils.CreateChildrenForElements(RequiredPackages, children, scanner);
+                rangeStart = RequiredPackages[^1].TextRange.End;
+            }
+            ReadOnlyCollection<Syntax> mergedPatterns = SyntaxUtils.MergeSyntaxListsByTextRange(Patterns, SearchTargets).AsReadOnly();
+            if (mergedPatterns.Count != 0)
+            {
+                int rangeEnd = mergedPatterns[0].TextRange.Start;
+                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
+                SyntaxUtils.CreateChildrenForElements(mergedPatterns, children, scanner);
+                rangeStart = mergedPatterns[^1].TextRange.End;
+            }
+            SyntaxUtils.CreateChildrenForRange(rangeStart, TextRange.End, children, scanner);
+            Children = children.AsReadOnly();
+        }
+
         internal PackageSyntax(IList<RequiredPackageSyntax> requiredPackages,
             IList<Syntax> searchTargets, IList<Syntax> patterns)
         {

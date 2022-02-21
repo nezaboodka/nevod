@@ -3,21 +3,20 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 
 namespace Nezaboodka.Nevod
 {
     public abstract class SearchTargetSyntax : Syntax
     {
         public string SearchTarget { get; }
+        public string Namespace { get; }
 
-        internal SearchTargetSyntax(string searchTarget)
+        internal SearchTargetSyntax(string searchTarget, string nameSpace)
         {
             SearchTarget = searchTarget;
+            Namespace = nameSpace != null ? nameSpace : string.Empty;
         }
     }
 
@@ -25,8 +24,25 @@ namespace Nezaboodka.Nevod
     {
         public new PatternReferenceSyntax PatternReference { get; }
 
-        internal PatternSearchTargetSyntax(string patternName, PatternReferenceSyntax patternReference)
-            : base(patternName)
+        public override void CreateChildren(string text)
+        {
+            if (Children != null)
+                return;
+            var children = new List<Syntax>();
+            var scanner = new Scanner(text);
+            if (PatternReference != null)
+            {
+                SyntaxUtils.CreateChildrenForRange(TextRange.Start, PatternReference.TextRange.Start, children, scanner);
+                children.Add(PatternReference);
+                SyntaxUtils.CreateChildrenForRange(PatternReference.TextRange.End, TextRange.End, children, scanner);
+            }
+            else
+                SyntaxUtils.CreateChildrenForRange(TextRange, children, scanner);
+            Children = children.AsReadOnly();
+        }
+
+        internal PatternSearchTargetSyntax(string patternName, string nameSpace, PatternReferenceSyntax patternReference)
+            : base(patternName, nameSpace)
         {
             PatternReference = patternReference;
         }
@@ -39,13 +55,23 @@ namespace Nezaboodka.Nevod
 
     public class NamespaceSearchTargetSyntax : SearchTargetSyntax
     {
-        public string Namespace { get; }
+        public string PatternsNamespace { get; }
         public ReadOnlyCollection<Syntax> PatternReferences { get; internal set; }
 
-        internal NamespaceSearchTargetSyntax(string nameSpace)
-            : base(nameSpace + ".*")
+        public override void CreateChildren(string text)
         {
-            Namespace = nameSpace;
+            if (Children != null)
+                return;
+            var children = new List<Syntax>();
+            var scanner = new Scanner(text);
+            SyntaxUtils.CreateChildrenForRange(TextRange, children, scanner);
+            Children = children.AsReadOnly();
+        }
+
+        internal NamespaceSearchTargetSyntax(string patternsNameSpace, string nameSpace)
+            : base(patternsNameSpace + ".*", nameSpace)
+        {
+            PatternsNamespace = patternsNameSpace;
         }
 
         protected internal override Syntax Accept(SyntaxVisitor visitor)
@@ -56,15 +82,15 @@ namespace Nezaboodka.Nevod
 
     public partial class Syntax
     {
-        public static PatternSearchTargetSyntax PatternSearchTarget(string fullName, PatternReferenceSyntax patternReference)
+        public static PatternSearchTargetSyntax PatternSearchTarget(string fullName, string nameSpace, PatternReferenceSyntax patternReference)
         {
-            var result = new PatternSearchTargetSyntax(fullName, patternReference);
+            var result = new PatternSearchTargetSyntax(fullName, nameSpace, patternReference);
             return result;
         }
 
-        public static NamespaceSearchTargetSyntax NamespaceSearchTarget(string nameSpace)
+        public static NamespaceSearchTargetSyntax NamespaceSearchTarget(string patternsNameSpace, string nameSpace)
         {
-            var result = new NamespaceSearchTargetSyntax(nameSpace);
+            var result = new NamespaceSearchTargetSyntax(patternsNameSpace, nameSpace);
             return result;
         }
     }

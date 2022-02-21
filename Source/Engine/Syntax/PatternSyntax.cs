@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 
 namespace Nezaboodka.Nevod
 {
@@ -29,6 +28,38 @@ namespace Nezaboodka.Nevod
         {
             FieldSyntax result = Fields.FirstOrDefault(x => x.Name == fieldName);
             return result;
+        }
+
+        public override void CreateChildren(string text)
+        {
+            if (Children != null)
+                return;
+            var children = new List<Syntax>();
+            var scanner = new Scanner(text);
+            int rangeStart = TextRange.Start;
+            if (Fields.Count != 0)
+            {
+                int rangeEnd = Fields[0].TextRange.Start;
+                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
+                SyntaxUtils.CreateChildrenForElements(Fields, children, scanner);
+                rangeStart = Fields[^1].TextRange.End;
+            }
+            if (Body != null)
+            {
+                int rangeEnd = Body.TextRange.Start;
+                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
+                children.Add(Body);
+                rangeStart = Body.TextRange.End;
+            }
+            if (NestedPatterns.Count != 0)
+            {
+                int rangeEnd = NestedPatterns[0].TextRange.Start;
+                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
+                SyntaxUtils.CreateChildrenForElements(NestedPatterns, children, scanner);
+                rangeStart = NestedPatterns[^1].TextRange.End;
+            }
+            SyntaxUtils.CreateChildrenForRange(rangeStart, TextRange.End, children, scanner);
+            Children = children.AsReadOnly();
         }
 
         internal PatternSyntax(string nameSpace, string masterPatternName, bool isSearchTarget, string name,

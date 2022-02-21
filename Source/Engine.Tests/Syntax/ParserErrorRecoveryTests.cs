@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using static Nezaboodka.Nevod.Engine.Tests.ErrorRecoveryTestHelper;
@@ -422,7 +424,11 @@ unterminated comment";
         {
             ParseAndCompareErrors(
                 patterns: "@search ;",
-                CreateExpectedError(";", TextResource.IdentifierExpected));
+                CreateExpectedError(";", TextResource.IdentifierExpected),
+                additionalChecks: package =>
+                {
+                    Assert.AreEqual(expected: 1, package.SearchTargets.Count, message: "Actual number of search targets is not equal to the expected one.");
+                });
         }
 
         [TestMethod]
@@ -436,7 +442,23 @@ Pattern = Word @where {
     }
 };
 ",
-                CreateExpectedError("@namespace", TextResource.NamespacesAreNotAllowedInNestedPatterns));
+                new List<ExpectedError>
+                {
+                    CreateExpectedError("@namespace", TextResource.NamespacesAreNotAllowedInNestedPatterns),
+                    CreateExpectedError("{", TextResource.EqualSignExpectedInPatternDefinition),
+                    CreateExpectedError("Inner", TextResource.ExpressionExpected),
+                    // Space after first close curly brace
+                    CreateExpectedError(errorStart: 78, errorLength: 1, TextResource.PatternShouldEndWithSemicolon),
+                    CreateExpectedError("}", TextResource.PatternNameExpected),
+                    CreateExpectedError(";", TextResource.PatternNameExpected)
+                },
+                additionalChecks: package =>
+                {
+                    ReadOnlyCollection<PatternSyntax> nestedPatterns = ((PatternSyntax)package.Patterns[0]).NestedPatterns;
+                    Assert.AreEqual(expected: 2, nestedPatterns.Count, "'Namespace' should be parsed as pattern with no body.");
+                    PatternSyntax innerPattern = nestedPatterns[0];
+                    Assert.AreEqual(String.Empty, innerPattern.Namespace, message: "Inner pattern should have no namespace.");
+                });
         }
 
         [TestMethod]
@@ -469,6 +491,19 @@ Pattern = Word @where {
             ParseExpressionAndCompareErrors(
                 expression: @"Word + Num 3-5",
                 CreateExpectedError("3", TextResource.EndOfExpressionExpectedInExpressionMode));
+        }
+
+        [TestMethod]
+        public void EmptySpan()
+        {
+            ParseAndCompareErrors(
+                patterns: @"Pattern = [];",
+                CreateExpectedError("]", TextResource.NumericRangeExpected),
+                additionalChecks: package =>
+                {
+                    var span = (SpanSyntax)((PatternSyntax)package.Patterns[0]).Body;
+                    Assert.AreEqual(expected: 0, span.Elements.Count, message: "Actual number of span elements is not equal to the expected one.");
+                });
         }
     }
 }

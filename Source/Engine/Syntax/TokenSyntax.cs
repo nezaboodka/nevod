@@ -3,10 +3,7 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
-using System.Text;
-using Nezaboodka.Text.Parsing;
 
 namespace Nezaboodka.Nevod
 {
@@ -17,6 +14,16 @@ namespace Nezaboodka.Nevod
         public bool IsCaseSensitive { get; }
         public bool TextIsPrefix { get; }
         public TokenAttributes TokenAttributes { get; }
+
+        public override void CreateChildren(string text)
+        {
+            if (Children != null)
+                return;
+            var children = new List<Syntax>();
+            var scanner = new Scanner(text);
+            SyntaxUtils.CreateChildrenForRange(TextRange, children, scanner);
+            Children = children.AsReadOnly();
+        }
 
         internal TokenSyntax(TokenKind tokenKind, string text, bool isCaseSensitive, bool textIsPrefix,
             TokenAttributes tokenAttributes)

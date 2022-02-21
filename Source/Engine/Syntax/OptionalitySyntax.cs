@@ -3,11 +3,8 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 
 namespace Nezaboodka.Nevod
 {
@@ -16,6 +13,23 @@ namespace Nezaboodka.Nevod
         private bool fCanReduce;
 
         public Syntax Body { get; }
+
+        public override void CreateChildren(string text)
+        {
+            if (Children != null)
+                return;
+            var children = new List<Syntax>();
+            var scanner = new Scanner(text);
+            if (Body != null)
+            {
+                SyntaxUtils.CreateChildrenForRange(TextRange.Start, Body.TextRange.Start, children, scanner);
+                children.Add(Body);
+                SyntaxUtils.CreateChildrenForRange(Body.TextRange.End, TextRange.End, children, scanner);
+            }
+            else
+                SyntaxUtils.CreateChildrenForRange(TextRange, children, scanner);
+            Children = children.AsReadOnly();
+        }
 
         internal override bool CanReduce => fCanReduce;
 

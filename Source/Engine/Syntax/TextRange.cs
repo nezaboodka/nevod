@@ -1,6 +1,6 @@
 ﻿namespace Nezaboodka.Nevod
 {
-    public struct TextRange
+    public readonly struct TextRange
     {
         public int Start { get; }
         public int End { get; }
@@ -10,9 +10,9 @@
             Start = start;
             End = end;
         }
-        
+
         public int Length => End - Start;
-        
+
         public bool IsEmpty => Start == End;
 
         public override string ToString()

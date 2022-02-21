@@ -192,6 +192,8 @@ P2 = P1;
                         return @"
 P1 = Word;
 ";
+                    case "REQUIRED.np":
+                        return "";
                     default:
                         throw new ArgumentException($"{nameof(filePath)}: '{filePath}'");
                 }
@@ -206,7 +208,13 @@ P1 = Word;
                         TextResource.DuplicatedRequiredPackage, "./REQUIRED.np", "Required.np"));
             }
             else
-                Assert.Inconclusive("File system is case sensitive.");
+            {
+                LinkAndCompareErrors(
+                    filePath: "Main.np",
+                    GetFileContent,
+                    Array.Empty<ExpectedError>()
+                    );
+            }
         }
         
         [TestMethod]

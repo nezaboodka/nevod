@@ -3,11 +3,9 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 
 namespace Nezaboodka.Nevod
 {
@@ -25,6 +23,24 @@ namespace Nezaboodka.Nevod
 
         public bool AnyElementIsSpanWithSingleElementWithZeroOrOnePlusRepetition() =>
             Elements.Any(x => x is SpanSyntax s && s.IsSingleElementWithZeroPlusOrOnePlusRepetition());
+
+        public override void CreateChildren(string text)
+        {
+            if (Children != null)
+                return;
+            var children = new List<Syntax>();
+            var scanner = new Scanner(text);
+            int rangeStart = TextRange.Start;
+            if (Elements.Count != 0)
+            {
+                int rangeEnd = Elements[0].TextRange.Start;
+                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
+                SyntaxUtils.CreateChildrenForElements(Elements, children, scanner);
+                rangeStart = Elements[^1].TextRange.End;
+            }
+            SyntaxUtils.CreateChildrenForRange(rangeStart, TextRange.End, children, scanner);
+            Children = children.AsReadOnly();
+        }
 
         internal override bool CanReduce => fCanReduce;
 
