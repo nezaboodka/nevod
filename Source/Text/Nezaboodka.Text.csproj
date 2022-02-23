@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Nezaboodka Text library provides data types and procedures for text parsing and formatting.</Description>
     <AssemblyName>Nezaboodka.Text</AssemblyName>
     <RootNamespace>Nezaboodka.Text</RootNamespace>
@@ -28,7 +28,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <LangVersion>latest</LangVersion>
     <DebugType Condition=" '$(Configuration)|$(CollectCoverage)' == 'Release|' ">None</DebugType>
   </PropertyGroup>
 

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Nezaboodka Nevod library provides pattern-based text search.</Description>
     <AssemblyName>Nezaboodka.Nevod</AssemblyName>
     <RootNamespace>Nezaboodka.Nevod</RootNamespace>
@@ -27,7 +27,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <LangVersion>latest</LangVersion>
     <DebugType Condition=" '$(Configuration)|$(CollectCoverage)' == 'Release|' ">None</DebugType>
   </PropertyGroup>
 

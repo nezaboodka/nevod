@@ -12,7 +12,7 @@ namespace Nezaboodka.Nevod
         private PatternSyntax fCurrentPattern;
         private List<Syntax> fAllPatterns;
 
-        public NormalizingPatternLinker(Func<string, string> fileContentProvider, PackageCache packageCache) 
+        public NormalizingPatternLinker(Func<string, string> fileContentProvider, PackageCache packageCache)
             : base(fileContentProvider, packageCache)
         {
         }
@@ -36,7 +36,7 @@ namespace Nezaboodka.Nevod
             }
             return result;
         }
-        
+
         protected internal override Syntax VisitPackage(PackageSyntax node)
         {
             var result = (LinkedPackageSyntax) base.VisitPackage(node);
@@ -45,7 +45,8 @@ namespace Nezaboodka.Nevod
             foreach (PatternSyntax p in fAllPatterns.Where(x => ((PatternSyntax)x).IsSearchTarget))
             {
                 var t = new PatternSearchTargetSyntax(p.FullName, Syntax.PatternReference(p));
-                searchTargetsFromPatterns ??= new List<Syntax>();
+                if (searchTargetsFromPatterns == null)
+                    searchTargetsFromPatterns = new List<Syntax>();
                 searchTargetsFromPatterns.Add(t);
             }
             ReadOnlyCollection<Syntax> searchTargets;
@@ -91,7 +92,7 @@ namespace Nezaboodka.Nevod
             Syntax result = node.Update(newInner, newOuter);
             return result;
         }
-        
+
         protected internal override Syntax VisitOutside(OutsideSyntax node)
         {
             Syntax newBody = Visit(node.Body);
@@ -106,7 +107,7 @@ namespace Nezaboodka.Nevod
             Syntax result = node.Update(newBody, newException);
             return result;
         }
-        
+
         protected internal override Syntax VisitHaving(HavingSyntax node)
         {
             Syntax newOuter = Visit(node.Outer);
@@ -124,7 +125,7 @@ namespace Nezaboodka.Nevod
             Syntax result = node.Update(newOuter, newInner);
             return result;
         }
-        
+
         private string GetExtractedPatternName()
         {
             string result = $"{fCurrentPattern.Name}/{fNextExtractedPatternNumber}";
