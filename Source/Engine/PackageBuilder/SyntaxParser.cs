@@ -1437,8 +1437,8 @@ namespace Nezaboodka.Nevod
         private void AddError(in Error error, bool checkForMultipleErrors = true)
         {
             if (!fIsErrorRecovery
-                && (!chekForMultipleErrors || fErrors.Count == 0 || error.ErrorRange.Start > fErrors[fErrors.Count - 1].ErrorRange.Start)
-                && error.ErrorRange.Start < fText.Length)
+                && (!checkForMultipleErrors || fErrors.Count == 0 || error.ErrorRange.Start > fErrors[fErrors.Count - 1].ErrorRange.Start)
+                && error.ErrorRange.Start < fTextLength)
                 fErrors.Add(error);
         }
 
