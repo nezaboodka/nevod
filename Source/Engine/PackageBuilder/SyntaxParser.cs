@@ -88,7 +88,7 @@ namespace Nezaboodka.Nevod
         }
 
         // Internal
-        
+
         private void AddExpressionModeError(bool isExpressionParsed)
         {
             if (fIsAbortingDueToPatternDefinition
@@ -427,7 +427,7 @@ namespace Nezaboodka.Nevod
             if (fScanner.CurrentToken.Id == TokenId.CloseParenthesis)
                 result = new List<FieldSyntax>();
             else
-            { 
+            {
                 EndSign saveEndSign = fEndSign;
                 fEndSign |= EndSign.EndOfFields;
                 result = ParseCommaSeparatedList(ParseField, TokenId.CloseParenthesis, IsFieldStart);
@@ -796,14 +796,26 @@ namespace Nezaboodka.Nevod
             return elements;
         }
 
-        private Error GetCommaOrEndOfListExpectedError(TokenId endToken) =>
-            endToken switch
+        private Error GetCommaOrEndOfListExpectedError(TokenId endToken)
+        {
+            Error result;
+            switch (endToken)
             {
-                TokenId.CloseCurlyBrace => CreateError(TextResource.CloseCurlyBraceOrCommaExpected),
-                TokenId.CloseParenthesis => CreateError(TextResource.CloseParenthesisOrCommaExpected),
-                TokenId.CloseSquareBracket => CreateError(TextResource.CloseSquareBracketOrCommaExpected),
-                _ => CreateError(TextResource.CommaExpected)
+                case TokenId.CloseCurlyBrace:
+                    result = CreateError(TextResource.CloseCurlyBraceOrCommaExpected);
+                    break;
+                case TokenId.CloseParenthesis:
+                    result = CreateError(TextResource.CloseParenthesisOrCommaExpected);
+                    break;
+                case TokenId.CloseSquareBracket:
+                    result = CreateError(TextResource.CloseSquareBracketOrCommaExpected);
+                    break;
+                default:
+                    result = CreateError(TextResource.CommaExpected);
+                    break;
             };
+            return result;
+        }
 
         private VariationSyntax ParseVariation()
         {
@@ -1027,13 +1039,15 @@ namespace Nezaboodka.Nevod
                         AddError(CreateError(errorRange, TextResource.AttributesAreNotAllowedForStandardPattern, patternName));
                     }
                 }
-                result ??= pattern.Body switch
+                if (result == null)
                 {
-                    TokenSyntax token => new TokenSyntax(token.TokenKind, token.Text, token.IsCaseSensitive, token.TextIsPrefix,
-                        token.TokenAttributes),
-                    VariationSyntax variation => new VariationSyntax(variation.Elements, checkCanReduce: false),
-                    _ => throw InternalError(TextResource.InternalCompilerError)
-                };
+                    if (pattern.Body is TokenSyntax token)
+                        result = new TokenSyntax(token.TokenKind, token.Text, token.IsCaseSensitive, token.TextIsPrefix, token.TokenAttributes);
+                    else if (pattern.Body is VariationSyntax variation)
+                        result = new VariationSyntax(variation.Elements, checkCanReduce: false);
+                    else
+                        throw InternalError(TextResource.InternalCompilerError);
+                }
             }
             else
             {
@@ -1226,7 +1240,7 @@ namespace Nezaboodka.Nevod
                             if (IsWordClass(value, out _) || IsCharCase(value, out _))
                                 AddError(CreateError(TextResource.AttributeIsInWrongPlace, value));
                             else
-                                AddError(CreateError(TextResource.UnknownAttribute, value));    
+                                AddError(CreateError(TextResource.UnknownAttribute, value));
                             NextToken();
                         }
                         else if (fScanner.CurrentToken.Id == TokenId.IntegerLiteral)
@@ -1245,7 +1259,7 @@ namespace Nezaboodka.Nevod
                             AddError(CreateError(TextResource.CloseParenthesisExpected));
                             NextToken();
                         }
-                    }   
+                    }
                 }
                 ValidateTokenAndAdvance(TokenId.CloseParenthesis, TextResource.CloseParenthesisExpected);
                 if (wordClass != WordClass.Any || !lengthRange.IsZeroPlus() || charCase != CharCase.Undefined)
@@ -1422,9 +1436,9 @@ namespace Nezaboodka.Nevod
 
         private void AddError(in Error error, bool checkForMultipleErrors = true)
         {
-            if (!fIsErrorRecovery 
-                && (!checkForMultipleErrors || fErrors.Count == 0 || error.ErrorRange.Start > fErrors[^1].ErrorRange.Start) 
-                && error.ErrorRange.Start < fTextLength)
+            if (!fIsErrorRecovery
+                && (!chekForMultipleErrors || fErrors.Count == 0 || error.ErrorRange.Start > fErrors[fErrors.Count - 1].ErrorRange.Start)
+                && error.ErrorRange.Start < fText.Length)
                 fErrors.Add(error);
         }
 
@@ -1459,9 +1473,9 @@ namespace Nezaboodka.Nevod
         private void ThrowIfNotValidated(bool isValidated)
         {
             if (!isValidated)
-                throw InternalError(string.Format(TextResource.InternalParserErrorFormat, fErrors[^1]));
+                throw InternalError(string.Format(TextResource.InternalParserErrorFormat, fErrors[fErrors.Count - 1]));
         }
-        
+
         private Exception InternalError(string message) => new InternalNevodErrorException(message);
 
         [Flags]
@@ -1479,7 +1493,7 @@ namespace Nezaboodka.Nevod
         }
 
         private const int MaxEndSign = (int)EndSign.EndOfExtractionFromFields;
-        
+
         private enum NestingContext
         {
             None,

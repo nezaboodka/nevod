@@ -327,25 +327,31 @@ namespace Nezaboodka.Nevod
 
         private void AddDuplicatePatternsInRequiredPackagesErrors()
         {
-            foreach ((RequiredPackageSyntax requiredPackage, Dictionary<string, List<string>> duplicatePatternsByOriginalFile) in
-                fDuplicatePatternsByRequiredPackage)
-            foreach ((string originalFile, List<string> duplicatePatterns) in duplicatePatternsByOriginalFile)
+            foreach (var duplicatesByPackage in fDuplicatePatternsByRequiredPackage)
             {
-                if (duplicatePatterns.Count == 1)
-                    AddError(requiredPackage, TextResource.DuplicatedPatternInRequiredPackage,
-                        requiredPackage.RelativePath, duplicatePatterns[0], originalFile);
-                else if (duplicatePatterns.Count <= 3)
+                RequiredPackageSyntax requiredPackage = duplicatesByPackage.Key;
+                Dictionary<string, List<string>> duplicatePatternsByOriginalFile = duplicatesByPackage.Value;
+                foreach (var duplicates in duplicatePatternsByOriginalFile)
                 {
-                    var joinedDuplicatePatterns = string.Join(", ", duplicatePatterns.Select(name => $"'{name}'"));
-                    AddError(requiredPackage, TextResource.DuplicatedPatternsInRequiredPackage,
-                        requiredPackage.RelativePath, duplicatePatterns.Count, joinedDuplicatePatterns, originalFile);
-                }
-                else
-                {
-                    var joinedDuplicatePatterns = string.Join(", ", duplicatePatterns.Take(3).Select(name => $"'{name}'"));
-                    AddError(requiredPackage, TextResource.DuplicatedPatternsAndMoreInRequiredPackage,
-                        requiredPackage.RelativePath, duplicatePatterns.Count, joinedDuplicatePatterns,
-                        duplicatePatterns.Count - 3,  originalFile);
+                    string originalFile = duplicates.Key;
+                    List<string> duplicatePatterns = duplicates.Value;
+
+                    if (duplicatePatterns.Count == 1)
+                        AddError(requiredPackage, TextResource.DuplicatedPatternInRequiredPackage,
+                            requiredPackage.RelativePath, duplicatePatterns[0], originalFile);
+                    else if (duplicatePatterns.Count <= 3)
+                    {
+                        var joinedDuplicatePatterns = string.Join(", ", duplicatePatterns.Select(name => $"'{name}'"));
+                        AddError(requiredPackage, TextResource.DuplicatedPatternsInRequiredPackage,
+                            requiredPackage.RelativePath, duplicatePatterns.Count, joinedDuplicatePatterns, originalFile);
+                    }
+                    else
+                    {
+                        var joinedDuplicatePatterns = string.Join(", ", duplicatePatterns.Take(3).Select(name => $"'{name}'"));
+                        AddError(requiredPackage, TextResource.DuplicatedPatternsAndMoreInRequiredPackage,
+                            requiredPackage.RelativePath, duplicatePatterns.Count, joinedDuplicatePatterns,
+                            duplicatePatterns.Count - 3,  originalFile);
+                    }
                 }
             }
         }
