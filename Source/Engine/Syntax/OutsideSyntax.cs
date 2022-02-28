@@ -3,8 +3,6 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
-using System.Collections.Generic;
-
 namespace Nezaboodka.Nevod
 {
     public class OutsideSyntax : Syntax
@@ -16,23 +14,22 @@ namespace Nezaboodka.Nevod
         {
             if (Children != null)
                 return;
-            var children = new List<Syntax>();
-            var scanner = new Scanner(text);
+            var childrenBuilder = new ChildrenBuilder(text);
             int rangeStart = TextRange.Start;
             if (Body != null)
             {
-                children.Add(Body);
+                childrenBuilder.Add(Body);
                 rangeStart = Body.TextRange.End;
             }
             if (Exception != null)
             {
                 int rangeEnd = Exception.TextRange.Start;
-                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
-                children.Add(Exception);
+                childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                childrenBuilder.Add(Exception);
                 rangeStart = Exception.TextRange.End;
             }
-            SyntaxUtils.CreateChildrenForRange(rangeStart, TextRange.End, children, scanner);
-            Children = children.AsReadOnly();
+            childrenBuilder.AddInsideRange(rangeStart, TextRange.End);
+            Children = childrenBuilder.GetChildren();
         }
 
         internal OutsideSyntax(Syntax body, Syntax exception)

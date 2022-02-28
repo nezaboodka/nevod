@@ -19,18 +19,17 @@ namespace Nezaboodka.Nevod
         {
             if (Children != null)
                 return;
-            var children = new List<Syntax>();
-            var scanner = new Scanner(text);
+            var childrenBuilder = new ChildrenBuilder(text);
             int rangeStart = TextRange.Start;
             if (ExtractionFromFields.Count != 0)
             {
                 int rangeEnd = ExtractionFromFields[0].TextRange.Start;
-                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
-                SyntaxUtils.CreateChildrenForElements(ExtractionFromFields, children, scanner);
-                rangeStart = ExtractionFromFields[^1].TextRange.End;
+                childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                childrenBuilder.AddForElements(ExtractionFromFields);
+                rangeStart = ExtractionFromFields[ExtractionFromFields.Count - 1].TextRange.End;
             }
-            SyntaxUtils.CreateChildrenForRange(rangeStart, TextRange.End, children, scanner);
-            Children = children.AsReadOnly();
+            childrenBuilder.AddInsideRange(rangeStart, TextRange.End);
+            Children = childrenBuilder.GetChildren();
         }
 
         internal PatternReferenceSyntax(PatternSyntax pattern, IList<Syntax> extractionFromFields)

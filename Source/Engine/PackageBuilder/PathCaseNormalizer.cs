@@ -4,28 +4,28 @@ using System.Reflection;
 
 namespace Nezaboodka.Nevod
 {
-    internal static class PathUtils
+    internal static class PathCaseNormalizer
     {
-        private static readonly Func<string, string> NormalizePathCaseFunc;
-        
+        private static readonly Func<string, string> NormalizePathCase;
+
         public static bool IsFileSystemCaseSensitive { get; }
-        
-        static PathUtils()
+
+        static PathCaseNormalizer()
         {
             string assemblyPath = Assembly.GetExecutingAssembly().Location;
             // If file system is not case sensitive, File.Exists for assembly path converted to upper case will return true.
             if (File.Exists(assemblyPath.ToUpper()))
             {
                 IsFileSystemCaseSensitive = false;
-                NormalizePathCaseFunc = path => path?.ToLower();
+                NormalizePathCase = path => path?.ToLower();
             }
             else
             {
                 IsFileSystemCaseSensitive = true;
-                NormalizePathCaseFunc = path => path;
+                NormalizePathCase = path => path;
             }
         }
 
-        public static string NormalizePathCase(string path) => NormalizePathCaseFunc(path);
+        public static string Normalize(string path) => NormalizePathCase(path);
     }
 }

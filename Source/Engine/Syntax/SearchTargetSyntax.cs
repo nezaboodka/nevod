@@ -3,7 +3,6 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace Nezaboodka.Nevod
@@ -28,17 +27,16 @@ namespace Nezaboodka.Nevod
         {
             if (Children != null)
                 return;
-            var children = new List<Syntax>();
-            var scanner = new Scanner(text);
+            var childrenBuilder = new ChildrenBuilder(text);
             if (PatternReference != null)
             {
-                SyntaxUtils.CreateChildrenForRange(TextRange.Start, PatternReference.TextRange.Start, children, scanner);
-                children.Add(PatternReference);
-                SyntaxUtils.CreateChildrenForRange(PatternReference.TextRange.End, TextRange.End, children, scanner);
+                childrenBuilder.AddInsideRange(TextRange.Start, PatternReference.TextRange.Start);
+                childrenBuilder.Add(PatternReference);
+                childrenBuilder.AddInsideRange(PatternReference.TextRange.End, TextRange.End);
             }
             else
-                SyntaxUtils.CreateChildrenForRange(TextRange, children, scanner);
-            Children = children.AsReadOnly();
+                childrenBuilder.AddInsideRange(TextRange);
+            Children = childrenBuilder.GetChildren();
         }
 
         internal PatternSearchTargetSyntax(string patternName, string nameSpace, PatternReferenceSyntax patternReference)
@@ -62,10 +60,9 @@ namespace Nezaboodka.Nevod
         {
             if (Children != null)
                 return;
-            var children = new List<Syntax>();
-            var scanner = new Scanner(text);
-            SyntaxUtils.CreateChildrenForRange(TextRange, children, scanner);
-            Children = children.AsReadOnly();
+            var childrenBuilder = new ChildrenBuilder(text);
+            childrenBuilder.AddInsideRange(TextRange);
+            Children = childrenBuilder.GetChildren();
         }
 
         internal NamespaceSearchTargetSyntax(string patternsNameSpace, string nameSpace)

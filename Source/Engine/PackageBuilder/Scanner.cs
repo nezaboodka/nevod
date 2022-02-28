@@ -14,9 +14,9 @@ namespace Nezaboodka.Nevod
         private bool fIsLanguageDetermined;
         private readonly Stack<State> fStates;
 
-        internal LexicalToken CurrentToken { get; private set; }
+        public LexicalToken CurrentToken { get; private set; }
 
-        internal Scanner(string text)
+        public Scanner(string text)
         {
             if (text == null)
                 throw new ArgumentNullException(nameof(text));
@@ -29,7 +29,7 @@ namespace Nezaboodka.Nevod
             NextCharacter();
         }
 
-        internal void SetPosition(int position)
+        public void SetPosition(int position)
         {
             if (position < 0 || position >= fText.Length)
                 throw new ArgumentOutOfRangeException(nameof(position));
@@ -39,7 +39,7 @@ namespace Nezaboodka.Nevod
             NextCharacter();
         }
 
-        internal void NextTokenOrComment()
+        public void NextTokenOrComment()
         {
             while (char.IsWhiteSpace(fCharacter))
                 NextCharacter();
@@ -282,13 +282,13 @@ namespace Nezaboodka.Nevod
                 fIsScanningMetadata = false;
         }
 
-        internal void SaveState()
+        public void SaveState()
         {
             var state = new State(fTextPosition, fCharacter, CurrentToken);
             fStates.Push(state);
         }
 
-        internal void RestoreState()
+        public void RestoreState()
         {
             if (fStates.Count == 0)
                 throw new InvalidOperationException("States stack is empty");

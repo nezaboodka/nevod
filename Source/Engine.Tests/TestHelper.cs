@@ -341,12 +341,12 @@ namespace Nezaboodka.Nevod.Engine.Tests
             return syntaxParser.ParsePackageText(patterns);
         }
 
-        public static void TestTerminalIdAndTextRange(string patterns, Syntax syntax, TokenId tokenId, string expectedText)
+        public static void TestTokenIdAndTextRange(string patterns, Syntax syntax, TokenId tokenId, string expectedText)
         {
-            Assert.IsInstanceOfType(syntax, typeof(TerminalSyntax));
-            var terminal = (TerminalSyntax)syntax;
-            Assert.AreEqual(tokenId, terminal.TokenId);
-            TestSourceTextInformation(patterns, terminal, expectedText);
+            Assert.IsInstanceOfType(syntax, typeof(Lexeme));
+            var lexeme = (Lexeme)syntax;
+            Assert.AreEqual(tokenId, lexeme.TokenId);
+            TestSourceTextInformation(patterns, lexeme, expectedText);
         }
 
         public static void TestToken(LexicalToken token, TokenId tokenId, string expectedText)

@@ -73,7 +73,7 @@ namespace Nezaboodka.Nevod
             fBaseDirectory = baseDirectory;
             if (filePath != null)
                 filePath = Path.GetFullPath(filePath);
-            fDependencyStack.Push(new FileInfo(filePath, PathUtils.NormalizePathCase(filePath)));
+            fDependencyStack.Push(new FileInfo(filePath, PathCaseNormalizer.Normalize(filePath)));
             Dictionary<string, PatternSyntax> savePatternByName = fPatternByName;
             Dictionary<string, RequiredPackageSyntax> saveRequiredPackageByFilePath = fRequiredPackageByFilePath;
             Dictionary<string, RequiredPackageSyntax> saveRequiredPackageByPatternName = fRequiredPackageByPatternName;
@@ -130,7 +130,7 @@ namespace Nezaboodka.Nevod
         protected internal override Syntax VisitRequiredPackage(RequiredPackageSyntax node)
         {
             string filePath = Syntax.GetRequiredFilePath(fBaseDirectory, node.RelativePath);
-            string normalizedFilePath = PathUtils.NormalizePathCase(filePath);
+            string normalizedFilePath = PathCaseNormalizer.Normalize(filePath);
             if (ValidateRequiredPathAndAddErrors(filePath, normalizedFilePath, node))
             {
                 LinkedPackageSyntax linkedPackage = TryLoadRequiredPackage(filePath, node);

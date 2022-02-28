@@ -3,8 +3,6 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
-using System.Collections.Generic;
-
 namespace Nezaboodka.Nevod
 {
     public class AnySpanSyntax : Syntax
@@ -17,30 +15,29 @@ namespace Nezaboodka.Nevod
         {
             if (Children != null)
                 return;
-            var children = new List<Syntax>();
-            var scanner = new Scanner(text);
+            var childrenBuilder = new ChildrenBuilder(text);
             int rangeStart = TextRange.Start;
             if (Left != null)
             {
-                children.Add(Left);
+                childrenBuilder.Add(Left);
                 rangeStart = Left.TextRange.End;
             }
             if (ExtractionOfSpan != null)
             {
                 int rangeEnd = ExtractionOfSpan.TextRange.Start;
-                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
-                children.Add(ExtractionOfSpan);
+                childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                childrenBuilder.Add(ExtractionOfSpan);
                 rangeStart = ExtractionOfSpan.TextRange.End;
             }
             if (Right != null)
             {
                 int rangeEnd = Right.TextRange.Start;
-                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
-                children.Add(Right);
+                childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                childrenBuilder.Add(Right);
                 rangeStart = Right.TextRange.End;
             }
-            SyntaxUtils.CreateChildrenForRange(rangeStart, TextRange.End, children, scanner);
-            Children = children.AsReadOnly();
+            childrenBuilder.AddInsideRange(rangeStart, TextRange.End);
+            Children = childrenBuilder.GetChildren();
         }
 
         internal AnySpanSyntax(Syntax left, Syntax right, Syntax extractionOfSpan)

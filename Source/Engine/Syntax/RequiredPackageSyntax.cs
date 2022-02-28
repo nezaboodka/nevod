@@ -3,7 +3,6 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
-using System.Collections.Generic;
 using System.IO;
 
 namespace Nezaboodka.Nevod
@@ -19,10 +18,9 @@ namespace Nezaboodka.Nevod
         {
             if (Children != null)
                 return;
-            var children = new List<Syntax>();
-            var scanner = new Scanner(text);
-            SyntaxUtils.CreateChildrenForRange(TextRange, children, scanner);
-            Children = children.AsReadOnly();
+            var childrenBuilder = new ChildrenBuilder(text);
+            childrenBuilder.AddInsideRange(TextRange);
+            Children = childrenBuilder.GetChildren();
         }
 
         internal RequiredPackageSyntax(string baseDirectory, string relativePath, LinkedPackageSyntax package)
@@ -32,7 +30,7 @@ namespace Nezaboodka.Nevod
             FullPath = GetRequiredFilePath(baseDirectory, relativePath);
             Package = package;
         }
-        
+
         internal RequiredPackageSyntax(string relativePath)
         {
             RelativePath = relativePath;

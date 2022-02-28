@@ -20,10 +20,9 @@ namespace Nezaboodka.Nevod
         {
             if (Children != null)
                 return;
-            var children = new List<Syntax>();
-            var scanner = new Scanner(text);
-            SyntaxUtils.CreateChildrenForRange(TextRange, children, scanner);
-            Children = children.AsReadOnly();
+            var childrenBuilder = new ChildrenBuilder(text);
+            childrenBuilder.AddInsideRange(TextRange);
+            Children = childrenBuilder.GetChildren();
         }
 
         internal static readonly PlainTextParserOptions TextParserOptions = new PlainTextParserOptions()

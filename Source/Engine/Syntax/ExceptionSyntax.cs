@@ -3,8 +3,6 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
-using System.Collections.Generic;
-
 namespace Nezaboodka.Nevod
 {
     public class ExceptionSyntax : Syntax
@@ -15,17 +13,16 @@ namespace Nezaboodka.Nevod
         {
             if (Children != null)
                 return;
-            var children = new List<Syntax>();
-            var scanner = new Scanner(text);
+            var childrenBuilder = new ChildrenBuilder(text);
             if (Body != null)
             {
-                SyntaxUtils.CreateChildrenForRange(TextRange.Start, Body.TextRange.Start, children, scanner);
-                children.Add(Body);
-                SyntaxUtils.CreateChildrenForRange(Body.TextRange.End, TextRange.End, children, scanner);
+                childrenBuilder.AddInsideRange(TextRange.Start, Body.TextRange.Start);
+                childrenBuilder.Add(Body);
+                childrenBuilder.AddInsideRange(Body.TextRange.End, TextRange.End);
             }
             else
-                SyntaxUtils.CreateChildrenForRange(TextRange, children, scanner);
-            Children = children.AsReadOnly();
+                childrenBuilder.AddInsideRange(TextRange);
+            Children = childrenBuilder.GetChildren();
         }
 
         internal ExceptionSyntax(Syntax body)

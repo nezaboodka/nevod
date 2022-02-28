@@ -19,26 +19,25 @@ namespace Nezaboodka.Nevod
         {
             if (Children != null)
                 return;
-            var children = new List<Syntax>();
-            var scanner = new Scanner(text);
+            var childrenBuilder = new ChildrenBuilder(text);
             int rangeStart = TextRange.Start;
             if (RequiredPackages.Count != 0)
             {
                 int rangeEnd = RequiredPackages[0].TextRange.Start;
-                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
-                SyntaxUtils.CreateChildrenForElements(RequiredPackages, children, scanner);
-                rangeStart = RequiredPackages[^1].TextRange.End;
+                childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                childrenBuilder.AddForElements(RequiredPackages);
+                rangeStart = RequiredPackages[RequiredPackages.Count - 1].TextRange.End;
             }
-            ReadOnlyCollection<Syntax> mergedPatterns = SyntaxUtils.MergeSyntaxListsByTextRange(Patterns, SearchTargets).AsReadOnly();
+            ReadOnlyCollection<Syntax> mergedPatterns = MergePatternsAndSearchTargetsByTextRange();
             if (mergedPatterns.Count != 0)
             {
                 int rangeEnd = mergedPatterns[0].TextRange.Start;
-                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
-                SyntaxUtils.CreateChildrenForElements(mergedPatterns, children, scanner);
-                rangeStart = mergedPatterns[^1].TextRange.End;
+                childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                childrenBuilder.AddForElements(mergedPatterns);
+                rangeStart = mergedPatterns[mergedPatterns.Count - 1].TextRange.End;
             }
-            SyntaxUtils.CreateChildrenForRange(rangeStart, TextRange.End, children, scanner);
-            Children = children.AsReadOnly();
+            childrenBuilder.AddInsideRange(rangeStart, TextRange.End);
+            Children = childrenBuilder.GetChildren();
         }
 
         internal PackageSyntax(IList<RequiredPackageSyntax> requiredPackages,
@@ -52,6 +51,27 @@ namespace Nezaboodka.Nevod
         protected internal override Syntax Accept(SyntaxVisitor visitor)
         {
             return visitor.VisitPackage(this);
+        }
+
+        private ReadOnlyCollection<Syntax> MergePatternsAndSearchTargetsByTextRange()
+        {
+            var mergedList = new List<Syntax>(Patterns.Count + SearchTargets.Count);
+            int firstIndex = 0;
+            int secondIndex = 0;
+            while (firstIndex < Patterns.Count && secondIndex < SearchTargets.Count)
+            {
+                if (Patterns[firstIndex].TextRange.Start < SearchTargets[secondIndex].TextRange.Start)
+                    mergedList.Add(Patterns[firstIndex++]);
+                else
+                    mergedList.Add(SearchTargets[secondIndex++]);
+            }
+            if (firstIndex < Patterns.Count)
+                for (int i = firstIndex; i < Patterns.Count; i++)
+                    mergedList.Add(Patterns[i]);
+            else if (secondIndex < SearchTargets.Count)
+                for (int i = secondIndex; i < SearchTargets.Count; i++)
+                    mergedList.Add(SearchTargets[i]);
+            return mergedList.AsReadOnly();
         }
     }
 

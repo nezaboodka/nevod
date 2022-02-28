@@ -3,8 +3,6 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
-using System.Collections.Generic;
-
 namespace Nezaboodka.Nevod
 {
     public class HavingSyntax : Syntax
@@ -16,23 +14,22 @@ namespace Nezaboodka.Nevod
         {
             if (Children != null)
                 return;
-            var children = new List<Syntax>();
-            var scanner = new Scanner(text);
+            var childrenBuilder = new ChildrenBuilder(text);
             int rangeStart = TextRange.Start;
             if (Outer != null)
             {
-                children.Add(Outer);
+                childrenBuilder.Add(Outer);
                 rangeStart = Outer.TextRange.End;
             }
             if (Inner != null)
             {
                 int rangeEnd = Inner.TextRange.Start;
-                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
-                children.Add(Inner);
+                childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                childrenBuilder.Add(Inner);
                 rangeStart = Inner.TextRange.End;
             }
-            SyntaxUtils.CreateChildrenForRange(rangeStart, TextRange.End, children, scanner);
-            Children = children.AsReadOnly();
+            childrenBuilder.AddInsideRange(rangeStart, TextRange.End);
+            Children = childrenBuilder.GetChildren();
         }
 
         internal HavingSyntax(Syntax outer, Syntax inner)

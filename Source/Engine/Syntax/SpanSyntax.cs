@@ -35,18 +35,17 @@ namespace Nezaboodka.Nevod
         {
             if (Children != null)
                 return;
-            var children = new List<Syntax>();
-            var scanner = new Scanner(text);
+            var childrenBuilder = new ChildrenBuilder(text);
             int rangeStart = TextRange.Start;
             if (Elements.Count != 0)
             {
                 int rangeEnd = Elements[0].TextRange.Start;
-                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
-                SyntaxUtils.CreateChildrenForElements(Elements, children, scanner);
-                rangeStart = Elements[^1].TextRange.End;
+                childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                childrenBuilder.AddForElements(Elements);
+                rangeStart = Elements[Elements.Count - 1].TextRange.End;
             }
-            SyntaxUtils.CreateChildrenForRange(rangeStart, TextRange.End, children, scanner);
-            Children = children.AsReadOnly();
+            childrenBuilder.AddInsideRange(rangeStart, TextRange.End);
+            Children = childrenBuilder.GetChildren();
         }
 
         internal override bool CanReduce => fCanReduce;

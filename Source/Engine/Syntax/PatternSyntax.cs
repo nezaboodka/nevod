@@ -34,32 +34,31 @@ namespace Nezaboodka.Nevod
         {
             if (Children != null)
                 return;
-            var children = new List<Syntax>();
-            var scanner = new Scanner(text);
+            var childrenBuilder = new ChildrenBuilder(text);
             int rangeStart = TextRange.Start;
             if (Fields.Count != 0)
             {
                 int rangeEnd = Fields[0].TextRange.Start;
-                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
-                SyntaxUtils.CreateChildrenForElements(Fields, children, scanner);
-                rangeStart = Fields[^1].TextRange.End;
+                childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                childrenBuilder.AddForElements(Fields);
+                rangeStart = Fields[Fields.Count - 1].TextRange.End;
             }
             if (Body != null)
             {
                 int rangeEnd = Body.TextRange.Start;
-                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
-                children.Add(Body);
+                childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                childrenBuilder.Add(Body);
                 rangeStart = Body.TextRange.End;
             }
             if (NestedPatterns.Count != 0)
             {
                 int rangeEnd = NestedPatterns[0].TextRange.Start;
-                SyntaxUtils.CreateChildrenForRange(rangeStart, rangeEnd, children, scanner);
-                SyntaxUtils.CreateChildrenForElements(NestedPatterns, children, scanner);
-                rangeStart = NestedPatterns[^1].TextRange.End;
+                childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                childrenBuilder.AddForElements(NestedPatterns);
+                rangeStart = NestedPatterns[NestedPatterns.Count - 1].TextRange.End;
             }
-            SyntaxUtils.CreateChildrenForRange(rangeStart, TextRange.End, children, scanner);
-            Children = children.AsReadOnly();
+            childrenBuilder.AddInsideRange(rangeStart, TextRange.End);
+            Children = childrenBuilder.GetChildren();
         }
 
         internal PatternSyntax(string nameSpace, string masterPatternName, bool isSearchTarget, string name,

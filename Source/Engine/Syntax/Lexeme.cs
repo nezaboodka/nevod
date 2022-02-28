@@ -1,10 +1,10 @@
 ﻿namespace Nezaboodka.Nevod
 {
-    public class TerminalSyntax : Syntax
+    public class Lexeme : Syntax
     {
         public TokenId TokenId { get; }
 
-        internal TerminalSyntax(TokenId tokenId)
+        internal Lexeme(TokenId tokenId)
         {
             TokenId = tokenId;
         }
@@ -12,9 +12,9 @@
 
     public partial class Syntax
     {
-        public static TerminalSyntax Terminal(TokenId tokenId)
+        public static Lexeme Lexeme(TokenId tokenId)
         {
-            var result = new TerminalSyntax(tokenId);
+            var result = new Lexeme(tokenId);
             return result;
         }
     }

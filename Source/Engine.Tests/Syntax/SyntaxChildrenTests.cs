@@ -21,7 +21,7 @@ namespace Nezaboodka.Nevod.Engine.Tests
                 ReadOnlyCollection<Syntax> children = anySpanSyntax.Children;
                 Assert.AreEqual(children.Count, 3);
                 Assert.AreEqual(anySpanSyntax.Left, children[0]);
-                TestTerminalIdAndTextRange(pattern, children[1], TokenId.Ellipsis, "... ");
+                TestTokenIdAndTextRange(pattern, children[1], TokenId.Ellipsis, "... ");
                 Assert.AreEqual(anySpanSyntax.Right, children[2]);
             }
             void AnySpanWithExtraction()
@@ -33,9 +33,9 @@ namespace Nezaboodka.Nevod.Engine.Tests
                 ReadOnlyCollection<Syntax> children = anySpanSyntax.Children;
                 Assert.AreEqual(children.Count, 5);
                 Assert.AreEqual(anySpanSyntax.Left, children[0]);
-                TestTerminalIdAndTextRange(pattern, children[1], TokenId.DoublePeriod, ".. ");
+                TestTokenIdAndTextRange(pattern, children[1], TokenId.DoublePeriod, ".. ");
                 Assert.AreEqual(anySpanSyntax.ExtractionOfSpan, children[2]);
-                TestTerminalIdAndTextRange(pattern, children[3], TokenId.DoublePeriod, ".. ");
+                TestTokenIdAndTextRange(pattern, children[3], TokenId.DoublePeriod, ".. ");
                 Assert.AreEqual(anySpanSyntax.Right, children[4]);
             }
             void AnySpanWithMissingRightPart()
@@ -47,7 +47,7 @@ namespace Nezaboodka.Nevod.Engine.Tests
                 ReadOnlyCollection<Syntax> children = anySpanSyntax.Children;
                 Assert.AreEqual(children.Count, 2);
                 Assert.AreEqual(anySpanSyntax.Left, children[0]);
-                TestTerminalIdAndTextRange(pattern, children[1], TokenId.Ellipsis, "... ");
+                TestTokenIdAndTextRange(pattern, children[1], TokenId.Ellipsis, "... ");
             }
             AnySpanWithoutExtraction();
             AnySpanWithExtraction();
@@ -64,9 +64,9 @@ namespace Nezaboodka.Nevod.Engine.Tests
             ReadOnlyCollection<Syntax> children = conjunctionSyntax.Children;
             Assert.AreEqual(children.Count, 5);
             Assert.AreEqual(conjunctionSyntax.Elements[0], children[0]);
-            TestTerminalIdAndTextRange(pattern, children[1], TokenId.Amphersand, "& ");
+            TestTokenIdAndTextRange(pattern, children[1], TokenId.Amphersand, "& ");
             Assert.AreEqual(conjunctionSyntax.Elements[1], children[2]);
-            TestTerminalIdAndTextRange(pattern, children[3], TokenId.Amphersand, "& ");
+            TestTokenIdAndTextRange(pattern, children[3], TokenId.Amphersand, "& ");
             Assert.AreEqual(conjunctionSyntax.Elements[2], children[4]);
         }
 
@@ -79,7 +79,7 @@ namespace Nezaboodka.Nevod.Engine.Tests
             exceptionSyntax.CreateChildren(pattern);
             ReadOnlyCollection<Syntax> children = exceptionSyntax.Children;
             Assert.AreEqual(children.Count, 2);
-            TestTerminalIdAndTextRange(pattern, children[0], TokenId.Tilde, "~");
+            TestTokenIdAndTextRange(pattern, children[0], TokenId.Tilde, "~");
             Assert.AreEqual(exceptionSyntax.Body, children[1]);
         }
 
@@ -94,9 +94,9 @@ namespace Nezaboodka.Nevod.Engine.Tests
             extractionFromFieldSyntax.CreateChildren(pattern);
             ReadOnlyCollection<Syntax> children = extractionFromFieldSyntax.Children;
             Assert.AreEqual(children.Count, 3);
-            TestTerminalIdAndTextRange(pattern, children[0], TokenId.Identifier, "X");
-            TestTerminalIdAndTextRange(pattern, children[1], TokenId.Colon, ": ");
-            TestTerminalIdAndTextRange(pattern, children[2], TokenId.Identifier, "Q");
+            TestTokenIdAndTextRange(pattern, children[0], TokenId.Identifier, "X");
+            TestTokenIdAndTextRange(pattern, children[1], TokenId.Colon, ": ");
+            TestTokenIdAndTextRange(pattern, children[2], TokenId.Identifier, "Q");
         }
 
         [TestMethod]
@@ -108,8 +108,8 @@ namespace Nezaboodka.Nevod.Engine.Tests
             extractionSyntax.CreateChildren(pattern);
             ReadOnlyCollection<Syntax> children = extractionSyntax.Children;
             Assert.AreEqual(children.Count, 3);
-            TestTerminalIdAndTextRange(pattern, children[0], TokenId.Identifier, "X");
-            TestTerminalIdAndTextRange(pattern, children[1], TokenId.Colon, ": ");
+            TestTokenIdAndTextRange(pattern, children[0], TokenId.Identifier, "X");
+            TestTokenIdAndTextRange(pattern, children[1], TokenId.Colon, ": ");
             Assert.AreEqual(extractionSyntax.Body, children[2]);
         }
 
@@ -122,7 +122,7 @@ namespace Nezaboodka.Nevod.Engine.Tests
             fieldReferenceSyntax.CreateChildren(pattern);
             ReadOnlyCollection<Syntax> children = fieldReferenceSyntax.Children;
             Assert.AreEqual(children.Count, 1);
-            TestTerminalIdAndTextRange(pattern, children[0], TokenId.Identifier, "X");
+            TestTokenIdAndTextRange(pattern, children[0], TokenId.Identifier, "X");
         }
 
         [TestMethod]
@@ -134,8 +134,8 @@ namespace Nezaboodka.Nevod.Engine.Tests
             fieldSyntax.CreateChildren(pattern);
             ReadOnlyCollection<Syntax> children = fieldSyntax.Children;
             Assert.AreEqual(children.Count, 2);
-            TestTerminalIdAndTextRange(pattern, children[0], TokenId.Tilde, "~");
-            TestTerminalIdAndTextRange(pattern, children[1], TokenId.Identifier, "Field ");
+            TestTokenIdAndTextRange(pattern, children[0], TokenId.Tilde, "~");
+            TestTokenIdAndTextRange(pattern, children[1], TokenId.Identifier, "Field ");
         }
 
         [TestMethod]
@@ -150,7 +150,7 @@ namespace Nezaboodka.Nevod.Engine.Tests
                 ReadOnlyCollection<Syntax> children = havingSyntax.Children;
                 Assert.AreEqual(children.Count, 3);
                 Assert.AreEqual(havingSyntax.Outer, children[0]);
-                TestTerminalIdAndTextRange(pattern, children[1], TokenId.HavingKeyword, "@having ");
+                TestTokenIdAndTextRange(pattern, children[1], TokenId.HavingKeyword, "@having ");
                 Assert.AreEqual(havingSyntax.Inner, children[2]);
             }
             void HavingWithoutInner()
@@ -162,7 +162,7 @@ namespace Nezaboodka.Nevod.Engine.Tests
                 ReadOnlyCollection<Syntax> children = havingSyntax.Children;
                 Assert.AreEqual(children.Count, 2);
                 Assert.AreEqual(havingSyntax.Outer, children[0]);
-                TestTerminalIdAndTextRange(pattern, children[1], TokenId.HavingKeyword, "@having");
+                TestTokenIdAndTextRange(pattern, children[1], TokenId.HavingKeyword, "@having");
             }
             HavingWithInnerAndOuter();
             HavingWithoutInner();
@@ -178,7 +178,7 @@ namespace Nezaboodka.Nevod.Engine.Tests
             ReadOnlyCollection<Syntax> children = insideSyntax.Children;
             Assert.AreEqual(children.Count, 3);
             Assert.AreEqual(insideSyntax.Inner, children[0]);
-            TestTerminalIdAndTextRange(pattern, children[1], TokenId.InsideKeyword, "@inside ");
+            TestTokenIdAndTextRange(pattern, children[1], TokenId.InsideKeyword, "@inside ");
             Assert.AreEqual(insideSyntax.Outer, children[2]);
         }
 
@@ -191,7 +191,7 @@ namespace Nezaboodka.Nevod.Engine.Tests
             optionalitySyntax.CreateChildren(pattern);
             ReadOnlyCollection<Syntax> children = optionalitySyntax.Children;
             Assert.AreEqual(children.Count, 2);
-            TestTerminalIdAndTextRange(pattern, children[0], TokenId.Question, "?");
+            TestTokenIdAndTextRange(pattern, children[0], TokenId.Question, "?");
             Assert.AreEqual(optionalitySyntax.Body, children[1]);
         }
 
@@ -205,7 +205,7 @@ namespace Nezaboodka.Nevod.Engine.Tests
             ReadOnlyCollection<Syntax> children = outsideSyntax.Children;
             Assert.AreEqual(children.Count, 3);
             Assert.AreEqual(outsideSyntax.Body, children[0]);
-            TestTerminalIdAndTextRange(pattern, children[1], TokenId.OutsideKeyword, "@outside ");
+            TestTokenIdAndTextRange(pattern, children[1], TokenId.OutsideKeyword, "@outside ");
             Assert.AreEqual(outsideSyntax.Exception, children[2]);
         }
 
@@ -227,14 +227,14 @@ namespace Nezaboodka.Nevod.Engine.Tests
             ReadOnlyCollection<Syntax> children = package.Children;
             Assert.AreEqual(children.Count, 10);
             Assert.AreEqual(package.RequiredPackages[0], children[0]);
-            TestTerminalIdAndTextRange(patterns, children[1], TokenId.NamespaceKeyword, "@namespace ");
-            TestTerminalIdAndTextRange(patterns, children[2], TokenId.Identifier, "Namespace ");
-            TestTerminalIdAndTextRange(patterns, children[3], TokenId.OpenCurlyBrace, @"{
+            TestTokenIdAndTextRange(patterns, children[1], TokenId.NamespaceKeyword, "@namespace ");
+            TestTokenIdAndTextRange(patterns, children[2], TokenId.Identifier, "Namespace ");
+            TestTokenIdAndTextRange(patterns, children[3], TokenId.OpenCurlyBrace, @"{
     ");
             Assert.AreEqual(package.Patterns[0], children[4]);
             Assert.AreEqual(package.SearchTargets[0], children[5]);
             Assert.AreEqual(package.Patterns[1], children[6]);
-            TestTerminalIdAndTextRange(patterns, children[7], TokenId.CloseCurlyBrace, @"}
+            TestTokenIdAndTextRange(patterns, children[7], TokenId.CloseCurlyBrace, @"}
 ");
             Assert.AreEqual(package.SearchTargets[1], children[8]);
             Assert.AreEqual(package.SearchTargets[2], children[9]);
@@ -251,9 +251,9 @@ namespace Nezaboodka.Nevod.Engine.Tests
                 patternReferenceSyntax.CreateChildren(pattern);
                 ReadOnlyCollection<Syntax> children = patternReferenceSyntax.Children;
                 Assert.AreEqual(children.Count, 3);
-                TestTerminalIdAndTextRange(pattern, children[0], TokenId.Identifier, "P2");
-                TestTerminalIdAndTextRange(pattern, children[1], TokenId.OpenParenthesis, "(");
-                TestTerminalIdAndTextRange(pattern, children[2], TokenId.CloseParenthesis, ")");
+                TestTokenIdAndTextRange(pattern, children[0], TokenId.Identifier, "P2");
+                TestTokenIdAndTextRange(pattern, children[1], TokenId.OpenParenthesis, "(");
+                TestTokenIdAndTextRange(pattern, children[2], TokenId.CloseParenthesis, ")");
             }
             void PatternReferenceWithExtraction()
             {
@@ -263,10 +263,10 @@ namespace Nezaboodka.Nevod.Engine.Tests
                 patternReferenceSyntax.CreateChildren(pattern);
                 ReadOnlyCollection<Syntax> children = patternReferenceSyntax.Children;
                 Assert.AreEqual(children.Count, 4);
-                TestTerminalIdAndTextRange(pattern, children[0], TokenId.Identifier, "P2");
-                TestTerminalIdAndTextRange(pattern, children[1], TokenId.OpenParenthesis, "(");
+                TestTokenIdAndTextRange(pattern, children[0], TokenId.Identifier, "P2");
+                TestTokenIdAndTextRange(pattern, children[1], TokenId.OpenParenthesis, "(");
                 Assert.AreEqual(patternReferenceSyntax.ExtractionFromFields[0], children[2]);
-                TestTerminalIdAndTextRange(pattern, children[3], TokenId.CloseParenthesis, ")");
+                TestTokenIdAndTextRange(pattern, children[3], TokenId.CloseParenthesis, ")");
             }
             PatternReferenceWithEmptyExtractionList();
             PatternReferenceWithExtraction();
@@ -283,11 +283,11 @@ namespace Nezaboodka.Nevod.Engine.Tests
                 patternSyntax.CreateChildren(pattern);
                 ReadOnlyCollection<Syntax> children = patternSyntax.Children;
                 Assert.AreEqual(children.Count, 5);
-                TestTerminalIdAndTextRange(pattern, children[0], TokenId.HashSign, "#");
-                TestTerminalIdAndTextRange(pattern, children[1], TokenId.Identifier, "Pattern ");
-                TestTerminalIdAndTextRange(pattern, children[2], TokenId.Equal, "= ");
+                TestTokenIdAndTextRange(pattern, children[0], TokenId.HashSign, "#");
+                TestTokenIdAndTextRange(pattern, children[1], TokenId.Identifier, "Pattern ");
+                TestTokenIdAndTextRange(pattern, children[2], TokenId.Equal, "= ");
                 Assert.AreEqual(patternSyntax.Body, children[3]);
-                TestTerminalIdAndTextRange(pattern, children[4], TokenId.Semicolon, ";");
+                TestTokenIdAndTextRange(pattern, children[4], TokenId.Semicolon, ";");
             }
             void PatternWithFieldsAndWithoutBody()
             {
@@ -297,14 +297,14 @@ namespace Nezaboodka.Nevod.Engine.Tests
                 patternSyntax.CreateChildren(pattern);
                 ReadOnlyCollection<Syntax> children = patternSyntax.Children;
                 Assert.AreEqual(children.Count, 8);
-                TestTerminalIdAndTextRange(pattern, children[0], TokenId.Identifier, "Pattern");
-                TestTerminalIdAndTextRange(pattern, children[1], TokenId.OpenParenthesis, "(");
+                TestTokenIdAndTextRange(pattern, children[0], TokenId.Identifier, "Pattern");
+                TestTokenIdAndTextRange(pattern, children[1], TokenId.OpenParenthesis, "(");
                 Assert.AreEqual(patternSyntax.Fields[0], children[2]);
-                TestTerminalIdAndTextRange(pattern, children[3], TokenId.Comma, ", ");
+                TestTokenIdAndTextRange(pattern, children[3], TokenId.Comma, ", ");
                 Assert.AreEqual(patternSyntax.Fields[1], children[4]);
-                TestTerminalIdAndTextRange(pattern, children[5], TokenId.CloseParenthesis, ") ");
-                TestTerminalIdAndTextRange(pattern, children[6], TokenId.Equal, "= ");
-                TestTerminalIdAndTextRange(pattern, children[7], TokenId.Semicolon, ";");
+                TestTokenIdAndTextRange(pattern, children[5], TokenId.CloseParenthesis, ") ");
+                TestTokenIdAndTextRange(pattern, children[6], TokenId.Equal, "= ");
+                TestTokenIdAndTextRange(pattern, children[7], TokenId.Semicolon, ";");
             }
             void PatternWithNestedPatternsAndWithoutSemicolon()
             {
@@ -318,15 +318,15 @@ Pattern = Nested1 + Nested2 @where {
                 patternSyntax.CreateChildren(pattern);
                 ReadOnlyCollection<Syntax> children = patternSyntax.Children;
                 Assert.AreEqual(children.Count, 8);
-                TestTerminalIdAndTextRange(pattern, children[0], TokenId.Identifier, "Pattern ");
-                TestTerminalIdAndTextRange(pattern, children[1], TokenId.Equal, "= ");
+                TestTokenIdAndTextRange(pattern, children[0], TokenId.Identifier, "Pattern ");
+                TestTokenIdAndTextRange(pattern, children[1], TokenId.Equal, "= ");
                 Assert.AreEqual(patternSyntax.Body, children[2]);
-                TestTerminalIdAndTextRange(pattern, children[3], TokenId.WhereKeyword, "@where ");
-                TestTerminalIdAndTextRange(pattern, children[4], TokenId.OpenCurlyBrace, @"{
+                TestTokenIdAndTextRange(pattern, children[3], TokenId.WhereKeyword, "@where ");
+                TestTokenIdAndTextRange(pattern, children[4], TokenId.OpenCurlyBrace, @"{
     ");
                 Assert.AreEqual(patternSyntax.NestedPatterns[0], children[5]);
                 Assert.AreEqual(patternSyntax.NestedPatterns[1], children[6]);
-                TestTerminalIdAndTextRange(pattern, children[7], TokenId.CloseCurlyBrace, "}");
+                TestTokenIdAndTextRange(pattern, children[7], TokenId.CloseCurlyBrace, "}");
             }
             SimplePattern();
             PatternWithFieldsAndWithoutBody();
@@ -342,9 +342,9 @@ Pattern = Nested1 + Nested2 @where {
             repetitionSyntax.CreateChildren(pattern);
             ReadOnlyCollection<Syntax> children = repetitionSyntax.Children;
             Assert.AreEqual(children.Count, 4);
-            TestTerminalIdAndTextRange(pattern, children[0], TokenId.IntegerLiteral, "1");
-            TestTerminalIdAndTextRange(pattern, children[1], TokenId.Minus, "-");
-            TestTerminalIdAndTextRange(pattern, children[2], TokenId.IntegerLiteral, "9 ");
+            TestTokenIdAndTextRange(pattern, children[0], TokenId.IntegerLiteral, "1");
+            TestTokenIdAndTextRange(pattern, children[1], TokenId.Minus, "-");
+            TestTokenIdAndTextRange(pattern, children[2], TokenId.IntegerLiteral, "9 ");
             Assert.AreEqual(repetitionSyntax.Body, children[3]);
         }
 
@@ -357,9 +357,9 @@ Pattern = Nested1 + Nested2 @where {
             requiredPackageSyntax.CreateChildren(pattern);
             ReadOnlyCollection<Syntax> children = requiredPackageSyntax.Children;
             Assert.AreEqual(children.Count, 3);
-            TestTerminalIdAndTextRange(pattern, children[0], TokenId.RequireKeyword, "@require ");
-            TestTerminalIdAndTextRange(pattern, children[1], TokenId.StringLiteral, "'Basic.np'");
-            TestTerminalIdAndTextRange(pattern, children[2], TokenId.Semicolon, ";");
+            TestTokenIdAndTextRange(pattern, children[0], TokenId.RequireKeyword, "@require ");
+            TestTokenIdAndTextRange(pattern, children[1], TokenId.StringLiteral, "'Basic.np'");
+            TestTokenIdAndTextRange(pattern, children[2], TokenId.Semicolon, ";");
         }
 
         [TestMethod]
@@ -371,9 +371,9 @@ Pattern = Nested1 + Nested2 @where {
             searchTarget.CreateChildren(pattern);
             ReadOnlyCollection<Syntax> children = searchTarget.Children;
             Assert.AreEqual(children.Count, 3);
-            TestTerminalIdAndTextRange(pattern, children[0], TokenId.SearchKeyword, "@search ");
+            TestTokenIdAndTextRange(pattern, children[0], TokenId.SearchKeyword, "@search ");
             Assert.AreEqual(searchTarget.PatternReference, children[1]);
-            TestTerminalIdAndTextRange(pattern, children[2], TokenId.Semicolon, ";");
+            TestTokenIdAndTextRange(pattern, children[2], TokenId.Semicolon, ";");
         }
 
         [TestMethod]
@@ -385,11 +385,11 @@ Pattern = Nested1 + Nested2 @where {
             searchTarget.CreateChildren(pattern);
             ReadOnlyCollection<Syntax> children = searchTarget.Children;
             Assert.AreEqual(children.Count, 5);
-            TestTerminalIdAndTextRange(pattern, children[0], TokenId.SearchKeyword, "@search ");
-            TestTerminalIdAndTextRange(pattern, children[1], TokenId.Identifier, "Basic");
-            TestTerminalIdAndTextRange(pattern, children[2], TokenId.Period, ".");
-            TestTerminalIdAndTextRange(pattern, children[3], TokenId.Asterisk, "*");
-            TestTerminalIdAndTextRange(pattern, children[4], TokenId.Semicolon, ";");
+            TestTokenIdAndTextRange(pattern, children[0], TokenId.SearchKeyword, "@search ");
+            TestTokenIdAndTextRange(pattern, children[1], TokenId.Identifier, "Basic");
+            TestTokenIdAndTextRange(pattern, children[2], TokenId.Period, ".");
+            TestTokenIdAndTextRange(pattern, children[3], TokenId.Asterisk, "*");
+            TestTokenIdAndTextRange(pattern, children[4], TokenId.Semicolon, ";");
         }
 
         [TestMethod]
@@ -404,7 +404,7 @@ Pattern = Nested1 + Nested2 @where {
                 ReadOnlyCollection<Syntax> children = sequenceSyntax.Children;
                 Assert.AreEqual(children.Count, 3);
                 Assert.AreEqual(sequenceSyntax.Elements[0], children[0]);
-                TestTerminalIdAndTextRange(pattern, children[1], TokenId.Plus, "+ ");
+                TestTokenIdAndTextRange(pattern, children[1], TokenId.Plus, "+ ");
                 Assert.AreEqual(sequenceSyntax.Elements[1], children[2]);
             }
             void SequenceWithoutLastElement()
@@ -416,7 +416,7 @@ Pattern = Nested1 + Nested2 @where {
                 ReadOnlyCollection<Syntax> children = sequenceSyntax.Children;
                 Assert.AreEqual(children.Count, 2);
                 Assert.AreEqual(sequenceSyntax.Elements[0], children[0]);
-                TestTerminalIdAndTextRange(pattern, children[1], TokenId.Plus, "+ ");
+                TestTokenIdAndTextRange(pattern, children[1], TokenId.Plus, "+ ");
             }
             SequenceWithAllElements();
             SequenceWithoutLastElement();
@@ -433,11 +433,11 @@ Pattern = Nested1 + Nested2 @where {
                 spanSyntax.CreateChildren(pattern);
                 ReadOnlyCollection<Syntax> children = spanSyntax.Children;
                 Assert.AreEqual(children.Count, 5);
-                TestTerminalIdAndTextRange(pattern, children[0], TokenId.OpenSquareBracket, "[");
+                TestTokenIdAndTextRange(pattern, children[0], TokenId.OpenSquareBracket, "[");
                 Assert.AreEqual(spanSyntax.Elements[0], children[1]);
-                TestTerminalIdAndTextRange(pattern, children[2], TokenId.Comma, ", ");
+                TestTokenIdAndTextRange(pattern, children[2], TokenId.Comma, ", ");
                 Assert.AreEqual(spanSyntax.Elements[1], children[3]);
-                TestTerminalIdAndTextRange(pattern, children[4], TokenId.CloseSquareBracket, "]");
+                TestTokenIdAndTextRange(pattern, children[4], TokenId.CloseSquareBracket, "]");
             }
             void EmptySpan()
             {
@@ -447,8 +447,8 @@ Pattern = Nested1 + Nested2 @where {
                 spanSyntax.CreateChildren(pattern);
                 ReadOnlyCollection<Syntax> children = spanSyntax.Children;
                 Assert.AreEqual(children.Count, 2);
-                TestTerminalIdAndTextRange(pattern, children[0], TokenId.OpenSquareBracket, "[");
-                TestTerminalIdAndTextRange(pattern, children[1], TokenId.CloseSquareBracket, "]");
+                TestTokenIdAndTextRange(pattern, children[0], TokenId.OpenSquareBracket, "[");
+                TestTokenIdAndTextRange(pattern, children[1], TokenId.CloseSquareBracket, "]");
             }
             SpanWithElements();
             EmptySpan();
@@ -463,16 +463,16 @@ Pattern = Nested1 + Nested2 @where {
             textSyntax.CreateChildren(pattern);
             ReadOnlyCollection<Syntax> children = textSyntax.Children;
             Assert.AreEqual(children.Count, 10);
-            TestTerminalIdAndTextRange(pattern, children[0], TokenId.StringLiteral, "'text'*");
-            TestTerminalIdAndTextRange(pattern, children[1], TokenId.OpenParenthesis, "(");
-            TestTerminalIdAndTextRange(pattern, children[2], TokenId.Identifier, "Alpha");
-            TestTerminalIdAndTextRange(pattern, children[3], TokenId.Comma, ", ");
-            TestTerminalIdAndTextRange(pattern, children[4], TokenId.IntegerLiteral, "3");
-            TestTerminalIdAndTextRange(pattern, children[5], TokenId.Minus, "-");
-            TestTerminalIdAndTextRange(pattern, children[6], TokenId.IntegerLiteral, "6");
-            TestTerminalIdAndTextRange(pattern, children[7], TokenId.Comma, ", ");
-            TestTerminalIdAndTextRange(pattern, children[8], TokenId.Identifier, "Lowercase");
-            TestTerminalIdAndTextRange(pattern, children[9], TokenId.CloseParenthesis, ")");
+            TestTokenIdAndTextRange(pattern, children[0], TokenId.StringLiteral, "'text'*");
+            TestTokenIdAndTextRange(pattern, children[1], TokenId.OpenParenthesis, "(");
+            TestTokenIdAndTextRange(pattern, children[2], TokenId.Identifier, "Alpha");
+            TestTokenIdAndTextRange(pattern, children[3], TokenId.Comma, ", ");
+            TestTokenIdAndTextRange(pattern, children[4], TokenId.IntegerLiteral, "3");
+            TestTokenIdAndTextRange(pattern, children[5], TokenId.Minus, "-");
+            TestTokenIdAndTextRange(pattern, children[6], TokenId.IntegerLiteral, "6");
+            TestTokenIdAndTextRange(pattern, children[7], TokenId.Comma, ", ");
+            TestTokenIdAndTextRange(pattern, children[8], TokenId.Identifier, "Lowercase");
+            TestTokenIdAndTextRange(pattern, children[9], TokenId.CloseParenthesis, ")");
         }
 
         [TestMethod]
@@ -484,14 +484,14 @@ Pattern = Nested1 + Nested2 @where {
             tokenSyntax.CreateChildren(pattern);
             ReadOnlyCollection<Syntax> children = tokenSyntax.Children;
             Assert.AreEqual(children.Count, 8);
-            TestTerminalIdAndTextRange(pattern, children[0], TokenId.Identifier, "Alpha");
-            TestTerminalIdAndTextRange(pattern, children[1], TokenId.OpenParenthesis, "(");
-            TestTerminalIdAndTextRange(pattern, children[2], TokenId.IntegerLiteral, "2");
-            TestTerminalIdAndTextRange(pattern, children[3], TokenId.Minus, "-");
-            TestTerminalIdAndTextRange(pattern, children[4], TokenId.IntegerLiteral, "10");
-            TestTerminalIdAndTextRange(pattern, children[5], TokenId.Comma, ", ");
-            TestTerminalIdAndTextRange(pattern, children[6], TokenId.Identifier, "TitleCase");
-            TestTerminalIdAndTextRange(pattern, children[7], TokenId.CloseParenthesis, ")");
+            TestTokenIdAndTextRange(pattern, children[0], TokenId.Identifier, "Alpha");
+            TestTokenIdAndTextRange(pattern, children[1], TokenId.OpenParenthesis, "(");
+            TestTokenIdAndTextRange(pattern, children[2], TokenId.IntegerLiteral, "2");
+            TestTokenIdAndTextRange(pattern, children[3], TokenId.Minus, "-");
+            TestTokenIdAndTextRange(pattern, children[4], TokenId.IntegerLiteral, "10");
+            TestTokenIdAndTextRange(pattern, children[5], TokenId.Comma, ", ");
+            TestTokenIdAndTextRange(pattern, children[6], TokenId.Identifier, "TitleCase");
+            TestTokenIdAndTextRange(pattern, children[7], TokenId.CloseParenthesis, ")");
         }
 
         [TestMethod]
@@ -505,11 +505,11 @@ Pattern = Nested1 + Nested2 @where {
                 variationSyntax.CreateChildren(pattern);
                 ReadOnlyCollection<Syntax> children = variationSyntax.Children;
                 Assert.AreEqual(children.Count, 5);
-                TestTerminalIdAndTextRange(pattern, children[0], TokenId.OpenCurlyBrace, "{");
+                TestTokenIdAndTextRange(pattern, children[0], TokenId.OpenCurlyBrace, "{");
                 Assert.AreEqual(variationSyntax.Elements[0], children[1]);
-                TestTerminalIdAndTextRange(pattern, children[2], TokenId.Comma, ", ");
+                TestTokenIdAndTextRange(pattern, children[2], TokenId.Comma, ", ");
                 Assert.AreEqual(variationSyntax.Elements[1], children[3]);
-                TestTerminalIdAndTextRange(pattern, children[4], TokenId.CloseCurlyBrace, "}");
+                TestTokenIdAndTextRange(pattern, children[4], TokenId.CloseCurlyBrace, "}");
             }
             void EmptyVariation()
             {
@@ -519,8 +519,8 @@ Pattern = Nested1 + Nested2 @where {
                 variationSyntax.CreateChildren(pattern);
                 ReadOnlyCollection<Syntax> children = variationSyntax.Children;
                 Assert.AreEqual(children.Count, 2);
-                TestTerminalIdAndTextRange(pattern, children[0], TokenId.OpenCurlyBrace, "{");
-                TestTerminalIdAndTextRange(pattern, children[1], TokenId.CloseCurlyBrace, "}");
+                TestTokenIdAndTextRange(pattern, children[0], TokenId.OpenCurlyBrace, "{");
+                TestTokenIdAndTextRange(pattern, children[1], TokenId.CloseCurlyBrace, "}");
             }
             VariationWithElements();
             EmptyVariation();
@@ -536,9 +536,9 @@ Pattern = Nested1 + Nested2 @where {
             ReadOnlyCollection<Syntax> children = wordSequenceSyntax.Children;
             Assert.AreEqual(children.Count, 5);
             Assert.AreEqual(wordSequenceSyntax.Elements[0], children[0]);
-            TestTerminalIdAndTextRange(pattern, children[1], TokenId.Underscore, "_ ");
+            TestTokenIdAndTextRange(pattern, children[1], TokenId.Underscore, "_ ");
             Assert.AreEqual(wordSequenceSyntax.Elements[1], children[2]);
-            TestTerminalIdAndTextRange(pattern, children[3], TokenId.Underscore, "_ ");
+            TestTokenIdAndTextRange(pattern, children[3], TokenId.Underscore, "_ ");
             Assert.AreEqual(wordSequenceSyntax.Elements[2], children[4]);
         }
 
@@ -554,13 +554,13 @@ Pattern = Nested1 + Nested2 @where {
                 ReadOnlyCollection<Syntax> children = wordSpanSyntax.Children;
                 Assert.AreEqual(children.Count, 9);
                 Assert.AreEqual(wordSpanSyntax.Left, children[0]);
-                TestTerminalIdAndTextRange(pattern, children[1], TokenId.DoublePeriod, ".. ");
-                TestTerminalIdAndTextRange(pattern, children[2], TokenId.OpenSquareBracket, "[");
-                TestTerminalIdAndTextRange(pattern, children[3], TokenId.IntegerLiteral, "1");
-                TestTerminalIdAndTextRange(pattern, children[4], TokenId.Minus, "-");
-                TestTerminalIdAndTextRange(pattern, children[5], TokenId.IntegerLiteral, "20");
-                TestTerminalIdAndTextRange(pattern, children[6], TokenId.CloseSquareBracket, "] ");
-                TestTerminalIdAndTextRange(pattern, children[7], TokenId.DoublePeriod, ".. ");
+                TestTokenIdAndTextRange(pattern, children[1], TokenId.DoublePeriod, ".. ");
+                TestTokenIdAndTextRange(pattern, children[2], TokenId.OpenSquareBracket, "[");
+                TestTokenIdAndTextRange(pattern, children[3], TokenId.IntegerLiteral, "1");
+                TestTokenIdAndTextRange(pattern, children[4], TokenId.Minus, "-");
+                TestTokenIdAndTextRange(pattern, children[5], TokenId.IntegerLiteral, "20");
+                TestTokenIdAndTextRange(pattern, children[6], TokenId.CloseSquareBracket, "] ");
+                TestTokenIdAndTextRange(pattern, children[7], TokenId.DoublePeriod, ".. ");
                 Assert.AreEqual(wordSpanSyntax.Right, children[8]);
             }
             void WordSpanWithExtractionAndExclusion()
@@ -572,17 +572,17 @@ Pattern = Nested1 + Nested2 @where {
                 ReadOnlyCollection<Syntax> children = wordSpanSyntax.Children;
                 Assert.AreEqual(children.Count, 13);
                 Assert.AreEqual(wordSpanSyntax.Left, children[0]);
-                TestTerminalIdAndTextRange(pattern, children[1], TokenId.DoublePeriod, ".. ");
+                TestTokenIdAndTextRange(pattern, children[1], TokenId.DoublePeriod, ".. ");
                 Assert.AreEqual(wordSpanSyntax.ExtractionOfSpan, children[2]);
-                TestTerminalIdAndTextRange(pattern, children[3], TokenId.Colon, ": ");
-                TestTerminalIdAndTextRange(pattern, children[4], TokenId.OpenSquareBracket, "[");
-                TestTerminalIdAndTextRange(pattern, children[5], TokenId.IntegerLiteral, "1");
-                TestTerminalIdAndTextRange(pattern, children[6], TokenId.Minus, "-");
-                TestTerminalIdAndTextRange(pattern, children[7], TokenId.IntegerLiteral, "20");
-                TestTerminalIdAndTextRange(pattern, children[8], TokenId.CloseSquareBracket, "] ");
-                TestTerminalIdAndTextRange(pattern, children[9], TokenId.Tilde, "~");
+                TestTokenIdAndTextRange(pattern, children[3], TokenId.Colon, ": ");
+                TestTokenIdAndTextRange(pattern, children[4], TokenId.OpenSquareBracket, "[");
+                TestTokenIdAndTextRange(pattern, children[5], TokenId.IntegerLiteral, "1");
+                TestTokenIdAndTextRange(pattern, children[6], TokenId.Minus, "-");
+                TestTokenIdAndTextRange(pattern, children[7], TokenId.IntegerLiteral, "20");
+                TestTokenIdAndTextRange(pattern, children[8], TokenId.CloseSquareBracket, "] ");
+                TestTokenIdAndTextRange(pattern, children[9], TokenId.Tilde, "~");
                 Assert.AreEqual(wordSpanSyntax.Exclusion, children[10]);
-                TestTerminalIdAndTextRange(pattern, children[11], TokenId.DoublePeriod, ".. ");
+                TestTokenIdAndTextRange(pattern, children[11], TokenId.DoublePeriod, ".. ");
                 Assert.AreEqual(wordSpanSyntax.Right, children[12]);
             }
             WordSpanWithoutExtraction();
@@ -598,10 +598,10 @@ Pattern = Nested1 + Nested2 @where {
             optionalitySyntax.CreateChildren(pattern);
             ReadOnlyCollection<Syntax> children = optionalitySyntax.Children;
             Assert.AreEqual(children.Count, 4);
-            TestTerminalIdAndTextRange(pattern, children[0], TokenId.Question, "?");
-            TestTerminalIdAndTextRange(pattern, children[1], TokenId.OpenParenthesis, "(");
+            TestTokenIdAndTextRange(pattern, children[0], TokenId.Question, "?");
+            TestTokenIdAndTextRange(pattern, children[1], TokenId.OpenParenthesis, "(");
             Assert.AreEqual(optionalitySyntax.Body, children[2]);
-            TestTerminalIdAndTextRange(pattern, children[3], TokenId.CloseParenthesis, ")");
+            TestTokenIdAndTextRange(pattern, children[3], TokenId.CloseParenthesis, ")");
         }
     }
 }
