@@ -16,17 +16,18 @@ namespace Nezaboodka.Nevod
 
         public override void CreateChildren(string text)
         {
-            if (Children != null)
-                return;
-            var childrenBuilder = new ChildrenBuilder(text);
-            int rangeStart = TextRange.Start;
-            if (Elements.Count != 0)
+            if (Children == null)
             {
-                childrenBuilder.AddForElements(Elements);
-                rangeStart = Elements[Elements.Count - 1].TextRange.End;
+                var childrenBuilder = new ChildrenBuilder(text);
+                int rangeStart = TextRange.Start;
+                if (Elements.Count != 0)
+                {
+                    childrenBuilder.AddForElements(Elements);
+                    rangeStart = Elements[Elements.Count - 1].TextRange.End;
+                }
+                childrenBuilder.AddInsideRange(rangeStart, TextRange.End);
+                Children = childrenBuilder.GetChildren();
             }
-            childrenBuilder.AddInsideRange(rangeStart, TextRange.End);
-            Children = childrenBuilder.GetChildren();
         }
 
         internal override bool CanReduce => true;

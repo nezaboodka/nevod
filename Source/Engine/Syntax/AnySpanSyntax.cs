@@ -13,31 +13,32 @@ namespace Nezaboodka.Nevod
 
         public override void CreateChildren(string text)
         {
-            if (Children != null)
-                return;
-            var childrenBuilder = new ChildrenBuilder(text);
-            int rangeStart = TextRange.Start;
-            if (Left != null)
+            if (Children == null)
             {
-                childrenBuilder.Add(Left);
-                rangeStart = Left.TextRange.End;
+                var childrenBuilder = new ChildrenBuilder(text);
+                int rangeStart = TextRange.Start;
+                if (Left != null)
+                {
+                    childrenBuilder.Add(Left);
+                    rangeStart = Left.TextRange.End;
+                }
+                if (ExtractionOfSpan != null)
+                {
+                    int rangeEnd = ExtractionOfSpan.TextRange.Start;
+                    childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                    childrenBuilder.Add(ExtractionOfSpan);
+                    rangeStart = ExtractionOfSpan.TextRange.End;
+                }
+                if (Right != null)
+                {
+                    int rangeEnd = Right.TextRange.Start;
+                    childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                    childrenBuilder.Add(Right);
+                    rangeStart = Right.TextRange.End;
+                }
+                childrenBuilder.AddInsideRange(rangeStart, TextRange.End);
+                Children = childrenBuilder.GetChildren();
             }
-            if (ExtractionOfSpan != null)
-            {
-                int rangeEnd = ExtractionOfSpan.TextRange.Start;
-                childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
-                childrenBuilder.Add(ExtractionOfSpan);
-                rangeStart = ExtractionOfSpan.TextRange.End;
-            }
-            if (Right != null)
-            {
-                int rangeEnd = Right.TextRange.Start;
-                childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
-                childrenBuilder.Add(Right);
-                rangeStart = Right.TextRange.End;
-            }
-            childrenBuilder.AddInsideRange(rangeStart, TextRange.End);
-            Children = childrenBuilder.GetChildren();
         }
 
         internal AnySpanSyntax(Syntax left, Syntax right, Syntax extractionOfSpan)

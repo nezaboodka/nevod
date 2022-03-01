@@ -12,18 +12,19 @@ namespace Nezaboodka.Nevod
 
         public override void CreateChildren(string text)
         {
-            if (Children != null)
-                return;
-            var childrenBuilder = new ChildrenBuilder(text);
-            if (Body != null)
+            if (Children == null)
             {
-                childrenBuilder.AddInsideRange(TextRange.Start, Body.TextRange.Start);
-                childrenBuilder.Add(Body);
-                childrenBuilder.AddInsideRange(Body.TextRange.End, TextRange.End);
+                var childrenBuilder = new ChildrenBuilder(text);
+                if (Body != null)
+                {
+                    childrenBuilder.AddInsideRange(TextRange.Start, Body.TextRange.Start);
+                    childrenBuilder.Add(Body);
+                    childrenBuilder.AddInsideRange(Body.TextRange.End, TextRange.End);
+                }
+                else
+                    childrenBuilder.AddInsideRange(TextRange);
+                Children = childrenBuilder.GetChildren();
             }
-            else
-                childrenBuilder.AddInsideRange(TextRange);
-            Children = childrenBuilder.GetChildren();
         }
 
         internal ExtractionSyntax(string fieldName, Syntax body)

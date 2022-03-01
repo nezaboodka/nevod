@@ -13,8 +13,8 @@ namespace Nezaboodka.Nevod
         static PathCaseNormalizer()
         {
             string assemblyPath = Assembly.GetExecutingAssembly().Location;
-            // If file system is not case sensitive, File.Exists for assembly path converted to upper case will return true.
-            if (File.Exists(assemblyPath.ToUpper()))
+            // If file system is not case sensitive, File.Exists for assembly path converted to upper case and lower case will return true.
+            if (File.Exists(assemblyPath.ToUpper()) && File.Exists(assemblyPath.ToLower()))
             {
                 IsFileSystemCaseSensitive = false;
                 NormalizePathCase = path => path?.ToLower();

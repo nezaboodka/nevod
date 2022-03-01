@@ -17,27 +17,28 @@ namespace Nezaboodka.Nevod
 
         public override void CreateChildren(string text)
         {
-            if (Children != null)
-                return;
-            var childrenBuilder = new ChildrenBuilder(text);
-            int rangeStart = TextRange.Start;
-            if (RequiredPackages.Count != 0)
+            if (Children == null)
             {
-                int rangeEnd = RequiredPackages[0].TextRange.Start;
-                childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
-                childrenBuilder.AddForElements(RequiredPackages);
-                rangeStart = RequiredPackages[RequiredPackages.Count - 1].TextRange.End;
+                var childrenBuilder = new ChildrenBuilder(text);
+                int rangeStart = TextRange.Start;
+                if (RequiredPackages.Count != 0)
+                {
+                    int rangeEnd = RequiredPackages[0].TextRange.Start;
+                    childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                    childrenBuilder.AddForElements(RequiredPackages);
+                    rangeStart = RequiredPackages[RequiredPackages.Count - 1].TextRange.End;
+                }
+                ReadOnlyCollection<Syntax> mergedPatterns = MergePatternsAndSearchTargetsByTextRange();
+                if (mergedPatterns.Count != 0)
+                {
+                    int rangeEnd = mergedPatterns[0].TextRange.Start;
+                    childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                    childrenBuilder.AddForElements(mergedPatterns);
+                    rangeStart = mergedPatterns[mergedPatterns.Count - 1].TextRange.End;
+                }
+                childrenBuilder.AddInsideRange(rangeStart, TextRange.End);
+                Children = childrenBuilder.GetChildren();
             }
-            ReadOnlyCollection<Syntax> mergedPatterns = MergePatternsAndSearchTargetsByTextRange();
-            if (mergedPatterns.Count != 0)
-            {
-                int rangeEnd = mergedPatterns[0].TextRange.Start;
-                childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
-                childrenBuilder.AddForElements(mergedPatterns);
-                rangeStart = mergedPatterns[mergedPatterns.Count - 1].TextRange.End;
-            }
-            childrenBuilder.AddInsideRange(rangeStart, TextRange.End);
-            Children = childrenBuilder.GetChildren();
         }
 
         internal PackageSyntax(IList<RequiredPackageSyntax> requiredPackages,

@@ -25,18 +25,19 @@ namespace Nezaboodka.Nevod
 
         public override void CreateChildren(string text)
         {
-            if (Children != null)
-                return;
-            var childrenBuilder = new ChildrenBuilder(text);
-            if (PatternReference != null)
+            if (Children == null)
             {
-                childrenBuilder.AddInsideRange(TextRange.Start, PatternReference.TextRange.Start);
-                childrenBuilder.Add(PatternReference);
-                childrenBuilder.AddInsideRange(PatternReference.TextRange.End, TextRange.End);
+                var childrenBuilder = new ChildrenBuilder(text);
+                if (PatternReference != null)
+                {
+                    childrenBuilder.AddInsideRange(TextRange.Start, PatternReference.TextRange.Start);
+                    childrenBuilder.Add(PatternReference);
+                    childrenBuilder.AddInsideRange(PatternReference.TextRange.End, TextRange.End);
+                }
+                else
+                    childrenBuilder.AddInsideRange(TextRange);
+                Children = childrenBuilder.GetChildren();
             }
-            else
-                childrenBuilder.AddInsideRange(TextRange);
-            Children = childrenBuilder.GetChildren();
         }
 
         internal PatternSearchTargetSyntax(string patternName, string nameSpace, PatternReferenceSyntax patternReference)
@@ -58,11 +59,12 @@ namespace Nezaboodka.Nevod
 
         public override void CreateChildren(string text)
         {
-            if (Children != null)
-                return;
-            var childrenBuilder = new ChildrenBuilder(text);
-            childrenBuilder.AddInsideRange(TextRange);
-            Children = childrenBuilder.GetChildren();
+            if (Children == null)
+            {
+                var childrenBuilder = new ChildrenBuilder(text);
+                childrenBuilder.AddInsideRange(TextRange);
+                Children = childrenBuilder.GetChildren();
+            }
         }
 
         internal NamespaceSearchTargetSyntax(string patternsNameSpace, string nameSpace)

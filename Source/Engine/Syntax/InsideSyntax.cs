@@ -12,24 +12,25 @@ namespace Nezaboodka.Nevod
 
         public override void CreateChildren(string text)
         {
-            if (Children != null)
-                return;
-            var childrenBuilder = new ChildrenBuilder(text);
-            int rangeStart = TextRange.Start;
-            if (Inner != null)
+            if (Children == null)
             {
-                childrenBuilder.Add(Inner);
-                rangeStart = Inner.TextRange.End;
+                var childrenBuilder = new ChildrenBuilder(text);
+                int rangeStart = TextRange.Start;
+                if (Inner != null)
+                {
+                    childrenBuilder.Add(Inner);
+                    rangeStart = Inner.TextRange.End;
+                }
+                if (Outer != null)
+                {
+                    int rangeEnd = Outer.TextRange.Start;
+                    childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                    childrenBuilder.Add(Outer);
+                    rangeStart = Outer.TextRange.End;
+                }
+                childrenBuilder.AddInsideRange(rangeStart, TextRange.End);
+                Children = childrenBuilder.GetChildren();
             }
-            if (Outer != null)
-            {
-                int rangeEnd = Outer.TextRange.Start;
-                childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
-                childrenBuilder.Add(Outer);
-                rangeStart = Outer.TextRange.End;
-            }
-            childrenBuilder.AddInsideRange(rangeStart, TextRange.End);
-            Children = childrenBuilder.GetChildren();
         }
 
         internal InsideSyntax(Syntax inner, Syntax outer)

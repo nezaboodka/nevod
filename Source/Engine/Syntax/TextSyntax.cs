@@ -18,11 +18,12 @@ namespace Nezaboodka.Nevod
 
         public override void CreateChildren(string text)
         {
-            if (Children != null)
-                return;
-            var childrenBuilder = new ChildrenBuilder(text);
-            childrenBuilder.AddInsideRange(TextRange);
-            Children = childrenBuilder.GetChildren();
+            if (Children == null)
+            {
+                var childrenBuilder = new ChildrenBuilder(text);
+                childrenBuilder.AddInsideRange(TextRange);
+                Children = childrenBuilder.GetChildren();
+            }
         }
 
         internal static readonly PlainTextParserOptions TextParserOptions = new PlainTextParserOptions()

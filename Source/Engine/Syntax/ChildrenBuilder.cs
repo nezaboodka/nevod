@@ -33,19 +33,20 @@ namespace Nezaboodka.Nevod
 
         public void AddInsideRange(int rangeStart, int rangeEnd)
         {
-            if (rangeStart == rangeEnd)
-                return;
-            fScanner.SetPosition(rangeStart);
-            NextNonTriviaToken(fScanner);
-            while (fScanner.CurrentToken.TextSlice.Position < rangeEnd)
+            if (rangeStart != rangeEnd)
             {
-                LexicalToken token = fScanner.CurrentToken;
+                fScanner.SetPosition(rangeStart);
                 NextNonTriviaToken(fScanner);
-                Lexeme lexeme = Syntax.Lexeme(token.Id);
-                int lexemeStart = token.TextSlice.Position;
-                int lexemeEnd = fScanner.CurrentToken.TextSlice.Position;
-                lexeme.TextRange = new TextRange(lexemeStart, lexemeEnd);
-                fChildren.Add(lexeme);
+                while (fScanner.CurrentToken.TextSlice.Position < rangeEnd)
+                {
+                    LexicalToken token = fScanner.CurrentToken;
+                    NextNonTriviaToken(fScanner);
+                    Lexeme lexeme = Syntax.Lexeme(token.Id);
+                    int lexemeStart = token.TextSlice.Position;
+                    int lexemeEnd = fScanner.CurrentToken.TextSlice.Position;
+                    lexeme.TextRange = new TextRange(lexemeStart, lexemeEnd);
+                    fChildren.Add(lexeme);
+                }
             }
         }
 
