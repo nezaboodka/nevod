@@ -21,7 +21,7 @@ The **Nevod Web site** is also an open-source project, hosted on GitLab: https:/
 
 ## The Target Platform
 
-The Nevod technology is based on the .NET Standard 2.1. It runs on Linux, Windows and macOS.
+The Nevod technology is based on the .NET Standard 2.0. It runs on Linux, Windows and macOS.
 
 ## How Can I Use Nevod in My Project?
 
