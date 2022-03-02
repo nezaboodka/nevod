@@ -3,6 +3,11 @@
 // Licensed under the Apache License, Version 2.0.
 //--------------------------------------------------------------------------------------------------
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
 namespace Nezaboodka.Nevod
 {
     public class ExtractionSyntax : Syntax
