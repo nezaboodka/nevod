@@ -21,6 +21,23 @@ namespace Nezaboodka.Nevod
         public bool IsBodyVariationWhereAnyElementIsSpanWithSingleElementWithZeroOrOnePlusRepetition() =>
             Body is VariationSyntax v && v.AnyElementIsSpanWithSingleElementWithZeroOrOnePlusRepetition();
 
+        public override void CreateChildren(string text)
+        {
+            if (Children == null)
+            {
+                var childrenBuilder = new ChildrenBuilder(text);
+                if (Body != null)
+                {
+                    childrenBuilder.AddInsideRange(TextRange.Start, Body.TextRange.Start);
+                    childrenBuilder.Add(Body);
+                    childrenBuilder.AddInsideRange(Body.TextRange.End, TextRange.End);
+                }
+                else
+                    childrenBuilder.AddInsideRange(TextRange);
+                Children = childrenBuilder.GetChildren();
+            }
+        }
+
         internal override bool CanReduce => fCanReduce;
 
         internal RepetitionSyntax(Range range, Syntax body)

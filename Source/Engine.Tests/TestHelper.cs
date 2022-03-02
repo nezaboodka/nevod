@@ -334,5 +334,25 @@ namespace Nezaboodka.Nevod.Engine.Tests
             string actualText = patterns.Substring(syntax.TextRange.Start, syntax.TextRange.Length);
             Assert.AreEqual(expectedText, actualText);
         }
+
+        public static PackageSyntax ParsePatterns(string patterns)
+        {
+            var syntaxParser = new SyntaxParser();
+            return syntaxParser.ParsePackageText(patterns);
+        }
+
+        public static void TestTokenIdAndTextRange(string patterns, Syntax syntax, TokenId tokenId, string expectedText)
+        {
+            Assert.IsInstanceOfType(syntax, typeof(Lexeme));
+            var lexeme = (Lexeme)syntax;
+            Assert.AreEqual(tokenId, lexeme.TokenId);
+            TestSourceTextInformation(patterns, lexeme, expectedText);
+        }
+
+        public static void TestToken(LexicalToken token, TokenId tokenId, string expectedText)
+        {
+            Assert.AreEqual(tokenId, token.Id);
+            Assert.AreEqual(expectedText, token.TextSlice.ToString());
+        }
     }
 }

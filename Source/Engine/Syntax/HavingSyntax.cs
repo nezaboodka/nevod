@@ -14,6 +14,29 @@ namespace Nezaboodka.Nevod
         public Syntax Outer { get; }
         public Syntax Inner { get; }
 
+        public override void CreateChildren(string text)
+        {
+            if (Children == null)
+            {
+                var childrenBuilder = new ChildrenBuilder(text);
+                int rangeStart = TextRange.Start;
+                if (Outer != null)
+                {
+                    childrenBuilder.Add(Outer);
+                    rangeStart = Outer.TextRange.End;
+                }
+                if (Inner != null)
+                {
+                    int rangeEnd = Inner.TextRange.Start;
+                    childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                    childrenBuilder.Add(Inner);
+                    rangeStart = Inner.TextRange.End;
+                }
+                childrenBuilder.AddInsideRange(rangeStart, TextRange.End);
+                Children = childrenBuilder.GetChildren();
+            }
+        }
+
         internal HavingSyntax(Syntax outer, Syntax inner)
         {
             Outer = outer;

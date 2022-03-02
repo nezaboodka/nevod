@@ -14,6 +14,16 @@ namespace Nezaboodka.Nevod
         public string Name { get; }
         public bool IsInternal { get; }
 
+        public override void CreateChildren(string text)
+        {
+            if (Children == null)
+            {
+                var childrenBuilder = new ChildrenBuilder(text);
+                childrenBuilder.AddInsideRange(TextRange);
+                Children = childrenBuilder.GetChildren();
+            }
+        }
+
         internal FieldSyntax(string name, bool isInternal)
         {
             Name = name;

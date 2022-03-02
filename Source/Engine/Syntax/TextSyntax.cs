@@ -17,6 +17,16 @@ namespace Nezaboodka.Nevod
         public bool TextIsPrefix { get; }
         public WordAttributes SuffixAttributes { get; }
 
+        public override void CreateChildren(string text)
+        {
+            if (Children == null)
+            {
+                var childrenBuilder = new ChildrenBuilder(text);
+                childrenBuilder.AddInsideRange(TextRange);
+                Children = childrenBuilder.GetChildren();
+            }
+        }
+
         internal static readonly PlainTextParserOptions TextParserOptions = new PlainTextParserOptions()
         {
             ProduceStartAndEndTokens = false,

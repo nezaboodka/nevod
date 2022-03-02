@@ -17,6 +17,22 @@ namespace Nezaboodka.Nevod
 
         public bool IsSingleElement() => Elements.Count == 1;
 
+        public override void CreateChildren(string text)
+        {
+            if (Children == null)
+            {
+                var childrenBuilder = new ChildrenBuilder(text);
+                int rangeStart = TextRange.Start;
+                if (Elements.Count != 0)
+                {
+                    childrenBuilder.AddForElements(Elements);
+                    rangeStart = Elements[Elements.Count - 1].TextRange.End;
+                }
+                childrenBuilder.AddInsideRange(rangeStart, TextRange.End);
+                Children = childrenBuilder.GetChildren();
+            }
+        }
+
         internal override bool CanReduce => true;
 
         internal WordSequenceSyntax(IList<Syntax> elements)

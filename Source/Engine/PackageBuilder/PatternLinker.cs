@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Security;
 
 namespace Nezaboodka.Nevod
 {
@@ -72,7 +73,7 @@ namespace Nezaboodka.Nevod
             fBaseDirectory = baseDirectory;
             if (filePath != null)
                 filePath = Path.GetFullPath(filePath);
-            fDependencyStack.Push(new FileInfo(filePath, PathUtils.NormalizePathCase(filePath)));
+            fDependencyStack.Push(new FileInfo(filePath, PathCaseNormalizer.Normalize(filePath)));
             Dictionary<string, PatternSyntax> savePatternByName = fPatternByName;
             Dictionary<string, RequiredPackageSyntax> saveRequiredPackageByFilePath = fRequiredPackageByFilePath;
             Dictionary<string, RequiredPackageSyntax> saveRequiredPackageByPatternName = fRequiredPackageByPatternName;
@@ -129,7 +130,7 @@ namespace Nezaboodka.Nevod
         protected internal override Syntax VisitRequiredPackage(RequiredPackageSyntax node)
         {
             string filePath = Syntax.GetRequiredFilePath(fBaseDirectory, node.RelativePath);
-            string normalizedFilePath = PathUtils.NormalizePathCase(filePath);
+            string normalizedFilePath = PathCaseNormalizer.Normalize(filePath);
             if (ValidateRequiredPathAndAddErrors(filePath, normalizedFilePath, node))
             {
                 LinkedPackageSyntax linkedPackage = TryLoadRequiredPackage(filePath, node);
@@ -145,17 +146,21 @@ namespace Nezaboodka.Nevod
 
         protected internal override Syntax VisitPatternSearchTarget(PatternSearchTargetSyntax node)
         {
-            if (fPatternByName.TryGetValue(node.SearchTarget, out PatternSyntax pattern))
-                node.PatternReference.ReferencedPattern = pattern;
-            else
-                AddError(node, TextResource.SearchTargetIsUndefinedPattern, node.SearchTarget);
+            // PatternSearchTarget with null pattern name is handled by parser. No need to add error here.
+            if (node.SearchTarget != null)
+            {
+                if (fPatternByName.TryGetValue(node.SearchTarget, out PatternSyntax pattern))
+                    node.PatternReference.ReferencedPattern = pattern;
+                else
+                    AddError(node, TextResource.SearchTargetIsUndefinedPattern, node.SearchTarget);
+            }
             return node;
         }
 
         protected internal override Syntax VisitNamespaceSearchTarget(NamespaceSearchTargetSyntax node)
         {
             var targetReferences = new List<Syntax>();
-            foreach (PatternSyntax p in fPatternByName.Values.Where(x => x.IsSearchTarget && x.Namespace == node.Namespace))
+            foreach (PatternSyntax p in fPatternByName.Values.Where(x => x.IsSearchTarget && x.Namespace == node.PatternsNamespace))
             {
                 PatternReferenceSyntax r = Syntax.PatternReference(p.FullName);
                 var rc = new PatternReferenceInContext()
@@ -268,6 +273,22 @@ namespace Nezaboodka.Nevod
             catch (UnauthorizedAccessException)
             {
                 AddError(node, TextResource.AccessToFileDenied, filePath);
+            }
+            catch (SecurityException)
+            {
+                AddError(node, TextResource.AccessToFileDenied, filePath);
+            }
+            catch (PathTooLongException)
+            {
+                AddError(node, TextResource.PathIsTooLong, filePath);
+            }
+            catch (NotSupportedException)
+            {
+                AddError(node, TextResource.PathIsNotValid, filePath);
+            }
+            catch (IOException)
+            {
+                AddError(node, TextResource.PathIsNotValid, filePath);
             }
             return package;
         }
@@ -428,6 +449,8 @@ namespace Nezaboodka.Nevod
         public const string SearchTargetIsUndefinedPattern = "Search target is undefined pattern '{0}'";
         public const string FileNotFound = "File '{0}' not found";
         public const string AccessToFileDenied = "Access to file '{0}' denied. If given path is a directory and you want to import all the files from it, import them separately";
+        public const string PathIsTooLong = "Path '{0}' is too long";
+        public const string PathIsNotValid = "Path '{0}' is not valid";
         public const string RecursiveFileDependencyIsNotSupported = "Recursive file dependency is not supported: {0}";
         public const string CannotLoadRequiredFile = "Cannot load required file '{0}' because fileContentProvider is null. Pass it to the linker's constructor";
     }

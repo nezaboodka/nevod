@@ -18,6 +18,16 @@ namespace Nezaboodka.Nevod
         public bool TextIsPrefix { get; }
         public TokenAttributes TokenAttributes { get; }
 
+        public override void CreateChildren(string text)
+        {
+            if (Children == null)
+            {
+                var childrenBuilder = new ChildrenBuilder(text);
+                childrenBuilder.AddInsideRange(TextRange);
+                Children = childrenBuilder.GetChildren();
+            }
+        }
+
         internal TokenSyntax(TokenKind tokenKind, string text, bool isCaseSensitive, bool textIsPrefix,
             TokenAttributes tokenAttributes)
         {

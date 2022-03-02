@@ -17,6 +17,24 @@ namespace Nezaboodka.Nevod
         public string PatternName { get; }
         public ReadOnlyCollection<Syntax> ExtractionFromFields { get; }
 
+        public override void CreateChildren(string text)
+        {
+            if (Children == null)
+            {
+                var childrenBuilder = new ChildrenBuilder(text);
+                int rangeStart = TextRange.Start;
+                if (ExtractionFromFields.Count != 0)
+                {
+                    int rangeEnd = ExtractionFromFields[0].TextRange.Start;
+                    childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                    childrenBuilder.AddForElements(ExtractionFromFields);
+                    rangeStart = ExtractionFromFields[ExtractionFromFields.Count - 1].TextRange.End;
+                }
+                childrenBuilder.AddInsideRange(rangeStart, TextRange.End);
+                Children = childrenBuilder.GetChildren();
+            }
+        }
+
         internal PatternReferenceSyntax(PatternSyntax pattern, IList<Syntax> extractionFromFields)
         {
             ReferencedPattern = pattern;

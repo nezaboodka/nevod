@@ -44,7 +44,7 @@ namespace Nezaboodka.Nevod
             List<Syntax> searchTargetsFromPatterns = null;
             foreach (PatternSyntax p in fAllPatterns.Where(x => ((PatternSyntax)x).IsSearchTarget))
             {
-                var t = new PatternSearchTargetSyntax(p.FullName, Syntax.PatternReference(p));
+                var t = new PatternSearchTargetSyntax(p.FullName, p.Namespace, Syntax.PatternReference(p));
                 if (searchTargetsFromPatterns == null)
                     searchTargetsFromPatterns = new List<Syntax>();
                 searchTargetsFromPatterns.Add(t);

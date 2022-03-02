@@ -14,6 +14,16 @@ namespace Nezaboodka.Nevod
         public string FullPath { get; private set; }
         public new LinkedPackageSyntax Package { get; private set; }
 
+        public override void CreateChildren(string text)
+        {
+            if (Children == null)
+            {
+                var childrenBuilder = new ChildrenBuilder(text);
+                childrenBuilder.AddInsideRange(TextRange);
+                Children = childrenBuilder.GetChildren();
+            }
+        }
+
         internal RequiredPackageSyntax(string baseDirectory, string relativePath, LinkedPackageSyntax package)
         {
             BaseDirectory = baseDirectory;
@@ -21,7 +31,7 @@ namespace Nezaboodka.Nevod
             FullPath = GetRequiredFilePath(baseDirectory, relativePath);
             Package = package;
         }
-        
+
         internal RequiredPackageSyntax(string relativePath)
         {
             RelativePath = relativePath;

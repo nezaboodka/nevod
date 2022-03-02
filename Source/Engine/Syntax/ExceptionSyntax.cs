@@ -13,6 +13,23 @@ namespace Nezaboodka.Nevod
     {
         public Syntax Body { get; }
 
+        public override void CreateChildren(string text)
+        {
+            if (Children == null)
+            {
+                var childrenBuilder = new ChildrenBuilder(text);
+                if (Body != null)
+                {
+                    childrenBuilder.AddInsideRange(TextRange.Start, Body.TextRange.Start);
+                    childrenBuilder.Add(Body);
+                    childrenBuilder.AddInsideRange(Body.TextRange.End, TextRange.End);
+                }
+                else
+                    childrenBuilder.AddInsideRange(TextRange);
+                Children = childrenBuilder.GetChildren();
+            }
+        }
+
         internal ExceptionSyntax(Syntax body)
         {
             Body = body;

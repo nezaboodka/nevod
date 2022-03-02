@@ -15,6 +15,16 @@ namespace Nezaboodka.Nevod
     {
         public string FieldName { get; }
 
+        public override void CreateChildren(string text)
+        {
+            if (Children == null)
+            {
+                var childrenBuilder = new ChildrenBuilder(text);
+                childrenBuilder.AddInsideRange(TextRange);
+                Children = childrenBuilder.GetChildren();
+            }
+        }
+
         internal FieldReferenceSyntax(string fieldName)
         {
             FieldName = fieldName;

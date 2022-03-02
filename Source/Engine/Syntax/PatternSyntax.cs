@@ -31,6 +31,38 @@ namespace Nezaboodka.Nevod
             return result;
         }
 
+        public override void CreateChildren(string text)
+        {
+            if (Children == null)
+            {
+                var childrenBuilder = new ChildrenBuilder(text);
+                int rangeStart = TextRange.Start;
+                if (Fields.Count != 0)
+                {
+                    int rangeEnd = Fields[0].TextRange.Start;
+                    childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                    childrenBuilder.AddForElements(Fields);
+                    rangeStart = Fields[Fields.Count - 1].TextRange.End;
+                }
+                if (Body != null)
+                {
+                    int rangeEnd = Body.TextRange.Start;
+                    childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                    childrenBuilder.Add(Body);
+                    rangeStart = Body.TextRange.End;
+                }
+                if (NestedPatterns.Count != 0)
+                {
+                    int rangeEnd = NestedPatterns[0].TextRange.Start;
+                    childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                    childrenBuilder.AddForElements(NestedPatterns);
+                    rangeStart = NestedPatterns[NestedPatterns.Count - 1].TextRange.End;
+                }
+                childrenBuilder.AddInsideRange(rangeStart, TextRange.End);
+                Children = childrenBuilder.GetChildren();
+            }
+        }
+
         internal PatternSyntax(string nameSpace, string masterPatternName, bool isSearchTarget, string name,
             IList<FieldSyntax> fields, Syntax body, IList<PatternSyntax> nestedPatterns)
         {

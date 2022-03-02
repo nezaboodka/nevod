@@ -19,6 +19,43 @@ namespace Nezaboodka.Nevod
         public Syntax Exclusion { get; }
         public Syntax ExtractionOfSpan { get; }
 
+        public override void CreateChildren(string text)
+        {
+            if (Children == null)
+            {
+                var childrenBuilder = new ChildrenBuilder(text);
+                int rangeStart = TextRange.Start;
+                if (Left != null)
+                {
+                    childrenBuilder.Add(Left);
+                    rangeStart = Left.TextRange.End;
+                }
+                if (ExtractionOfSpan != null)
+                {
+                    int rangeEnd = ExtractionOfSpan.TextRange.Start;
+                    childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                    childrenBuilder.Add(ExtractionOfSpan);
+                    rangeStart = ExtractionOfSpan.TextRange.End;
+                }
+                if (Exclusion != null)
+                {
+                    int rangeEnd = Exclusion.TextRange.Start;
+                    childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                    childrenBuilder.Add(Exclusion);
+                    rangeStart = Exclusion.TextRange.End;
+                }
+                if (Right != null)
+                {
+                    int rangeEnd = Right.TextRange.Start;
+                    childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
+                    childrenBuilder.Add(Right);
+                    rangeStart = Right.TextRange.End;
+                }
+                childrenBuilder.AddInsideRange(rangeStart, TextRange.End);
+                Children = childrenBuilder.GetChildren();
+            }
+        }
+
         internal WordSpanSyntax(Syntax left, Range spanRange, Syntax right, Syntax exclusion, Syntax extractionOfSpan)
         {
             Left = left;
