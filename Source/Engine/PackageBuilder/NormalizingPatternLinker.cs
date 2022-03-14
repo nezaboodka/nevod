@@ -13,7 +13,13 @@ namespace Nezaboodka.Nevod
         private List<Syntax> fAllPatterns;
 
         public NormalizingPatternLinker(Func<string, string> fileContentProvider, PackageCache packageCache)
-            : base(fileContentProvider, packageCache)
+            : base(fileContentProvider, packageCache, isFileSystemCaseSensitive: null)
+        {
+        }
+
+        public NormalizingPatternLinker(Func<string, string> fileContentProvider, PackageCache packageCache, 
+            bool? isFileSystemCaseSensitive)
+            : base(fileContentProvider, packageCache, isFileSystemCaseSensitive)
         {
         }
 

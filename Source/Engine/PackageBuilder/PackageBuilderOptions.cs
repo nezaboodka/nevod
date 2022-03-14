@@ -17,6 +17,8 @@ namespace Nezaboodka.Nevod
 
         public bool SyntaxInformationBinding { get; set; }
 
+        public bool? IsFileSystemCaseSensitive { get; set; }
+
         public PackageBuilderOptions()
         {
             PatternReferencesInlined = true;
@@ -28,6 +30,7 @@ namespace Nezaboodka.Nevod
                 source = Default;
             PatternReferencesInlined = source.PatternReferencesInlined;
             SyntaxInformationBinding = source.SyntaxInformationBinding;
+            IsFileSystemCaseSensitive = source.IsFileSystemCaseSensitive;
         }
     }
 }
