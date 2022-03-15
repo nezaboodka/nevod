@@ -1,31 +1,45 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Nezaboodka.Nevod
 {
-    internal static class PathCaseNormalizer
+    internal class PathCaseNormalizer
     {
-        private static readonly Func<string, string> NormalizePathCase;
+        public bool IsFileSystemCaseSensitive { get; }
 
-        public static bool IsFileSystemCaseSensitive { get; }
-
-        static PathCaseNormalizer()
+        public PathCaseNormalizer()
+            : this (isFileSystemCaseSensitive: null)
         {
-            string assemblyPath = Assembly.GetExecutingAssembly().Location;
-            // If file system is not case sensitive, File.Exists for assembly path converted to upper case and lower case will return true.
-            if (File.Exists(assemblyPath.ToUpper()) && File.Exists(assemblyPath.ToLower()))
-            {
-                IsFileSystemCaseSensitive = false;
-                NormalizePathCase = path => path?.ToLower();
-            }
-            else
-            {
-                IsFileSystemCaseSensitive = true;
-                NormalizePathCase = path => path;
-            }
         }
 
-        public static string Normalize(string path) => NormalizePathCase(path);
+        public PathCaseNormalizer(bool? isFileSystemCaseSensitive)
+        {
+            if (isFileSystemCaseSensitive != null)
+                IsFileSystemCaseSensitive = isFileSystemCaseSensitive.Value;
+            else
+                IsFileSystemCaseSensitive = DetermineCaseSensitivityBasedOnOperatingSystem();
+        }
+
+        public string Normalize(string path)
+        {
+            string normalizedPath;
+            if (IsFileSystemCaseSensitive)
+                normalizedPath = path;
+            else
+                normalizedPath = path?.ToLower();
+            return normalizedPath;
+        }
+
+        private bool DetermineCaseSensitivityBasedOnOperatingSystem()
+        {
+            bool isFileSystemCaseSensitive;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                isFileSystemCaseSensitive = false;
+            else
+                isFileSystemCaseSensitive = true;
+            return isFileSystemCaseSensitive;
+        }
     }
 }

@@ -107,7 +107,7 @@ namespace Nezaboodka.Nevod
 
         private LinkedPackageSyntax LinkPackage(PackageSyntax parsedTree, string baseDirectory, string filePath)
         {
-            var linker = new NormalizingPatternLinker(fFileContentProvider, fPackageCache);
+            var linker = new NormalizingPatternLinker(fFileContentProvider, fPackageCache, fOptions.IsFileSystemCaseSensitive);
             LinkedPackageSyntax result = linker.Link(parsedTree, baseDirectory, filePath);
             return result;
         }

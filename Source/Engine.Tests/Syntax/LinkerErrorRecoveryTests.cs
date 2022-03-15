@@ -199,7 +199,8 @@ P1 = Word;
                 }
             }
             
-            if (!PathCaseNormalizer.IsFileSystemCaseSensitive)
+            var pathCaseNormalizer = new PathCaseNormalizer();
+            if (!pathCaseNormalizer.IsFileSystemCaseSensitive)
             {
                 LinkAndCompareErrors(
                     filePath: "Main.np",

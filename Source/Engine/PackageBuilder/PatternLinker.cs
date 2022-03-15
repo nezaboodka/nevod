@@ -35,6 +35,7 @@ namespace Nezaboodka.Nevod
         private static readonly HashSet<string> StandardPatternNames;
         private readonly Func<string, string> fFileContentProvider;
         private readonly PackageCache fPackageCache;
+        private readonly PathCaseNormalizer fPathCaseNormalizer;
         private readonly Stack<FileInfo> fDependencyStack;
         private string fBaseDirectory;
         private Dictionary<string, PatternSyntax> fPatternByName;
@@ -51,19 +52,20 @@ namespace Nezaboodka.Nevod
         }
 
         public PatternLinker()
-            : this(fileContentProvider: null, packageCache: null)
+            : this(fileContentProvider: null, packageCache: null, isFileSystemCaseSensitive: null)
         {
         }
 
         public PatternLinker(Func<string, string> fileContentProvider)
-            : this(fileContentProvider, packageCache: null)
+            : this(fileContentProvider, packageCache: null, isFileSystemCaseSensitive: null)
         {
         }
 
-        public PatternLinker(Func<string, string> fileContentProvider, PackageCache packageCache)
+        public PatternLinker(Func<string, string> fileContentProvider, PackageCache packageCache, bool? isFileSystemCaseSensitive)
         {
             fFileContentProvider = fileContentProvider;
             fPackageCache = packageCache;
+            fPathCaseNormalizer = new PathCaseNormalizer(isFileSystemCaseSensitive);
             fDependencyStack = new Stack<FileInfo>();
         }
 
@@ -73,7 +75,7 @@ namespace Nezaboodka.Nevod
             fBaseDirectory = baseDirectory;
             if (filePath != null)
                 filePath = Path.GetFullPath(filePath);
-            fDependencyStack.Push(new FileInfo(filePath, PathCaseNormalizer.Normalize(filePath)));
+            fDependencyStack.Push(new FileInfo(filePath, fPathCaseNormalizer.Normalize(filePath)));
             Dictionary<string, PatternSyntax> savePatternByName = fPatternByName;
             Dictionary<string, RequiredPackageSyntax> saveRequiredPackageByFilePath = fRequiredPackageByFilePath;
             Dictionary<string, RequiredPackageSyntax> saveRequiredPackageByPatternName = fRequiredPackageByPatternName;
@@ -130,7 +132,7 @@ namespace Nezaboodka.Nevod
         protected internal override Syntax VisitRequiredPackage(RequiredPackageSyntax node)
         {
             string filePath = Syntax.GetRequiredFilePath(fBaseDirectory, node.RelativePath);
-            string normalizedFilePath = PathCaseNormalizer.Normalize(filePath);
+            string normalizedFilePath = fPathCaseNormalizer.Normalize(filePath);
             if (ValidateRequiredPathAndAddErrors(filePath, normalizedFilePath, node))
             {
                 LinkedPackageSyntax linkedPackage = TryLoadRequiredPackage(filePath, node);
