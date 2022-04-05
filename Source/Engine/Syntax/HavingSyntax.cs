@@ -22,6 +22,8 @@ namespace Nezaboodka.Nevod
                 int rangeStart = TextRange.Start;
                 if (Outer != null)
                 {
+                    int rangeEnd = Outer.TextRange.Start;
+                    childrenBuilder.AddInsideRange(rangeStart, rangeEnd);
                     childrenBuilder.Add(Outer);
                     rangeStart = Outer.TextRange.End;
                 }
