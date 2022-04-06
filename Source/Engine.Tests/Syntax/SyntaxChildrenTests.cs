@@ -592,16 +592,35 @@ Pattern = Nested1 + Nested2 @where {
         [TestMethod]
         public void ParenthesizedExpressionChildren()
         {
-            string pattern = @"#Company = ?('Optionality' + Space)";
-            PackageSyntax package = ParsePatterns(pattern);
-            var optionalitySyntax = (OptionalitySyntax)((PatternSyntax)package.Patterns[0]).Body;
-            optionalitySyntax.CreateChildren(pattern);
-            ReadOnlyCollection<Syntax> children = optionalitySyntax.Children;
-            Assert.AreEqual(children.Count, 4);
-            TestTokenIdAndTextRange(pattern, children[0], TokenId.Question, "?");
-            TestTokenIdAndTextRange(pattern, children[1], TokenId.OpenParenthesis, "(");
-            Assert.AreEqual(optionalitySyntax.Body, children[2]);
-            TestTokenIdAndTextRange(pattern, children[3], TokenId.CloseParenthesis, ")");
+            void ParenthesizedExpressionInOptionality()
+            {
+                string pattern = @"#Company = ?('Optionality' + Space)";
+                PackageSyntax package = ParsePatterns(pattern);
+                var optionalitySyntax = (OptionalitySyntax)((PatternSyntax)package.Patterns[0]).Body;
+                optionalitySyntax.CreateChildren(pattern);
+                ReadOnlyCollection<Syntax> children = optionalitySyntax.Children;
+                Assert.AreEqual(children.Count, 4);
+                TestTokenIdAndTextRange(pattern, children[0], TokenId.Question, "?");
+                TestTokenIdAndTextRange(pattern, children[1], TokenId.OpenParenthesis, "(");
+                Assert.AreEqual(optionalitySyntax.Body, children[2]);
+                TestTokenIdAndTextRange(pattern, children[3], TokenId.CloseParenthesis, ")");
+            }
+            void ParenthesizedExpressionInSequence()
+            {
+                string pattern = @"Pattern = (Word) + Num;";
+                PackageSyntax package = ParsePatterns(pattern);
+                var sequenceSyntax = (SequenceSyntax)((PatternSyntax)package.Patterns[0]).Body;
+                sequenceSyntax.CreateChildren(pattern);
+                ReadOnlyCollection<Syntax> children = sequenceSyntax.Children;
+                Assert.AreEqual(children.Count, 5);
+                TestTokenIdAndTextRange(pattern, children[0], TokenId.OpenParenthesis, "(");
+                Assert.AreEqual(sequenceSyntax.Elements[0], children[1]);
+                TestTokenIdAndTextRange(pattern, children[2], TokenId.CloseParenthesis, ") ");
+                TestTokenIdAndTextRange(pattern, children[3], TokenId.Plus, "+ ");
+                Assert.AreEqual(sequenceSyntax.Elements[1], children[4]);
+            }
+            ParenthesizedExpressionInOptionality();
+            ParenthesizedExpressionInSequence();
         }
     }
 }
