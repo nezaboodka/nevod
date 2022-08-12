@@ -362,7 +362,7 @@ namespace Nezaboodka.Nevod
             fTokenByKeyword.Add("@где", TokenId.WhereKeyword);
             fTokenByKeyword.Add("@внутри", TokenId.InsideKeyword);
             fTokenByKeyword.Add("@вне", TokenId.OutsideKeyword);
-            fTokenByKeyword.Add("@имеющий", TokenId.HavingKeyword);
+            fTokenByKeyword.Add("@содержащий", TokenId.HavingKeyword);
         }
 
         private struct State
