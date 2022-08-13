@@ -64,13 +64,21 @@ comment */");
         {
             string text = @"
 // ru
-@шаблон
+@шаблон Мой-шаблон = Слово;
 ";
             var scanner = new Scanner(text);
             // Skip comment
             scanner.NextTokenOrComment();
             scanner.NextTokenOrComment();
             TestToken(scanner.CurrentToken, TokenId.PatternKeyword, "@шаблон");
+            scanner.NextTokenOrComment();
+            TestToken(scanner.CurrentToken, TokenId.Identifier, "Мой-шаблон");
+            scanner.NextTokenOrComment();
+            TestToken(scanner.CurrentToken, TokenId.Equal, "=");
+            scanner.NextTokenOrComment();
+            TestToken(scanner.CurrentToken, TokenId.Identifier, "Слово");
+            scanner.NextTokenOrComment();
+            TestToken(scanner.CurrentToken, TokenId.Semicolon, ";");
         }
 
         [TestMethod]
