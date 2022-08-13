@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: negrep
-Source: https://nevod.io/#/downloads
+Source: https://nevod.io/#/en/downloads
 
 Files: *
 Copyright: 2011-2021, Nezaboodka Software LLC

@@ -11,9 +11,9 @@ Nevod is a **language** and technology for **pattern-based** text search. It is 
 aimed to rapidly reveal entities and their relationships in texts written in the natural language.
 
 - Official Website: https://nevod.io/
-- Language Tutorial: https://nevod.io/#/tutorial
-- Language Reference: https://nevod.io/#/reference
-- Playground: https://nevod.io/#/playground
+- Language Tutorial: https://nevod.io/#/en/tutorial
+- Language Reference: https://nevod.io/#/en/reference
+- Playground: https://nevod.io/#/en/playground
 
 ![Nevod Playground](https://raw.githubusercontent.com/nezaboodka/nevod/main/nevod.jpg)
 
@@ -28,7 +28,7 @@ The Nevod technology is based on the .NET Standard 2.0. It runs on Linux, Window
 You can use Nevod in the following ways:
 - Download [source code](https://github.com/nezaboodka/nevod) and link it into your source tree.
 - Add reference to the Nevod [NuGet package](https://www.nuget.org/packages/Nezaboodka.Nevod).
-- Download and use the command-line [negrep](https://nevod.io/#/downloads) utility, which is pre-compiled for
+- Download and use the command-line [negrep](https://nevod.io/#/en/downloads) utility, which is pre-compiled for
 Windows, Linux and macOS.
 
 ## Example of Usage in C# Code
