@@ -41,6 +41,21 @@ namespace Nezaboodka.Nevod
             public static PatternReferenceSyntax Blank;
             public static PatternReferenceSyntax WordBreak;
 
+            public static PatternReferenceSyntax Начало;
+            public static PatternReferenceSyntax Конец;
+            public static PatternReferenceSyntax Слово;
+            public static PatternReferenceSyntax Буквы;
+            public static PatternReferenceSyntax Цифры;
+            public static PatternReferenceSyntax БуквыЦифры;
+            public static PatternReferenceSyntax ЦифрыБуквы;
+            public static PatternReferenceSyntax ЗнакПрепинания;
+            public static PatternReferenceSyntax Символ;
+            public static PatternReferenceSyntax Пробел;
+            public static PatternReferenceSyntax РазделительСтрок;
+            public static PatternReferenceSyntax Любое;
+            public static PatternReferenceSyntax Пропуск;
+            public static PatternReferenceSyntax РазделительСлов;
+
             internal static TokenSyntax StartToken;
             internal static TokenSyntax EndToken;
             internal static TokenSyntax WordToken;
@@ -66,6 +81,22 @@ namespace Nezaboodka.Nevod
             internal static SystemPatternSyntax AnyPattern;
             internal static SystemPatternSyntax BlankPattern;
             internal static SystemPatternSyntax WordBreakPattern;
+
+            internal static FundamentalPatternSyntax ШаблонНачало;
+            internal static FundamentalPatternSyntax ШаблонКонец;
+            internal static FundamentalPatternSyntax ШаблонСлово;
+            internal static FundamentalPatternSyntax ШаблонБуквы;
+            internal static FundamentalPatternSyntax ШаблонЦифры;
+            internal static FundamentalPatternSyntax ШаблонБуквыЦифры;
+            internal static FundamentalPatternSyntax ШаблонЦифрыБуквы;
+            internal static FundamentalPatternSyntax ШаблонЗнакПрепинания;
+            internal static FundamentalPatternSyntax ШаблонСимвол;
+            internal static FundamentalPatternSyntax ШаблонПробел;
+            internal static FundamentalPatternSyntax ШаблонРазделительСтрок;
+            internal static SystemPatternSyntax ШаблонЛюбое;
+            internal static SystemPatternSyntax ШаблонПропуск;
+            internal static SystemPatternSyntax ШаблонРазделительСлов;
+
             internal static PatternSyntax[] StandardPatterns;
 
             static StandardPattern()
@@ -81,6 +112,7 @@ namespace Nezaboodka.Nevod
                 SymbolToken = Token(TokenKind.Symbol);
                 SpaceToken = Token(TokenKind.Space);
                 LineBreakToken = Token(TokenKind.LineBreak);
+
                 StartPattern = new FundamentalPatternSyntax("Start", StartToken);
                 EndPattern = new FundamentalPatternSyntax("End", EndToken);
                 WordPattern = new FundamentalPatternSyntax("Word", WordToken);
@@ -92,6 +124,19 @@ namespace Nezaboodka.Nevod
                 SymbolPattern = new FundamentalPatternSyntax("Symbol", SymbolToken);
                 SpacePattern = new FundamentalPatternSyntax("Space", SpaceToken);
                 LineBreakPattern = new FundamentalPatternSyntax("LineBreak", LineBreakToken);
+
+                ШаблонНачало = new FundamentalPatternSyntax("Начало", StartToken);
+                ШаблонКонец = new FundamentalPatternSyntax("Конец", EndToken);
+                ШаблонСлово = new FundamentalPatternSyntax("Слово", WordToken);
+                ШаблонБуквы = new FundamentalPatternSyntax("Буквы", WordAlphaToken);
+                ШаблонЦифры = new FundamentalPatternSyntax("Цифры", WordNumToken);
+                ШаблонБуквыЦифры = new FundamentalPatternSyntax("БуквыЦифры", WordAlphaNumToken);
+                ШаблонЦифрыБуквы = new FundamentalPatternSyntax("ЦифрыБуквы", WordNumAlphaToken);
+                ШаблонЗнакПрепинания = new FundamentalPatternSyntax("ЗнакПрепинания", PunctToken);
+                ШаблонСимвол = new FundamentalPatternSyntax("Символ", SymbolToken);
+                ШаблонПробел = new FundamentalPatternSyntax("Пробел", SpaceToken);
+                ШаблонРазделительСтрок = new FundamentalPatternSyntax("РазделительСтрок", LineBreakToken);
+
                 // The following variables must be initialized prior to WordBreakPattern!!!
                 Start = new PatternReferenceSyntax(StartPattern, EmptyFieldList());
                 End = new PatternReferenceSyntax(EndPattern, EmptyFieldList());
@@ -124,14 +169,56 @@ namespace Nezaboodka.Nevod
                         Symbol,
                         LineBreak
                     }, checkCanReduce: false));
-                StandardPatterns = new PatternSyntax[]
-                {
-                    StartPattern, EndPattern, WordPattern, AlphaPattern, NumPattern, AlphaNumPattern, NumAlphaPattern,
-                    PunctPattern, SymbolPattern, SpacePattern, LineBreakPattern, AnyPattern, BlankPattern, WordBreakPattern
-                };
                 Any = new PatternReferenceSyntax(AnyPattern, EmptyFieldList());
                 Blank = new PatternReferenceSyntax(BlankPattern, EmptyFieldList());
                 WordBreak = new PatternReferenceSyntax(WordBreakPattern, EmptyFieldList());
+
+                // The following variables must be initialized prior to ШаблонРазделительСлов!!!
+                Начало = new PatternReferenceSyntax(ШаблонНачало, EmptyFieldList());
+                Конец = new PatternReferenceSyntax(ШаблонКонец, EmptyFieldList());
+                Слово = new PatternReferenceSyntax(ШаблонСлово, EmptyFieldList());
+                ЗнакПрепинания = new PatternReferenceSyntax(ШаблонЗнакПрепинания, EmptyFieldList());
+                Символ = new PatternReferenceSyntax(ШаблонСимвол, EmptyFieldList());
+                Пробел = new PatternReferenceSyntax(ШаблонПробел, EmptyFieldList());
+                РазделительСтрок = new PatternReferenceSyntax(ШаблонРазделительСтрок, EmptyFieldList());
+                // The following variables must be initialized after Начало, Конец, Слово, ЗнакПрепинания, Символ, Пробел, РазделительСтрок!!!
+                ШаблонЛюбое = new SystemPatternSyntax("Любое",
+                    new VariationSyntax(new[]
+                    {
+                        Слово,
+                        Пробел,
+                        ЗнакПрепинания,
+                        Символ,
+                        РазделительСтрок
+                    }, checkCanReduce: false));
+                ШаблонПропуск = new SystemPatternSyntax("Пропуск",
+                    new VariationSyntax(new[]
+                    {
+                        Пробел,
+                        РазделительСтрок
+                    }, checkCanReduce: false));
+                ШаблонРазделительСлов = new SystemPatternSyntax("РазделительСлов",
+                    new VariationSyntax(new[]
+                    {
+                        Пробел,
+                        ЗнакПрепинания,
+                        Символ,
+                        РазделительСтрок
+                    }, checkCanReduce: false));
+                Любое = new PatternReferenceSyntax(ШаблонЛюбое, EmptyFieldList());
+                Пробел = new PatternReferenceSyntax(ШаблонПробел, EmptyFieldList());
+                РазделительСлов = new PatternReferenceSyntax(ШаблонРазделительСлов, EmptyFieldList());
+
+                StandardPatterns = new PatternSyntax[]
+                {
+                    StartPattern, EndPattern, WordPattern, AlphaPattern, NumPattern, AlphaNumPattern,
+                    NumAlphaPattern, PunctPattern, SymbolPattern, SpacePattern, LineBreakPattern,
+                    AnyPattern, BlankPattern, WordBreakPattern,
+
+                    ШаблонНачало, ШаблонКонец, ШаблонСлово, ШаблонБуквы, ШаблонЦифры, ШаблонБуквыЦифры,
+                    ШаблонЦифрыБуквы, ШаблонЗнакПрепинания, ШаблонСимвол, ШаблонПробел, ШаблонРазделительСтрок,
+                    ШаблонЛюбое, ШаблонПропуск, ШаблонРазделительСлов
+                };
             }
         }
 

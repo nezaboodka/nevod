@@ -358,7 +358,7 @@ namespace Nezaboodka.Nevod
                 }
                 else
                     nestedPatterns = Syntax.EmptyPatternList();
-                if (fScanner.CurrentToken.Id == TokenId.Semicolon) 
+                if (fScanner.CurrentToken.Id == TokenId.Semicolon)
                     NextToken();
                 else
                     AddError(CreateErrorAfterRange(fPreviousTokenRange, TextResource.PatternShouldEndWithSemicolon));
@@ -658,9 +658,9 @@ namespace Nezaboodka.Nevod
         private bool IsStartOfPrimaryExpression()
         {
             return fScanner.CurrentToken.Id == TokenId.OpenParenthesis
-                   || fScanner.CurrentToken.Id == TokenId.OpenCurlyBrace  
+                   || fScanner.CurrentToken.Id == TokenId.OpenCurlyBrace
                    || fScanner.CurrentToken.Id == TokenId.OpenSquareBracket
-                   || fScanner.CurrentToken.Id == TokenId.Question 
+                   || fScanner.CurrentToken.Id == TokenId.Question
                    || fScanner.CurrentToken.Id == TokenId.Identifier
                    || fScanner.CurrentToken.Id == TokenId.StringLiteral;
         }
@@ -1298,6 +1298,20 @@ namespace Nezaboodka.Nevod
                 case "NumAlpha":
                     wordClass = WordClass.NumAlpha;
                     break;
+
+                case "Буквы":
+                    wordClass = WordClass.Alpha;
+                    break;
+                case "Цифры":
+                    wordClass = WordClass.Num;
+                    break;
+                case "БуквыЦифры":
+                    wordClass = WordClass.AlphaNum;
+                    break;
+                case "ЦифрыБуквы":
+                    wordClass = WordClass.NumAlpha;
+                    break;
+
                 default:
                     wordClass = WordClass.Any;
                     result = false;
@@ -1320,6 +1334,17 @@ namespace Nezaboodka.Nevod
                 case "TitleCase":
                     charCase = CharCase.TitleCase;
                     break;
+
+                case "Строчные":
+                    charCase = CharCase.Lowercase;
+                    break;
+                case "Прописные":
+                    charCase = CharCase.Uppercase;
+                    break;
+                case "ПерваяПрописная":
+                    charCase = CharCase.TitleCase;
+                    break;
+
                 default:
                     charCase = CharCase.Undefined;
                     result = false;
@@ -1442,10 +1467,10 @@ namespace Nezaboodka.Nevod
                 fErrors.Add(error);
         }
 
-        private Error CreateError(string format) => 
+        private Error CreateError(string format) =>
             CreateError(fScanner.CurrentToken.Id == TokenId.End ? fPreviousTokenRange : fScanner.CurrentToken.GetTextRange(), format, args: fScanner.CurrentToken);
-        
-        private Error CreateError(string format, params object[] args) => 
+
+        private Error CreateError(string format, params object[] args) =>
             CreateError(fScanner.CurrentToken.Id == TokenId.End ? fPreviousTokenRange : fScanner.CurrentToken.GetTextRange(), format, args);
 
         private Error CreateError(int position, string format)
