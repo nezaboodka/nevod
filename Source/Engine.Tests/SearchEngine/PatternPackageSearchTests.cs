@@ -97,16 +97,6 @@ namespace Nezaboodka.Nevod.Engine.Tests
         }
 
         [TestMethod]
-        public void SearchPackage_RU()
-        {
-            string text = "IS ANDROID OR IPHONE THE BETTER SMARTPHONE\n\n" +
-                "When it comes to buying one of the best smartphones,\n" +
-                "the first choice can be the hardest (www.google.com): iPhone or Android.";
-            SearchPatternsAndCheckMatches(GetFileContent, UrlPackage_RU, text,
-                "www.google.com");
-        }
-
-        [TestMethod]
         public void SearchPatternsInRequiredPackages()
         {
             string text = "IS ANDROID OR IPHONE THE BETTER SMARTPHONE\n\n" +
@@ -185,6 +175,24 @@ namespace Nezaboodka.Nevod.Engine.Tests
             );
         }
 
+        [TestMethod]
+        public void SearchPackage_RU()
+        {
+            string text = "IS ANDROID OR IPHONE THE BETTER SMARTPHONE\n\n" +
+                "When it comes to buying one of the best smartphones,\n" +
+                "the first choice can be the hardest (www.google.com): iPhone or Android.";
+            SearchPatternsAndCheckMatches(GetFileContent, UrlFileContent_RU, text,
+                "www.google.com");
+        }
+
+        [TestMethod]
+        public void SearchPatternsInRequiredPackages_RU()
+        {
+            string text = "Технологию Невод можно попробовать на сайте https://nevod.io/.";
+            SearchPatternsAndCheckMatches(GetFileContent, SearchDomainFileContent_RU, text,
+                "nevod.io");
+        }
+
         private string GetFileContent(string filePath)
         {
             string result;
@@ -220,6 +228,9 @@ namespace Nezaboodka.Nevod.Engine.Tests
                 case "SearchUrlAndDomainDomain.np":
                     result = SearchUrlAndDomainFileContent;
                     break;
+                case "Интернет-ссылка.невод":
+                    result = UrlFileContent_RU;
+                    break;
                 default:
                     throw new ArgumentException($"{nameof(filePath)}: '{filePath}'");
             }
@@ -241,26 +252,6 @@ namespace Nezaboodka.Nevod.Engine.Tests
             @where
             {
                 @pattern Identifier = {AlphaNum, Alpha, '_'} + [0+ {Word, '_'}];
-            };
-        };
-    };
-}
-";
-        const string UrlPackage_RU = @"
-@пространство Общее
-{
-    @шаблон #Url = {'http', 'https'} + '://' + Домен + ?Путь + ?Запрос
-    @где
-    {
-        @шаблон #Домен = Слово + [1+ ('.' + Слово + [0+ {Слово, '_', '-'}])];
-        @шаблон Путь = '/' + [0+ {Слово, '/', '_', '+', '-', '%'}];
-        @шаблон Запрос = '?' + ?(Параметр + [0+ ('&' + Параметр)])
-        @где
-        {
-            Параметр = Идентификатор + '=' + Идентификатор
-            @где
-            {
-                @шаблон Идентификатор = {БуквыЦифры, Буквы, '_'} + [0+ {Слово, '_'}];
             };
         };
     };
@@ -353,6 +344,31 @@ namespace Nezaboodka.Nevod.Engine.Tests
 @require 'Nevod.np';
 
 @search Nv.*;
+";
+
+        const string UrlFileContent_RU = @"
+@пространство Общее
+{
+    @шаблон #Интернет-ссылка = {'http', 'https'} + '://' + Домен + ?Путь + ?Запрос
+    @где
+    {
+        @шаблон #Домен = Слово + [1+ ('.' + Слово + [0+ {Слово, '_', '-'}])];
+        @шаблон Путь = '/' + [0+ {Слово, '/', '_', '+', '-', '%'}];
+        @шаблон Запрос = '?' + ?(Параметр + [0+ ('&' + Параметр)])
+        @где
+        {
+            Параметр = Идентификатор + '=' + Идентификатор
+            @где
+            {
+                @шаблон Идентификатор = {БуквыЦифры, Буквы, '_'} + [0+ {Слово, '_'}];
+            };
+        };
+    };
+}
+";
+        const string SearchDomainFileContent_RU = @"
+@требуется 'Интернет-ссылка.невод';
+@искать Общее.Интернет-ссылка.Домен;
 ";
     }
 }
