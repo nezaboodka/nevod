@@ -111,7 +111,7 @@ namespace Nezaboodka.Nevod.Engine.Tests
                 CreateExpectedError(invalidToken: ")", TextResource.ExpressionExpected));
             ParseAndCompareErrors(
                 patterns: "P5 = Word + ] Num;",
-                CreateExpectedError(invalidToken: "]", TextResource.ExpressionExpected));  
+                CreateExpectedError(invalidToken: "]", TextResource.ExpressionExpected));
             ParseAndCompareErrors(
                 patterns: "P6 = Word + } Num;",
                 CreateExpectedError(invalidToken: "}", TextResource.ExpressionExpected));
@@ -168,7 +168,7 @@ namespace Nezaboodka.Nevod.Engine.Tests
             {
                 Assert.AreEqual(expected: 2, package.Patterns.Count, message: "Actual number of patterns is not equal to the expected one.");
             }
-            
+
             ParseAndCompareErrors(
                 patterns: "P1 = Word P2 = Num;",
                 // Space between Word and P2
@@ -238,25 +238,25 @@ Pattern = Word;
             ParseAndCompareErrors(
                 patterns: @"
 Pattern(X, Y) = X: Word + Y: Num;
-Reference(A) = Pattern(A: X, A: Y); 
+Reference(A) = Pattern(A: X, A: Y);
 ",
                 CreateExpectedError(invalidToken: "A", TextResource.FieldAlreadyUsedForTextExtraction));
             ParseAndCompareErrors(
                 patterns: @"
 Pattern(X) = X: Word;
-Reference() = Pattern(UndeclaredField: X); 
+Reference() = Pattern(UndeclaredField: X);
 ",
                 CreateExpectedError(invalidToken: "UndeclaredField", TextResource.UndeclaredField));
             ParseAndCompareErrors(
                 patterns: @"
 Pattern(X) = X: Word;
-Reference(A) = Pattern(A X); 
+Reference(A) = Pattern(A X);
 ",
                 CreateExpectedError(invalidToken: "X", TextResource.ColonExpected));
             ParseAndCompareErrors(
                 patterns: @"
 Pattern(X) = X: Word;
-Reference(A) = Pattern(A: ); 
+Reference(A) = Pattern(A: );
 ",
                 CreateExpectedError(invalidToken: ")", TextResource.FromFieldNameExpected));
         }
@@ -300,14 +300,14 @@ Reference(A) = Pattern(A: );
         public void FieldsErrors()
         {
             ParseAndCompareErrors(
-                patterns: "Pattern(Method, Domain = Method: Pattern.Method + Domain: Pattern.Domain;",
+                patterns: "Pattern(Schema, Domain = Schema: Pattern.Schema + Domain: Pattern.Domain;",
                 CreateExpectedError(invalidToken: "=", TextResource.CloseParenthesisExpected));
             ParseAndCompareErrors(
-                patterns: "Pattern(Method, Domain, = Method: Pattern.Method + Domain: Pattern.Domain;",
+                patterns: "Pattern(Schema, Domain, = Schema: Pattern.Schema + Domain: Pattern.Domain;",
                 CreateExpectedError(invalidToken: "=", TextResource.FieldNameExpected));
             ParseAndCompareErrors(
-                patterns: "Pattern(Method, Method) = Method: Pattern.Method;",
-                CreateExpectedError(invalidToken: "Method", TextResource.DuplicatedField));
+                patterns: "Pattern(Schema, Schema) = Schema: Pattern.Schema;",
+                CreateExpectedError(invalidToken: "Schema", TextResource.DuplicatedField));
         }
 
         [TestMethod]
@@ -315,7 +315,7 @@ Reference(A) = Pattern(A: );
         {
             ParseAndCompareErrors(
                 patterns: "P1 = '';",
-                CreateExpectedError(invalidToken: "''", TextResource.NonEmptyStringLiteralExpected));            
+                CreateExpectedError(invalidToken: "''", TextResource.NonEmptyStringLiteralExpected));
             ParseAndCompareErrors(
                 patterns: "P2 = 'text'(Alpha, 3-6, Lowercase);",
                 CreateExpectedError(invalidToken: "(Alpha, 3-6, Lowercase)", TextResource.TextAttributesAreAllowedOnlyForTextPrefixLiterals));
@@ -335,7 +335,7 @@ Reference(A) = Pattern(A: );
         [TestMethod]
         public void UnterminatedComment()
         {
-            string patterns = 
+            string patterns =
 @"Pattern = Word;
 /* This is an
 unterminated comment";
@@ -344,7 +344,7 @@ unterminated comment";
                 // Last symbol of "comment" word
                 CreateExpectedError(errorStart: 49, errorLength: 1, TextResource.UnterminatedComment));
         }
-        
+
         [TestMethod]
         public void UnterminatedStringLiteral()
         {
@@ -402,7 +402,7 @@ unterminated comment";
         {
             ParseAndCompareErrors(
                 patterns: "Pattern = Any(1-2);",
-                CreateExpectedErrorWithArgs("(1-2)", 
+                CreateExpectedErrorWithArgs("(1-2)",
                     TextResource.AttributesAreNotAllowedForStandardPattern, "Any"));
         }
 
