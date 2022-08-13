@@ -23,7 +23,7 @@ namespace Nezaboodka.Nevod
             fTokenByKeyword = new Dictionary<string, TokenId>();
             fStates = new Stack<State>();
             fIsScanningMetadata = true;
-            PrepareEnglishKeywordsDictionary();
+            PrepareKeywordsDictionary();
             fText = text.Slice();
             fTextPosition = -1;
             NextCharacter();
@@ -328,20 +328,19 @@ namespace Nezaboodka.Nevod
                 switch (metadata)
                 {
                     case "en":
-                        PrepareEnglishKeywordsDictionary();
                         fIsLanguageDetermined = true;
                         break;
                     case "ru":
-                        PrepareRussianKeywordsDictionary();
                         fIsLanguageDetermined = true;
                         break;
                 }
             }
         }
 
-        private void PrepareEnglishKeywordsDictionary()
+        private void PrepareKeywordsDictionary()
         {
             fTokenByKeyword.Clear();
+
             fTokenByKeyword.Add("@require", TokenId.RequireKeyword);
             fTokenByKeyword.Add("@namespace", TokenId.NamespaceKeyword);
             fTokenByKeyword.Add("@pattern", TokenId.PatternKeyword);
@@ -350,11 +349,7 @@ namespace Nezaboodka.Nevod
             fTokenByKeyword.Add("@inside", TokenId.InsideKeyword);
             fTokenByKeyword.Add("@outside", TokenId.OutsideKeyword);
             fTokenByKeyword.Add("@having", TokenId.HavingKeyword);
-        }
 
-        private void PrepareRussianKeywordsDictionary()
-        {
-            fTokenByKeyword.Clear();
             fTokenByKeyword.Add("@требуется", TokenId.RequireKeyword);
             fTokenByKeyword.Add("@пространство", TokenId.NamespaceKeyword);
             fTokenByKeyword.Add("@шаблон", TokenId.PatternKeyword);

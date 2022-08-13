@@ -97,6 +97,16 @@ namespace Nezaboodka.Nevod.Engine.Tests
         }
 
         [TestMethod]
+        public void SearchPackage_RU()
+        {
+            string text = "IS ANDROID OR IPHONE THE BETTER SMARTPHONE\n\n" +
+                "When it comes to buying one of the best smartphones,\n" +
+                "the first choice can be the hardest (www.google.com): iPhone or Android.";
+            SearchPatternsAndCheckMatches(GetFileContent, UrlPackage_RU, text,
+                "www.google.com");
+        }
+
+        [TestMethod]
         public void SearchPatternsInRequiredPackages()
         {
             string text = "IS ANDROID OR IPHONE THE BETTER SMARTPHONE\n\n" +
@@ -231,6 +241,26 @@ namespace Nezaboodka.Nevod.Engine.Tests
             @where
             {
                 @pattern Identifier = {AlphaNum, Alpha, '_'} + [0+ {Word, '_'}];
+            };
+        };
+    };
+}
+";
+        const string UrlPackage_RU = @"
+@пространство Общее
+{
+    @шаблон #Url = {'http', 'https'} + '://' + Домен + ?Путь + ?Запрос
+    @где
+    {
+        @шаблон #Домен = Слово + [1+ ('.' + Слово + [0+ {Слово, '_', '-'}])];
+        @шаблон Путь = '/' + [0+ {Слово, '/', '_', '+', '-', '%'}];
+        @шаблон Запрос = '?' + ?(Параметр + [0+ ('&' + Параметр)])
+        @где
+        {
+            Параметр = Идентификатор + '=' + Идентификатор
+            @где
+            {
+                @шаблон Идентификатор = {БуквыЦифры, Буквы, '_'} + [0+ {Слово, '_'}];
             };
         };
     };
