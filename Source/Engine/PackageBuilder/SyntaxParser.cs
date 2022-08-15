@@ -1283,72 +1283,95 @@ namespace Nezaboodka.Nevod
 
         private bool IsWordClass(string value, out WordClass wordClass)
         {
-            bool result = true;
-            switch (value)
+            bool result = false;
+            wordClass = WordClass.Any;
+            if (fScanner.DetectedLanguage == Language.Unknown || (fScanner.DetectedLanguage & Language.English) != 0)
             {
-                case "Alpha":
-                    wordClass = WordClass.Alpha;
-                    break;
-                case "Num":
-                    wordClass = WordClass.Num;
-                    break;
-                case "AlphaNum":
-                    wordClass = WordClass.AlphaNum;
-                    break;
-                case "NumAlpha":
-                    wordClass = WordClass.NumAlpha;
-                    break;
-
-                case "Буквы":
-                    wordClass = WordClass.Alpha;
-                    break;
-                case "Цифры":
-                    wordClass = WordClass.Num;
-                    break;
-                case "БуквыЦифры":
-                    wordClass = WordClass.AlphaNum;
-                    break;
-                case "ЦифрыБуквы":
-                    wordClass = WordClass.NumAlpha;
-                    break;
-
-                default:
-                    wordClass = WordClass.Any;
-                    result = false;
-                    break;
+                switch (value)
+                {
+                    case "Alpha":
+                        wordClass = WordClass.Alpha;
+                        result = true;
+                        break;
+                    case "Num":
+                        wordClass = WordClass.Num;
+                        result = true;
+                        break;
+                    case "AlphaNum":
+                        wordClass = WordClass.AlphaNum;
+                        result = true;
+                        break;
+                    case "NumAlpha":
+                        wordClass = WordClass.NumAlpha;
+                        result = true;
+                        break;
+                }
+            }
+            if (!result && (fScanner.DetectedLanguage == Language.Unknown || (fScanner.DetectedLanguage & Language.Russian) != 0))
+            {
+                switch (value)
+                {
+                    case "Буквы":
+                        wordClass = WordClass.Alpha;
+                        result = true;
+                        break;
+                    case "Цифры":
+                        wordClass = WordClass.Num;
+                        result = true;
+                        break;
+                    case "БуквыЦифры":
+                        wordClass = WordClass.AlphaNum;
+                        result = true;
+                        break;
+                    case "ЦифрыБуквы":
+                        wordClass = WordClass.NumAlpha;
+                        result = true;
+                        break;
+                }
             }
             return result;
         }
 
         private bool IsCharCase(string value, out CharCase charCase)
         {
-            bool result = true;
-            switch (value)
+            bool result = false;
+            charCase = CharCase.Undefined;
+            if (fScanner.DetectedLanguage == Language.Unknown || (fScanner.DetectedLanguage & Language.English) != 0)
             {
-                case "Lowercase":
-                    charCase = CharCase.Lowercase;
-                    break;
-                case "Uppercase":
-                    charCase = CharCase.Uppercase;
-                    break;
-                case "TitleCase":
-                    charCase = CharCase.TitleCase;
-                    break;
+                switch (value)
+                {
+                    case "Lowercase":
+                        result = true;
+                        charCase = CharCase.Lowercase;
+                        break;
+                    case "Uppercase":
+                        result = true;
+                        charCase = CharCase.Uppercase;
+                        break;
+                    case "TitleCase":
+                        result = true;
+                        charCase = CharCase.TitleCase;
+                        break;
+                }
 
-                case "Строчные":
-                    charCase = CharCase.Lowercase;
-                    break;
-                case "Прописные":
-                    charCase = CharCase.Uppercase;
-                    break;
-                case "ПерваяПрописная":
-                    charCase = CharCase.TitleCase;
-                    break;
-
-                default:
-                    charCase = CharCase.Undefined;
-                    result = false;
-                    break;
+            }
+            if (!result && (fScanner.DetectedLanguage == Language.Unknown || (fScanner.DetectedLanguage & Language.Russian) != 0))
+            {
+                switch (value)
+                {
+                    case "Строчные":
+                        result = true;
+                        charCase = CharCase.Lowercase;
+                        break;
+                    case "Прописные":
+                        result = true;
+                        charCase = CharCase.Uppercase;
+                        break;
+                    case "ПерваяПрописная":
+                        result = true;
+                        charCase = CharCase.TitleCase;
+                        break;
+                }
             }
             return result;
         }
