@@ -14,6 +14,7 @@ namespace Nezaboodka.Nevod
         private bool fIsLanguageDetermined;
         private readonly Stack<State> fStates;
 
+        public Language DetectedLanguage { get; private set; }
         public LexicalToken CurrentToken { get; private set; }
 
         public Scanner(string text)
@@ -22,7 +23,7 @@ namespace Nezaboodka.Nevod
                 throw new ArgumentNullException(nameof(text));
             fStates = new Stack<State>();
             fIsScanningMetadata = true;
-            fKeywordsDictionary = Keywords.GetKeywordsDictionary();
+            fKeywordsDictionary = Keywords.GetDictionary();
             fText = text.Slice();
             fTextPosition = -1;
             NextCharacter();
@@ -128,7 +129,10 @@ namespace Nezaboodka.Nevod
                         string keywordName = keywordSlice.ToString();
                         Keyword keyword;
                         if (fKeywordsDictionary.TryGetValue(keywordName, out keyword))
+                        {
                             tokenId = keyword.TokenId;
+                            DetectedLanguage |= keyword.Language;
+                        }
                         else
                             tokenId = TokenId.UnknownKeyword;
                     }
@@ -331,9 +335,11 @@ namespace Nezaboodka.Nevod
                 {
                     case "en":
                         fIsLanguageDetermined = true;
+                        DetectedLanguage |= Language.English;
                         break;
                     case "ru":
                         fIsLanguageDetermined = true;
+                        DetectedLanguage |= Language.Russian;
                         break;
                 }
             }
@@ -429,7 +435,7 @@ namespace Nezaboodka.Nevod
     }
 
     [Flags]
-    public enum LanguageId {
+    public enum Language {
         Unknown = 0,
         English = 1,
         Russian = 2,
@@ -439,32 +445,32 @@ namespace Nezaboodka.Nevod
     public struct Keyword {
         public string Name;
         public TokenId TokenId;
-        public LanguageId LanguageId;
+        public Language Language;
     }
 
     public static class Keywords {
 
         public static Keyword[] All = new Keyword[]
         {
-            new Keyword { Name = "@require", TokenId = TokenId.RequireKeyword, LanguageId = LanguageId.English },
-            new Keyword { Name = "@namespace", TokenId = TokenId.NamespaceKeyword, LanguageId = LanguageId.English },
-            new Keyword { Name = "@pattern", TokenId = TokenId.PatternKeyword, LanguageId = LanguageId.English },
-            new Keyword { Name = "@search", TokenId = TokenId.SearchKeyword, LanguageId = LanguageId.English },
-            new Keyword { Name = "@where", TokenId = TokenId.WhereKeyword, LanguageId = LanguageId.English },
-            new Keyword { Name = "@inside", TokenId = TokenId.InsideKeyword, LanguageId = LanguageId.English },
-            new Keyword { Name = "@outside", TokenId = TokenId.OutsideKeyword, LanguageId = LanguageId.English },
-            new Keyword { Name = "@having", TokenId = TokenId.HavingKeyword, LanguageId = LanguageId.English },
-            new Keyword { Name = "@требуется", TokenId = TokenId.RequireKeyword, LanguageId = LanguageId.Russian },
-            new Keyword { Name = "@пространство", TokenId = TokenId.NamespaceKeyword, LanguageId = LanguageId.Russian },
-            new Keyword { Name = "@шаблон", TokenId = TokenId.PatternKeyword, LanguageId = LanguageId.Russian },
-            new Keyword { Name = "@искать", TokenId = TokenId.SearchKeyword, LanguageId = LanguageId.Russian },
-            new Keyword { Name = "@где", TokenId = TokenId.WhereKeyword, LanguageId = LanguageId.Russian },
-            new Keyword { Name = "@внутри", TokenId = TokenId.InsideKeyword, LanguageId = LanguageId.Russian },
-            new Keyword { Name = "@вне", TokenId = TokenId.OutsideKeyword, LanguageId = LanguageId.Russian },
-            new Keyword { Name = "@содержащий", TokenId = TokenId.HavingKeyword, LanguageId = LanguageId.Russian }
+            new Keyword { Name = "@require", TokenId = TokenId.RequireKeyword, Language = Language.English },
+            new Keyword { Name = "@namespace", TokenId = TokenId.NamespaceKeyword, Language = Language.English },
+            new Keyword { Name = "@pattern", TokenId = TokenId.PatternKeyword, Language = Language.English },
+            new Keyword { Name = "@search", TokenId = TokenId.SearchKeyword, Language = Language.English },
+            new Keyword { Name = "@where", TokenId = TokenId.WhereKeyword, Language = Language.English },
+            new Keyword { Name = "@inside", TokenId = TokenId.InsideKeyword, Language = Language.English },
+            new Keyword { Name = "@outside", TokenId = TokenId.OutsideKeyword, Language = Language.English },
+            new Keyword { Name = "@having", TokenId = TokenId.HavingKeyword, Language = Language.English },
+            new Keyword { Name = "@требуется", TokenId = TokenId.RequireKeyword, Language = Language.Russian },
+            new Keyword { Name = "@пространство", TokenId = TokenId.NamespaceKeyword, Language = Language.Russian },
+            new Keyword { Name = "@шаблон", TokenId = TokenId.PatternKeyword, Language = Language.Russian },
+            new Keyword { Name = "@искать", TokenId = TokenId.SearchKeyword, Language = Language.Russian },
+            new Keyword { Name = "@где", TokenId = TokenId.WhereKeyword, Language = Language.Russian },
+            new Keyword { Name = "@внутри", TokenId = TokenId.InsideKeyword, Language = Language.Russian },
+            new Keyword { Name = "@вне", TokenId = TokenId.OutsideKeyword, Language = Language.Russian },
+            new Keyword { Name = "@содержащий", TokenId = TokenId.HavingKeyword, Language = Language.Russian }
         };
 
-        public static Dictionary<string, Keyword> GetKeywordsDictionary()
+        public static Dictionary<string, Keyword> GetDictionary()
         {
             var result = new Dictionary<string, Keyword>();
             foreach (var keyword in All)
