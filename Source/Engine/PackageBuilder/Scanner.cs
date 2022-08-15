@@ -443,28 +443,32 @@ namespace Nezaboodka.Nevod
     }
 
     public static class Keywords {
-        
+
+        public static Keyword[] All = new Keyword[]
+        {
+            new Keyword { Name = "@require", TokenId = TokenId.RequireKeyword, LanguageId = LanguageId.English },
+            new Keyword { Name = "@namespace", TokenId = TokenId.NamespaceKeyword, LanguageId = LanguageId.English },
+            new Keyword { Name = "@pattern", TokenId = TokenId.PatternKeyword, LanguageId = LanguageId.English },
+            new Keyword { Name = "@search", TokenId = TokenId.SearchKeyword, LanguageId = LanguageId.English },
+            new Keyword { Name = "@where", TokenId = TokenId.WhereKeyword, LanguageId = LanguageId.English },
+            new Keyword { Name = "@inside", TokenId = TokenId.InsideKeyword, LanguageId = LanguageId.English },
+            new Keyword { Name = "@outside", TokenId = TokenId.OutsideKeyword, LanguageId = LanguageId.English },
+            new Keyword { Name = "@having", TokenId = TokenId.HavingKeyword, LanguageId = LanguageId.English },
+            new Keyword { Name = "@требуется", TokenId = TokenId.RequireKeyword, LanguageId = LanguageId.Russian },
+            new Keyword { Name = "@пространство", TokenId = TokenId.NamespaceKeyword, LanguageId = LanguageId.Russian },
+            new Keyword { Name = "@шаблон", TokenId = TokenId.PatternKeyword, LanguageId = LanguageId.Russian },
+            new Keyword { Name = "@искать", TokenId = TokenId.SearchKeyword, LanguageId = LanguageId.Russian },
+            new Keyword { Name = "@где", TokenId = TokenId.WhereKeyword, LanguageId = LanguageId.Russian },
+            new Keyword { Name = "@внутри", TokenId = TokenId.InsideKeyword, LanguageId = LanguageId.Russian },
+            new Keyword { Name = "@вне", TokenId = TokenId.OutsideKeyword, LanguageId = LanguageId.Russian },
+            new Keyword { Name = "@содержащий", TokenId = TokenId.HavingKeyword, LanguageId = LanguageId.Russian }
+        };
+
         public static Dictionary<string, Keyword> GetKeywordsDictionary()
         {
             var result = new Dictionary<string, Keyword>();
-            result = new Dictionary<string, Keyword>(StringComparer.Ordinal);
-            result.Add("@require", new Keyword { Name = "@require", TokenId = TokenId.RequireKeyword, LanguageId = LanguageId.English });
-            result.Add("@namespace", new Keyword { Name = "@namespace", TokenId = TokenId.NamespaceKeyword, LanguageId = LanguageId.English });
-            result.Add("@pattern", new Keyword { Name = "@pattern", TokenId = TokenId.PatternKeyword, LanguageId = LanguageId.English });
-            result.Add("@search", new Keyword { Name = "@search", TokenId = TokenId.SearchKeyword, LanguageId = LanguageId.English });
-            result.Add("@where", new Keyword { Name = "@where", TokenId = TokenId.WhereKeyword, LanguageId = LanguageId.English });
-            result.Add("@inside", new Keyword { Name = "@inside", TokenId = TokenId.InsideKeyword, LanguageId = LanguageId.English });
-            result.Add("@outside", new Keyword { Name = "@outside", TokenId = TokenId.OutsideKeyword, LanguageId = LanguageId.English });
-            result.Add("@having", new Keyword { Name = "@having", TokenId = TokenId.HavingKeyword, LanguageId = LanguageId.English });
-
-            result.Add("@требуется", new Keyword { Name = "@требуется", TokenId = TokenId.RequireKeyword, LanguageId = LanguageId.Russian });
-            result.Add("@пространство", new Keyword { Name = "@пространство", TokenId = TokenId.NamespaceKeyword, LanguageId = LanguageId.Russian });
-            result.Add("@шаблон", new Keyword { Name = "@шаблон", TokenId = TokenId.PatternKeyword, LanguageId = LanguageId.Russian });
-            result.Add("@искать", new Keyword { Name = "@искать", TokenId = TokenId.SearchKeyword, LanguageId = LanguageId.Russian });
-            result.Add("@где", new Keyword { Name = "@где", TokenId = TokenId.WhereKeyword, LanguageId = LanguageId.Russian });
-            result.Add("@внутри", new Keyword { Name = "@внутри", TokenId = TokenId.InsideKeyword, LanguageId = LanguageId.Russian });
-            result.Add("@вне", new Keyword { Name = "@вне", TokenId = TokenId.OutsideKeyword, LanguageId = LanguageId.Russian });
-            result.Add("@содержащий", new Keyword { Name = "@содержащий", TokenId = TokenId.HavingKeyword, LanguageId = LanguageId.Russian });
+            foreach (var keyword in All)
+                result.Add(keyword.Name, keyword);
             return result;
         }
     }
