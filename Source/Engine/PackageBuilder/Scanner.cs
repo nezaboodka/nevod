@@ -9,7 +9,7 @@ namespace Nezaboodka.Nevod
         private readonly Slice fText;
         private int fTextPosition;
         private char fCharacter;
-        private readonly Dictionary<string, TokenId> fTokenByKeyword;
+        private readonly Dictionary<string, Keyword> fKeywordsDictionary;
         private bool fIsScanningMetadata;
         private bool fIsLanguageDetermined;
         private readonly Stack<State> fStates;
@@ -20,10 +20,9 @@ namespace Nezaboodka.Nevod
         {
             if (text == null)
                 throw new ArgumentNullException(nameof(text));
-            fTokenByKeyword = new Dictionary<string, TokenId>();
             fStates = new Stack<State>();
             fIsScanningMetadata = true;
-            PrepareKeywordsDictionary();
+            fKeywordsDictionary = Keywords.GetKeywordsDictionary();
             fText = text.Slice();
             fTextPosition = -1;
             NextCharacter();
@@ -126,8 +125,11 @@ namespace Nezaboodka.Nevod
                         while (char.IsLetterOrDigit(fCharacter) || fCharacter == '-')
                             NextCharacter();
                         Slice keywordSlice = fText.SubSlice(tokenPosition, fTextPosition - tokenPosition);
-                        string keyword = keywordSlice.ToString();
-                        if (!fTokenByKeyword.TryGetValue(keyword, out tokenId))
+                        string keywordName = keywordSlice.ToString();
+                        Keyword keyword;
+                        if (fKeywordsDictionary.TryGetValue(keywordName, out keyword))
+                            tokenId = keyword.TokenId;
+                        else
                             tokenId = TokenId.UnknownKeyword;
                     }
                     else
@@ -337,29 +339,6 @@ namespace Nezaboodka.Nevod
             }
         }
 
-        private void PrepareKeywordsDictionary()
-        {
-            fTokenByKeyword.Clear();
-
-            fTokenByKeyword.Add("@require", TokenId.RequireKeyword);
-            fTokenByKeyword.Add("@namespace", TokenId.NamespaceKeyword);
-            fTokenByKeyword.Add("@pattern", TokenId.PatternKeyword);
-            fTokenByKeyword.Add("@search", TokenId.SearchKeyword);
-            fTokenByKeyword.Add("@where", TokenId.WhereKeyword);
-            fTokenByKeyword.Add("@inside", TokenId.InsideKeyword);
-            fTokenByKeyword.Add("@outside", TokenId.OutsideKeyword);
-            fTokenByKeyword.Add("@having", TokenId.HavingKeyword);
-
-            fTokenByKeyword.Add("@требуется", TokenId.RequireKeyword);
-            fTokenByKeyword.Add("@пространство", TokenId.NamespaceKeyword);
-            fTokenByKeyword.Add("@шаблон", TokenId.PatternKeyword);
-            fTokenByKeyword.Add("@искать", TokenId.SearchKeyword);
-            fTokenByKeyword.Add("@где", TokenId.WhereKeyword);
-            fTokenByKeyword.Add("@внутри", TokenId.InsideKeyword);
-            fTokenByKeyword.Add("@вне", TokenId.OutsideKeyword);
-            fTokenByKeyword.Add("@содержащий", TokenId.HavingKeyword);
-        }
-
         private struct State
         {
             public int TextPosition { get; }
@@ -447,5 +426,46 @@ namespace Nezaboodka.Nevod
         HavingKeyword,
         UnterminatedComment,
         UnterminatedStringLiteral,
+    }
+
+    [Flags]
+    public enum LanguageId {
+        Unknown = 0,
+        English = 1,
+        Russian = 2,
+        All = English | Russian
+    }
+
+    public struct Keyword {
+        public string Name;
+        public TokenId TokenId;
+        public LanguageId LanguageId;
+    }
+
+    public static class Keywords {
+        
+        public static Dictionary<string, Keyword> GetKeywordsDictionary()
+        {
+            var result = new Dictionary<string, Keyword>();
+            result = new Dictionary<string, Keyword>(StringComparer.Ordinal);
+            result.Add("@require", new Keyword { Name = "@require", TokenId = TokenId.RequireKeyword, LanguageId = LanguageId.English });
+            result.Add("@namespace", new Keyword { Name = "@namespace", TokenId = TokenId.NamespaceKeyword, LanguageId = LanguageId.English });
+            result.Add("@pattern", new Keyword { Name = "@pattern", TokenId = TokenId.PatternKeyword, LanguageId = LanguageId.English });
+            result.Add("@search", new Keyword { Name = "@search", TokenId = TokenId.SearchKeyword, LanguageId = LanguageId.English });
+            result.Add("@where", new Keyword { Name = "@where", TokenId = TokenId.WhereKeyword, LanguageId = LanguageId.English });
+            result.Add("@inside", new Keyword { Name = "@inside", TokenId = TokenId.InsideKeyword, LanguageId = LanguageId.English });
+            result.Add("@outside", new Keyword { Name = "@outside", TokenId = TokenId.OutsideKeyword, LanguageId = LanguageId.English });
+            result.Add("@having", new Keyword { Name = "@having", TokenId = TokenId.HavingKeyword, LanguageId = LanguageId.English });
+
+            result.Add("@требуется", new Keyword { Name = "@требуется", TokenId = TokenId.RequireKeyword, LanguageId = LanguageId.Russian });
+            result.Add("@пространство", new Keyword { Name = "@пространство", TokenId = TokenId.NamespaceKeyword, LanguageId = LanguageId.Russian });
+            result.Add("@шаблон", new Keyword { Name = "@шаблон", TokenId = TokenId.PatternKeyword, LanguageId = LanguageId.Russian });
+            result.Add("@искать", new Keyword { Name = "@искать", TokenId = TokenId.SearchKeyword, LanguageId = LanguageId.Russian });
+            result.Add("@где", new Keyword { Name = "@где", TokenId = TokenId.WhereKeyword, LanguageId = LanguageId.Russian });
+            result.Add("@внутри", new Keyword { Name = "@внутри", TokenId = TokenId.InsideKeyword, LanguageId = LanguageId.Russian });
+            result.Add("@вне", new Keyword { Name = "@вне", TokenId = TokenId.OutsideKeyword, LanguageId = LanguageId.Russian });
+            result.Add("@содержащий", new Keyword { Name = "@содержащий", TokenId = TokenId.HavingKeyword, LanguageId = LanguageId.Russian });
+            return result;
+        }
     }
 }
