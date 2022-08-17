@@ -37,9 +37,11 @@
   <ItemGroup>
     <EmbeddedResource Include=".\Resource-en.restext" >
       <LogicalName>Nevod.en.resources</LogicalName>
+      <CultureInfo>en</CultureInfo>
     </EmbeddedResource>
     <EmbeddedResource Include=".\Resource-ru.restext" >
       <LogicalName>Nevod.ru.resources</LogicalName>
+      <CultureInfo>ru</CultureInfo>
     </EmbeddedResource>
   </ItemGroup>
 
