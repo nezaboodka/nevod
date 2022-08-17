@@ -4,6 +4,8 @@
 //--------------------------------------------------------------------------------------------------
 
 using System.Runtime.CompilerServices;
+using System.Resources;
 
 [assembly: InternalsVisibleTo("Nezaboodka.Nevod.Engine.Tests")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
+[assembly:NeutralResourcesLanguage("en", UltimateResourceFallbackLocation.MainAssembly)]

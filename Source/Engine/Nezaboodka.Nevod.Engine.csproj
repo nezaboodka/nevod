@@ -34,4 +34,13 @@
     <ProjectReference Include="..\Text\Nezaboodka.Text.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include=".\Resource-en.restext" >
+      <LogicalName>Nevod.en.resources</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include=".\Resource-ru.restext" >
+      <LogicalName>Nevod.ru.resources</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>
