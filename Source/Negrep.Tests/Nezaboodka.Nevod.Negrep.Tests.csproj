@@ -7,15 +7,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ILLinkPackVersion>@(KnownILLinkPack->WithMetadataValue('TargetFramework', '$(TargetFramework)')->Metadata('ILLinkPackVersion'))</ILLinkPackVersion>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NET.ILLink.Tasks" Version="$(ILLinkPackVersion)" />
-    <PackageReference Include="Microsoft.NET.ILLink.Analyzers" Version="$(ILLinkPackVersion)" />
-  </ItemGroup>
-
-  <PropertyGroup>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
