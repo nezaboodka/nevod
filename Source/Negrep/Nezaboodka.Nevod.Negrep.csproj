@@ -9,7 +9,7 @@
     <PublishTrimmed>true</PublishTrimmed>
     <TrimUnusedDependencies>true</TrimUnusedDependencies>
     <RuntimeIdentifiers>alpine-x64;rhel.6-x64;osx-x64;win-x64;win-x86</RuntimeIdentifiers>
-    <RuntimeFrameworkVersion>3.1.20</RuntimeFrameworkVersion>
+    <RuntimeFrameworkVersion>3.1</RuntimeFrameworkVersion>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
