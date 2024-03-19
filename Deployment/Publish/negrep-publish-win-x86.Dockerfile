@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1-alpine
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.18
 
 RUN apk add --no-cache \
         ca-certificates \
