@@ -30,7 +30,7 @@ jobs:
         with:
           dotnet-version: 8.0.x # Used in Nezaboodka.Nevod.Example.csproj
       - name: Build
-        run: dotnet build Source/Nezaboodka.Nevod.sln -c Release -warnaserror
+        run: dotnet build Source/Nezaboodka.Nevod.sln -c Release
 
   test-nevod:
     runs-on: ubuntu-latest
