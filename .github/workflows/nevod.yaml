@@ -24,11 +24,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.x
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 8.0.x # Used in Nezaboodka.Nevod.Example.csproj
+          dotnet-version: 8.0.x
       - name: Build
         run: dotnet build Source/Nezaboodka.Nevod.sln -c Release
 
@@ -39,7 +35,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.x
+          dotnet-version: 8.0.x
       - name: Test
         run: |
           dotnet test Source/Engine.Tests/Nezaboodka.Nevod.Engine.Tests.csproj -c Release --verbosity normal --test-adapter-path:. \
@@ -57,7 +53,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.x
+          dotnet-version: 8.0.x
       - name: Test
         run: |
           dotnet test Source/Negrep.Tests/Nezaboodka.Nevod.Negrep.Tests.csproj -c Release --verbosity normal --test-adapter-path:. \
@@ -75,7 +71,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.x
+          dotnet-version: 8.0.x
       - name: Test
         run: dotnet test Source/Text.Tests/Nezaboodka.Text.Tests.csproj -c Release --verbosity normal
 
@@ -186,7 +182,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.x
+          dotnet-version: 8.0.x
       - name: Set VERSION variable from tag
         run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
       - name: Build
@@ -211,7 +207,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.x
+          dotnet-version: 8.0.x
       - name: Set VERSION variable from tag
         run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
       - name: Build
