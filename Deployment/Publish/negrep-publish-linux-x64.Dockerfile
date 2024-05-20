@@ -10,18 +10,18 @@ COPY LICENSE.txt publish/nevod.negrep/LICENSE.txt
 COPY NOTICE publish/nevod.negrep/NOTICE
 COPY Deployment/Publish/THIRD-PARTY-NOTICES.txt publish/nevod.negrep/Deployment/Publish/THIRD-PARTY-NOTICES.txt
 COPY Source/ publish/nevod.negrep/Source
-RUN dotnet restore publish/nevod.negrep/Source/Negrep -r rhel.6-x64
+RUN dotnet restore publish/nevod.negrep/Source/Negrep -r linux-x64
 
-RUN dotnet publish /tmp/publish/nevod.negrep/Source/Negrep -c Release -f net8.0 -r rhel.6-x64 --no-restore /p:Version=$NG_VERSION
+RUN dotnet publish /tmp/publish/nevod.negrep/Source/Negrep -c Release -f net8.0 -r linux-x64 --no-restore /p:Version=$NG_VERSION
 
 WORKDIR /tmp/publish/out
 COPY Deployment/Publish/negrep-deb-package negrep-x86_64
 
-RUN cp -r ../nevod.negrep/Build/Release/bin/Nezaboodka.Nevod.Negrep/rhel.6-x64/publish/* negrep-x86_64/usr/share/negrep \
+RUN cp -r ../nevod.negrep/Build/Release/bin/Nezaboodka.Nevod.Negrep/linux-x64/publish/* negrep-x86_64/usr/share/negrep \
     && mv negrep-x86_64/usr/share/negrep/Nezaboodka.Nevod.Negrep negrep-x86_64/usr/share/negrep/negrep \
     && rm -f negrep-x86_64/usr/share/negrep/.gitkeep
 
-RUN tar -czf negrep-rhel.6-x64.tar.gz -C negrep-x86_64/usr/share negrep
+RUN tar -czf negrep-linux-x64.tar.gz -C negrep-x86_64/usr/share negrep
 
 RUN find negrep-x86_64/DEBIAN -type d | xargs chmod 755 \
     && chmod 755 negrep-x86_64/DEBIAN/* \

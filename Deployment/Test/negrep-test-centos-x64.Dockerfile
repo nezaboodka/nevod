@@ -2,8 +2,8 @@ FROM centos
 
 WORKDIR /tmp
 
-COPY Publish/negrep-rhel.6-x64.tar.gz /tmp
-RUN tar -xf ./negrep-rhel.6-x64.tar.gz -C /usr/share
+COPY Publish/negrep-linux-x64.tar.gz /tmp
+RUN tar -xf ./negrep-linux-x64.tar.gz -C /usr/share
 RUN test -f /usr/share/negrep/NOTICE
 RUN ln -s /usr/share/negrep/negrep /usr/bin/negrep
 

@@ -43,7 +43,7 @@ publish_netcoreapp() {
 set -e
 
 linux_x64=1
-RIDS_1="rhel.6-x64"
+RIDS_1="linux-x64"
 
 windows_x64=2
 RIDS_2="win-x64"

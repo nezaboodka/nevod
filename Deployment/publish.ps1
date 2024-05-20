@@ -43,7 +43,7 @@ function Publish-NetCoreApp {
 # Script
 
 $RIDS = @{
-    linux_x64 = "rhel.6-x64";
+    linux_x64 = "linux-x64";
     windows_x64 = "win-x64";
     windows_x86 = "win-x86";
     osx_x64 = "osx-x64";

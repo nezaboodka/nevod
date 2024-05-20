@@ -4,7 +4,6 @@ bin
 obj
 Debug
 Release
-Publish
 Tools
 *.suo
 *.user
