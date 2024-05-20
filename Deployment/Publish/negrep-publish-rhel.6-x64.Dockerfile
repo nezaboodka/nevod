@@ -12,7 +12,7 @@ COPY Deployment/Publish/THIRD-PARTY-NOTICES.txt publish/nevod.negrep/Deployment/
 COPY Source/ publish/nevod.negrep/Source
 RUN dotnet restore publish/nevod.negrep/Source/Negrep -r rhel.6-x64
 
-RUN dotnet publish /tmp/publish/nevod.negrep/Source/Negrep -c Release -f netcoreapp3.1 -r rhel.6-x64 --no-restore /p:Version=$NG_VERSION
+RUN dotnet publish /tmp/publish/nevod.negrep/Source/Negrep -c Release -f net8.0 -r rhel.6-x64 --no-restore /p:Version=$NG_VERSION
 
 WORKDIR /tmp/publish/out
 COPY Deployment/Publish/negrep-deb-package negrep-x86_64

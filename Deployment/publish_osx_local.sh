@@ -25,7 +25,7 @@ function publish()
 {
     echo -e "${BLUE_COLOR}Stage: publish ${DEFAULT_COLOR}"
     mkdir -p "${NEGREP_PUBLISH_BIN_PATH}"
-    dotnet publish Source/Negrep -c Release -f netcoreapp3.1 -r osx-x64
+    dotnet publish Source/Negrep -c Release -f net8.0 -r osx-x64
     cp -r "${NEGREP_SOURCE_BIN_PATH}" "${NEGREP_PUBLISH_BIN_PATH}"
     echo -e "negrep has been published successfully [${GREEN_COLOR}${NEGREP_PUBLISH_BIN_PATH}${DEFAULT_COLOR}]"
 }

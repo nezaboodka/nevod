@@ -16,7 +16,7 @@ COPY NOTICE publish/nevod.negrep/NOTICE
 COPY Deployment/Publish/THIRD-PARTY-NOTICES.txt publish/nevod.negrep/Deployment/Publish/THIRD-PARTY-NOTICES.txt
 COPY Source/ publish/nevod.negrep/Source
 
-RUN dotnet publish /tmp/publish/nevod.negrep/Source/Negrep -c Release -f netcoreapp3.1 -r win-x86 /p:Version=$NG_VERSION
+RUN dotnet publish /tmp/publish/nevod.negrep/Source/Negrep -c Release -f net8.0 -r win-x86 /p:Version=$NG_VERSION
 
 WORKDIR /tmp/publish/out
 
