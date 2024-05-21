@@ -14,7 +14,7 @@ function Publish-NetCoreApp {
     Remove-Item ./Publish/local -Recurse -Force -ErrorAction Ignore
 
     $NG_VERSION = "0.0.1"
-    dotnet publish ./Source/Negrep -c Release -f net8.0 --self-contained --runtime ${RuntimeId} --output ./Publish/local/${RuntimeId}/negrep
+    dotnet publish ./Source/Negrep -c Release -f net8.0 --runtime ${RuntimeId} --output ./Publish/local/${RuntimeId}/negrep
 
     Set-Location ./Publish/local/${RuntimeId}
     Rename-Item "negrep/Nezaboodka.Nevod.Negrep.exe" "negrep.exe"

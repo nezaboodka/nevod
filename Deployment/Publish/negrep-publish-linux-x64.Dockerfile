@@ -12,7 +12,7 @@ COPY Deployment/Publish/THIRD-PARTY-NOTICES.txt publish/nevod.negrep/Deployment/
 COPY Source/ publish/nevod.negrep/Source
 RUN dotnet restore publish/nevod.negrep/Source/Negrep -r linux-x64
 
-RUN dotnet publish /tmp/publish/nevod.negrep/Source/Negrep -c Release -f net8.0 -r linux-x64 --self-contained --no-restore /p:Version=$NG_VERSION
+RUN dotnet publish /tmp/publish/nevod.negrep/Source/Negrep -c Release -f net8.0 -r linux-x64 --no-restore /p:Version=$NG_VERSION
 
 WORKDIR /tmp/publish/out
 COPY Deployment/Publish/negrep-deb-package negrep-x86_64
