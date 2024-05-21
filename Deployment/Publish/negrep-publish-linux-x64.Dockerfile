@@ -26,7 +26,7 @@ RUN tar -czf negrep-linux-x64.tar.gz -C negrep-x86_64/usr/share negrep
 RUN find negrep-x86_64/DEBIAN -type d | xargs chmod 755 \
     && chmod 755 negrep-x86_64/DEBIAN/* \
     && chmod 755 negrep-x86_64/usr/share/negrep/* \
-    && chmod 644 negrep-x86_64/usr/share/negrep/*.so
+    && chmod 644 negrep-x86_64/usr/share/negrep/*.dll
 RUN INSTALLED_SIZE=$(du negrep-x86_64 | tail -n 1 | grep -E -o '^[0-9]+') \
     && sed -i "s/{installed-size-value}/$INSTALLED_SIZE/" negrep-x86_64/DEBIAN/control
 RUN sed -i "s/{current-version-value}/$NG_VERSION/" negrep-x86_64/DEBIAN/control
