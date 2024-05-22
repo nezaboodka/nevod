@@ -246,6 +246,16 @@ namespace Nezaboodka.Nevod.Engine.Tests
         }
 
         [TestMethod]
+        public void VariationWithExtraCommaSyntaxParsing()
+        {
+            string pattern = "Cipher = {Alpha, AlphaNum, NumAlpha, Num, };";
+            var parser = new SyntaxParser();
+            PackageSyntax package = parser.ParsePackageText(pattern);
+            string text = package.ToString();
+            TestPackageIs(expected: "Cipher = {Alpha, AlphaNum, NumAlpha, Num};", actual: text);
+        }
+
+        [TestMethod]
         public void EndlessFromZeroRepetitionSyntaxParsing()
         {
             string pattern = "TheBlanks = [0+ {Space, LineBreak}];";
