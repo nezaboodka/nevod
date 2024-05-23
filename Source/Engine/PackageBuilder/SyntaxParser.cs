@@ -775,7 +775,11 @@ namespace Nezaboodka.Nevod
                 if (element != null)
                     elements.Add(element);
                 if (fScanner.CurrentToken.Id == TokenId.Comma)
+                {
                     NextToken();
+                    if (fScanner.CurrentToken.Id == endToken)
+                        isListParsed = true;
+                }
                 else if (fScanner.CurrentToken.Id == endToken || IsEndSign() || fIsAbortingDueToPatternDefinition)
                     isListParsed = true;
                 else
@@ -787,7 +791,11 @@ namespace Nezaboodka.Nevod
                         NextToken();
                     }
                     if (fScanner.CurrentToken.Id == TokenId.Comma)
+                    {
                         NextToken();
+                        if (fScanner.CurrentToken.Id == endToken)
+                            isListParsed = true;
+                    }
                     else if (IsEndSign())
                         isListParsed = true;
                 }
