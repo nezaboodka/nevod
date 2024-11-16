@@ -385,10 +385,10 @@ namespace Nezaboodka.Nevod.Engine.Tests
         [TestMethod]
         public void WordSequenceWithSequenceOfTokens()
         {
-            string patterns = "#Pattern = 'Nezaboodka' _ 'Software' + Space + 'LLC';";
-            string text = "Nezaboodka - Software LLC";
+            string patterns = "#Pattern = 'Nezaboodka' _* 'Software' _ 'Company' + Space + 'LLC';";
+            string text = "Nezaboodka - Software Company LLC";
             SearchPatternsAndCheckMatches(patterns, text,
-                "Nezaboodka - Software LLC");
+                "Nezaboodka - Software Company LLC");
         }
 
         [TestMethod]

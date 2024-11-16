@@ -50,13 +50,19 @@ namespace Nezaboodka.Nevod
             else
             {
                 var sequenceElements = new List<Syntax>();
-                Syntax wordBreaks = Syntax.Repetition(new Range(0, Range.Max), Syntax.StandardPattern.WordBreak);
+                // Syntax wordBreaks = Syntax.Repetition(new Range(0, Range.Max), Syntax.StandardPattern.WordBreak);
                 for (int i = 0, n = Elements.Count; i < n; i++)
                 {
-                    sequenceElements.Add(Elements[i]);
-                    if (i < n - 1)
-                        sequenceElements.Add(wordBreaks);
-                } 
+                    Syntax element = Elements[i];
+                    if (element != null)
+                    {
+                        if (element.CanReduce)
+                            element = element.Reduce();
+                    }
+                    sequenceElements.Add(element);
+                    // if (i < n - 1)
+                    //     sequenceElements.Add(wordBreaks);
+                }
                 result = Syntax.Sequence(sequenceElements);
             }
             return result;

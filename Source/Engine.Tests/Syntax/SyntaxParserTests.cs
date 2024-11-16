@@ -608,7 +608,8 @@ Pattern = 'Pattern';
     ");
                 var wordSequence = (WordSequenceSyntax) pattern2.Body;
                 TestSourceTextInformation(patterns, wordSequence.Elements[0], @"A ");
-                TestSourceTextInformation(patterns, wordSequence.Elements[1], @"B ");
+                TestSourceTextInformation(patterns, wordSequence.Elements[1], @"_ ");
+                TestSourceTextInformation(patterns, wordSequence.Elements[2], @"B ");
                 void PatternA()
                 {
                     PatternSyntax patternA = pattern2.NestedPatterns[0];

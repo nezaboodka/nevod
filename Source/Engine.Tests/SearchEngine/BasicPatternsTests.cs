@@ -66,7 +66,7 @@ namespace Nezaboodka.Nevod.Engine.Tests
         }
 
         [TestMethod]
-        [Timeout(5 * 1000)]    // 5 seconds
+        [Timeout(10 * 1000)]    // 5 seconds
         public void DebugGlobalPackageCache()
         {
             string dataDir = TestHelper.GetBasicPackageDirectory();

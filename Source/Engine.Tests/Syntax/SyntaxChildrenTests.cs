@@ -529,17 +529,17 @@ Pattern = Nested1 + Nested2 @where {
         [TestMethod]
         public void WordSequenceSyntaxChildren()
         {
-            string pattern = @"#Company = 'Nezaboodka' _ 'Software' _ 'LLC';";
+            string pattern = @"#Company = 'Nezaboodka' _* 'Software' _ 'LLC';";
             PackageSyntax package = ParsePatterns(pattern);
             var wordSequenceSyntax = (WordSequenceSyntax)((PatternSyntax)package.Patterns[0]).Body;
             wordSequenceSyntax.CreateChildren(pattern);
             ReadOnlyCollection<Syntax> children = wordSequenceSyntax.Children;
             Assert.AreEqual(children.Count, 5);
             Assert.AreEqual(wordSequenceSyntax.Elements[0], children[0]);
-            TestTokenIdAndTextRange(pattern, children[1], TokenId.Underscore, "_ ");
-            Assert.AreEqual(wordSequenceSyntax.Elements[1], children[2]);
-            TestTokenIdAndTextRange(pattern, children[3], TokenId.Underscore, "_ ");
-            Assert.AreEqual(wordSequenceSyntax.Elements[2], children[4]);
+            TestSourceTextInformation(pattern, children[1], "_* ");
+            Assert.AreEqual(wordSequenceSyntax.Elements[2], children[2]);
+            TestSourceTextInformation(pattern, children[3], "_ ");
+            Assert.AreEqual(wordSequenceSyntax.Elements[4], children[4]);
         }
 
         [TestMethod]

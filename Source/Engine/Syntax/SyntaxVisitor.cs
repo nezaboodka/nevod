@@ -153,6 +153,11 @@ namespace Nezaboodka.Nevod
             return result;
         }
 
+        protected internal virtual Syntax VisitWordSeparator(WordSeparatorSyntax node)
+        {
+            return node;
+        }
+
         protected internal virtual Syntax VisitConjunction(ConjunctionSyntax node)
         {
             ReadOnlyCollection<Syntax> newElements = Visit(node.Elements);

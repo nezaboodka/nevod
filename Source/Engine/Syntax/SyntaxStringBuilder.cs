@@ -194,7 +194,26 @@ namespace Nezaboodka.Nevod
         protected internal override Syntax VisitWordSequence(WordSequenceSyntax node)
         {
             fParents.Push(node);
-            WriteChildren(node.Elements, " _ ");
+            WriteChildren(node.Elements);
+            fParents.Pop();
+            return node;
+        }
+
+        protected internal override Syntax VisitWordSeparator(WordSeparatorSyntax node)
+        {
+            fParents.Push(node);
+            string text;
+            switch (node.Separator)
+            {
+                case Separator.Blanks:
+                    text = " _ ";
+                    break;
+                case Separator.WordBreaks:
+                default:
+                    text = " _* ";
+                    break;
+            }
+            Write(text);
             fParents.Pop();
             return node;
         }
@@ -412,6 +431,17 @@ namespace Nezaboodka.Nevod
                     WriteChild(nodes[i]);
                     if (i < n - 1)
                         Write(elementsSeparator);
+                }
+            }
+        }
+
+        internal void WriteChildren<T>(ReadOnlyCollection<T> nodes) where T : Syntax
+        {
+            if (nodes.Count > 0)
+            {
+                for (int i = 0, n = nodes.Count; i < n; i++)
+                {
+                    WriteChild(nodes[i]);
                 }
             }
         }
@@ -708,6 +738,9 @@ namespace Nezaboodka.Nevod
                     result = 2;
                     break;
                 case WordSequenceSyntax _:
+                    result = 2;
+                    break;
+                case WordSeparatorSyntax _:
                     result = 2;
                     break;
                 case WordSpanSyntax _:

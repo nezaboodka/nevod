@@ -615,18 +615,42 @@ namespace Nezaboodka.Nevod
         {
             int startPosition = fScanner.CurrentToken.TextSlice.Position;
             Syntax result = ParseSequence();
-            if (fScanner.CurrentToken.Id == TokenId.Underscore)
+            if (fScanner.CurrentToken.Id == TokenId.Underscore ||
+                fScanner.CurrentToken.Id == TokenId.UnderscoreAsterisk)
             {
                 var elements = new List<Syntax> { result };
-                while (fScanner.CurrentToken.Id == TokenId.Underscore)
+                while (fScanner.CurrentToken.Id == TokenId.Underscore ||
+                    fScanner.CurrentToken.Id == TokenId.UnderscoreAsterisk)
                 {
-                    NextToken();
+                    Syntax separator = ParseWordSeparator();
+                    if (separator != null)
+                        elements.Add(separator);
                     Syntax element = ParseSequence();
                     if (element != null)
                         elements.Add(element);
                 }
                 result = SetTextRange(Syntax.WordSequence(elements), startPosition);
             }
+            return result;
+        }
+
+        private Syntax ParseWordSeparator()
+        {
+            int startPosition = fScanner.CurrentToken.TextSlice.Position;
+            Syntax result;
+            Syntax separator;
+            switch (fScanner.CurrentToken.Id)
+            {
+                case TokenId.Underscore:
+                    separator = Syntax.WordSeparator(Separator.Blanks);
+                    break;
+                case TokenId.UnderscoreAsterisk:
+                default:
+                    separator = Syntax.WordSeparator(Separator.WordBreaks);
+                    break;
+            }
+            NextToken();
+            result = SetTextRange(separator, startPosition);
             return result;
         }
 
