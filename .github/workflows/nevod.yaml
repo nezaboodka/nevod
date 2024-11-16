@@ -101,7 +101,7 @@ jobs:
       - run: chmod +x ./Deployment/publish.sh
       - run: ./Deployment/publish.sh ${{ matrix.target-os }}
         shell: sh
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target-os }}
           path: Publish/
@@ -116,7 +116,7 @@ jobs:
       NV_DOCK_TAG: github
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           name: linux_x64
           path: Publish
@@ -131,7 +131,7 @@ jobs:
       NV_DOCK_TAG: github
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           name: osx_x64
           path: Publish
@@ -146,7 +146,7 @@ jobs:
       NV_DOCK_TAG: github
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           name: linux_x64
           path: Publish
@@ -162,7 +162,7 @@ jobs:
         windows-version: [ "windows_x86", "windows_x64" ]
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.windows-version }}
           path: Publish
@@ -226,7 +226,7 @@ jobs:
       - publish-text-nuget-package
       - publish-nevod-nuget-package
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           path: release-artifacts
       - uses: ncipollo/release-action@v1
