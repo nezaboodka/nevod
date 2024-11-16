@@ -196,7 +196,13 @@ namespace Nezaboodka.Nevod
                     break;
                 case '_':
                     NextCharacter();
-                    tokenId = TokenId.Underscore;
+                    if (fCharacter == '*')
+                    {
+                        NextCharacter();
+                        tokenId = TokenId.UnderscoreAsterisk;
+                    }
+                    else
+                        tokenId = TokenId.Underscore;
                     break;
                 case '!':
                     NextCharacter();
@@ -413,6 +419,7 @@ namespace Nezaboodka.Nevod
         Exclamation,
         Equal,
         Underscore,
+        UnderscoreAsterisk,
         LessThan,
         GreaterThan,
         DoublePeriod,
